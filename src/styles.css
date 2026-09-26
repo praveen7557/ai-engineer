@@ -585,3 +585,18 @@ code { font-family: var(--mono); font-size: .88em; padding: 1px 5px; border-radi
 .guide-list li { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 16px; font-size: 14.5px; color: var(--muted); }
 .guide-list b { color: var(--text); font-weight: 500; }
 @media (max-width: 860px) { .guide-list li { grid-template-columns: 1fr; gap: 2px; } .build-card { margin: 12px 4px 6px; } }
+
+/* week guidance + concept links */
+.how { list-style: none; counter-reset: how; display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 12px 12px 2px; padding: 10px 14px; border-radius: var(--r-sm); background: rgba(255, 232, 200, .025); border: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+.how li { counter-increment: how; display: flex; gap: 6px; align-items: baseline; }
+.how li::before { content: counter(how); font-family: var(--mono); font-size: 11px; color: var(--accent); }
+.how b { color: var(--text); font-weight: 500; }
+.hint { font-family: var(--mono); font-size: 10.5px; letter-spacing: .04em; color: var(--faint); }
+.hint.on { color: var(--good); }
+.learn { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; margin-top: 8px; font-size: 12.5px; }
+.learn-k { font-family: var(--mono); font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--faint); }
+.learn-link { color: var(--muted); text-decoration: none; padding: 2px 9px; border-radius: 99px; border: 1px solid var(--line-2); transition: color .2s, border-color .2s; }
+.learn-link:hover { color: var(--text); border-color: var(--accent-lo); }
+.learn-link.must { border-color: rgba(224, 164, 88, .4); color: var(--accent-hi); }
+.learn-link.reference { border-color: rgba(147, 165, 184, .35); }
+.learn-link.read { color: var(--good); border-color: rgba(141, 191, 159, .35); }

@@ -151,13 +151,23 @@ function WeekTraining({ ch, week, focus }: { ch: Chapter; week: number; focus?: 
         <div className="display h-md" style={{ marginTop: 4 }}>{w.title}</div>
         <p className="muted" style={{ margin: "6px 0 0" }}>{w.focus}</p>
       </div>
+      <ol className="how" aria-label="How to use this week">
+        <li><b>Read the build</b> below</li>
+        <li><b>Skim the concepts</b>; don't tick yet</li>
+        <li><b>Start building</b>; open the linked Intel when you're stuck</li>
+        <li><b>Tick milestones</b> as you finish them</li>
+        <li><b>Tick a concept</b> once you can explain it without notes</li>
+      </ol>
       <WeekBuildCard ch={ch} week={w.number} focus={focus} />
       {w.groups.map(g => (
         <div key={g.title}>
           <div className="group-title">{g.title}</div>
           <ul className="checks">
             {g.concepts.map(c => (
-              <CheckRow key={c.id} id={c.id} title={c.title} sub={c.summary} side={<span>{fmtMinutes(c.minutes)}</span>} target={focus === c.id} />
+              <CheckRow key={c.id} id={c.id} title={c.title} target={focus === c.id}
+                hint={{ off: "I can explain this", on: "Understood" }}
+                sub={<>{c.summary}<ConceptLinks ids={c.resources} /></>}
+                side={<span>{fmtMinutes(c.minutes)}</span>} />
             ))}
           </ul>
         </div>
@@ -310,6 +320,25 @@ function ResourceRow({ r, target }: { r: Resource; target?: boolean }) {
       title={<><a href={r.url} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>{r.title}</a>{r.suggested && <span className="tag steel" style={{ marginLeft: 8 }}>Suggested</span>}</>}
       sub={r.note}
       side={<><span className={`tag ${r.use === "must" ? "req" : r.use === "reference" ? "steel" : ""}`}>{r.kind}</span><span>{r.hours ? `~${r.hours} h` : "ongoing"} · {weekLabel(r)}</span></>} />
+  );
+}
+
+/** "Learn from" links under a concept, pointing at the resources that teach it. */
+function ConceptLinks({ ids }: { ids?: string[] }) {
+  const { state } = useStore();
+  const rs = (ids ?? []).map(id => RESOURCE_BY_ID.get(id)).filter((r): r is NonNullable<typeof r> => !!r);
+  if (!rs.length) return <span className="learn faint">Learned by doing this week's build.</span>;
+  return (
+    <span className="learn">
+      <span className="learn-k">Learn from</span>
+      {rs.map(r => (
+        <a key={r.id} href={r.url} target="_blank" rel="noopener noreferrer" className={`learn-link ${r.use} ${state.done[r.id] ? "read" : ""}`}
+          title={`${r.use === "must" ? "Must read" : r.use === "reference" ? "Reference" : "Bonus"} · ${r.kind}${r.hours ? ` · ~${r.hours} h` : ""}`}
+          onClick={e => e.stopPropagation()}>
+          {state.done[r.id] ? "✓ " : ""}{r.title}
+        </a>
+      ))}
+    </span>
   );
 }
 

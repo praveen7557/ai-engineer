@@ -35,8 +35,10 @@ export function Ring({ value, size = 64 }: { value: number; size?: number }) {
 }
 
 /** A checklist row for any tracked item. Flashes when completed; highlights when it's the navigation target. */
-export function CheckRow({ id, title, sub, side, className = "", target }: {
+export function CheckRow({ id, title, sub, side, className = "", target, hint }: {
   id: string; title: ReactNode; sub?: ReactNode; side?: ReactNode; className?: string; target?: boolean;
+  /** What ticking means, e.g. { off: "I can explain this", on: "Understood" }. */
+  hint?: { off: string; on: string };
 }) {
   const { state, toggle } = useStore();
   const done = !!state.done[id];
@@ -51,6 +53,8 @@ export function CheckRow({ id, title, sub, side, className = "", target }: {
       <label ref={ref} className={`row ${done ? "done" : ""} ${flash ? "flash" : ""} ${target && !done ? "target" : ""} ${className}`} htmlFor={`cb-${id}`}>
         <input
           id={`cb-${id}`} type="checkbox" className="cb" checked={done}
+          title={hint ? hint.off : undefined}
+          aria-describedby={hint ? `hint-${id}` : undefined}
           onChange={e => {
             toggle(id, e.target.checked, e.target);
             if (e.target.checked) { setFlash(true); window.setTimeout(() => setFlash(false), 1400); }
@@ -61,6 +65,7 @@ export function CheckRow({ id, title, sub, side, className = "", target }: {
           {sub && <span className="sub">{sub}</span>}
         </span>
         <span className="side">
+          {hint && <span id={`hint-${id}`} className={`hint ${done ? "on" : ""}`}>{done ? hint.on : hint.off}</span>}
           {side}
           {meta && <span className="xp">{done ? "✓ " : "+"}{itemXp(meta)} XP</span>}
         </span>
