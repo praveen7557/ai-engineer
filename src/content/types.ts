@@ -1,20 +1,23 @@
 /**
- * Content model for The AI Engineer.
+ * Content model for The AI Engineer (build-first roadmap).
  *
- * IDs are explicit, stable strings — progress is keyed by them, so never derive
- * them from titles and never change an ID once shipped.
+ * IDs are explicit, stable strings. Progress is keyed by them, so never derive them from titles and
+ * never change an ID once shipped.
  *
- * ID conventions (all lowercase, kebab-case slugs):
- *   concept     `${chapterId}.c.${slug}`          e.g. "ch4.c.hybrid-search"
- *   resource    `${chapterId}.r.${slug}`          e.g. "ch4.r.contextual-retrieval"
- *   mission     `${chapterId}.m${n}`              e.g. "ch4.m1"
- *   milestone   `${missionId}.s${n}`              e.g. "ch4.m1.s3"
- *   stretch     `${missionId}.x${n}`              e.g. "ch4.m1.x1"
- *   trial       `${chapterId}.t.${slug}`          e.g. "ch4.t.debugging"
+ * ID conventions (lowercase, kebab-case slugs):
+ *   concept     `${chapterId}.c.${slug}`   e.g. "ch4.c.hybrid-search"
+ *   resource    `${chapterId}.r.${slug}`   e.g. "ch4.r.contextual-retrieval"
+ *   mission     `${chapterId}.m${k}`       k restarts at 1 in every chapter, e.g. "ch7.m2"
+ *   milestone   `${missionId}.s${n}`       e.g. "ch7.m2.s3"
+ *   stretch     `${missionId}.x${n}`       e.g. "ch7.m2.x1"
+ *   trial       `${chapterId}.t.${slug}`   e.g. "ch4.t.debugging"
  */
 
 export type ResourceKind =
   | "Video" | "Course" | "Docs" | "Article" | "Paper" | "Book" | "Tool" | "Code" | "Spec" | "Tutorial";
+
+/** must = needed for the build (counts toward progress) · reference = consult while implementing · bonus = optional depth. */
+export type ResourceUse = "must" | "reference" | "bonus";
 
 export type Skill = "knowledge" | "building" | "systemDesign" | "evaluation" | "production";
 
@@ -24,25 +27,32 @@ export type TrialDimension =
 export interface Concept {
   id: string;
   title: string;
-  /** One or two sentences: what it is and why it matters. */
+  /** One or two sentences: what it is and why it matters for this week's build. */
   summary: string;
-  /** Estimated study time in minutes (typically 15–90). */
+  /** Estimated study time in minutes (typically 15–60). */
   minutes: number;
 }
 
 export interface ConceptGroup {
-  /** Short category label, e.g. "Context & prompting". */
   title: string;
   concepts: Concept[];
+}
+
+export interface WeekBuild {
+  /** What to build this week (the "Deliverable" column). */
+  deliverable: string;
+  /** What to keep as proof (the "Evidence to keep" column). */
+  evidence: string;
 }
 
 export interface Week {
   /** Absolute week number, 1–24. */
   number: number;
-  /** Short title for the week, e.g. "Embeddings & vector search". */
   title: string;
   /** One sentence on what this week is about. */
   focus: string;
+  build: WeekBuild;
+  /** 1–2 groups, 3–5 concepts in total: only what the build needs. */
   groups: ConceptGroup[];
 }
 
@@ -51,13 +61,17 @@ export interface Resource {
   title: string;
   url: string;
   kind: ResourceKind;
-  /** Estimated hours (0 for ongoing feeds). */
+  /** Estimated hours of focused reading/viewing (not build time). */
   hours: number;
-  required: boolean;
-  /** Why it's on the list / what to focus on. */
+  use: ResourceUse;
+  /** What to focus on and why. */
   note: string;
-  /** Week number this resource best supports. */
+  /** First week this resource supports. */
   week: number;
+  /** Last week, when it spans a range (e.g. 1–3). */
+  weekEnd?: number;
+  /** Marked as a suggested addition in the roadmap document. */
+  suggested?: boolean;
 }
 
 export interface Milestone {
@@ -65,6 +79,8 @@ export interface Milestone {
   title: string;
   /** Estimated minutes of work. */
   minutes: number;
+  /** The week this milestone belongs to (within the chapter). */
+  week: number;
 }
 
 export interface Mission {
@@ -72,16 +88,16 @@ export interface Mission {
   /** Global mission number across the roadmap (1..N), shown as "MISSION 07". */
   number: number;
   title: string;
-  /** e.g. "Full-stack", "Backend", "Frontend", "Security", "Career". */
+  /** e.g. "Full-stack", "Backend", "Python lab", "Security". */
   track: string;
   hours: number;
-  /** Major missions award a completion bonus and count toward the Builder/Field Tested achievements. */
+  /** Major missions award a completion bonus and count toward achievements. */
   major: boolean;
   objective: string;
   requirements: string[];
   milestones: Milestone[];
   deliverable: string;
-  /** 2–3 questions the learner answers in the mission's reflection box. */
+  /** 2–3 reflection questions. */
   reflection: string[];
   stretch: Milestone[];
 }
@@ -93,21 +109,34 @@ export interface TrialCriterion {
   statement: string;
 }
 
+export interface ChapterNote {
+  /** e.g. "Lab boundary", "Bonus build", "Apply earlier resources", "Deployment". */
+  label: string;
+  text: string;
+}
+
 export interface Chapter {
   id: string;            // "ch1".."ch8"
   number: number;        // 1..8
-  title: string;         // "RAG & Knowledge Systems"
-  /** One-line tagline, evocative but plain, e.g. "Teach the model what it was never trained on." */
+  title: string;
+  /** Short evocative-but-plain line, ≤ 10 words. */
   tagline: string;
+  /** The italic summary line under the chapter heading. */
   description: string;
-  /** Why this chapter matters for a working FE/BE engineer. */
   why: string;
-  weeks: Week[];         // exactly 3 consecutive weeks
-  /** The one thing you'll be able to do at the end of the chapter. */
+  /** 2–4 consecutive weeks. */
+  weeks: Week[];
   majorObjective: string;
+  /** "Done when" from the roadmap. */
+  doneWhen: string;
+  /** "Engineering decision" from the roadmap. */
+  decision: string;
   resources: Resource[];
+  /** Resource ids from earlier chapters worth revisiting here (shown as links, not re-counted). */
+  revisit?: string[];
   missions: Mission[];
   trial: TrialCriterion[];
+  notes?: ChapterNote[];
   /** Relative weight of this chapter toward each end-state capability (0–3). */
   skills: Partial<Record<Skill, number>>;
 }
@@ -118,6 +147,24 @@ export interface ContinuingSource {
   kind: ResourceKind;
   note: string;
   category: "Releases" | "Research" | "Practice" | "Community" | "Deep dives";
+}
+
+export interface ShelfItem {
+  title: string;
+  url: string;
+  kind: ResourceKind;
+  note: string;
+}
+
+export interface Guide {
+  intro: string;
+  audience: string;
+  howToUse: { label: string; text: string }[];
+  resourceAllowance: string;
+  prerequisites: string;
+  deployment: string;
+  shelf: ShelfItem[];
+  continuingIntro: string;
 }
 
 export interface SetupItem {

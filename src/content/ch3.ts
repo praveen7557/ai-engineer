@@ -1,134 +1,54 @@
-// Chapter 3 — Building AI Applications (weeks 7–9)
+// Chapter 3 — Building AI & Multimodal Applications (weeks 7–9)
 import type { Chapter } from "./types";
 
 export const ch3: Chapter = {
   id: "ch3",
   number: 3,
-  title: "Building AI Applications",
-  tagline: "Ship a real chat surface, then make it feel intentional.",
+  title: "Building AI & Multimodal Applications",
+  tagline: "Ship a streaming, multimodal feature that's safe and affordable.",
   description:
-    "Three weeks building a full-stack streaming chat app behind a backend proxy, then applying AI-native UX patterns and hardening the result for safe, affordable production use.",
+    "Ship a streaming interface and a useful image/document feature with observable, bounded backend behavior.",
   why:
-    "A chatbot is the smallest complete AI product: a backend that guards the key and manages state, and a frontend that has to render an uncertain, streaming, sometimes-wrong output. Everything you learn here about state, streaming and safety carries into every later chapter.",
+    "A streaming assistant and a document/image extraction feature are two of the most common AI product shapes. The safety, cost and UX patterns you build here — server-side enforcement, redacted tracing, human correction — carry into every later chapter.",
   weeks: [
     {
       number: 7,
-      title: "Full-stack chat",
-      focus: "A backend proxy that streams to the browser and manages conversation state.",
+      title: "Streaming, authenticated backend",
+      focus: "A backend that streams safely, cancels cleanly, and can be traced without leaking sensitive content.",
+      build: {
+        deliverable: "Put the extractor or assistant behind a streaming UI and authenticated backend.",
+        evidence:
+          "Test cancellation, interrupted streams, concurrent requests, safe output rendering, and access control. Trace model calls with sensitive content redacted.",
+      },
       groups: [
         {
-          title: "Backend & state",
+          title: "Streaming backend",
           concepts: [
             {
               id: "ch3.c.backend-proxy",
               title: "Backend proxy pattern",
               summary:
-                "The browser never holds the API key; a small backend endpoint holds it, forwards requests, and is the only thing that talks to the model.",
+                "The browser never holds the API key; a small, authenticated backend endpoint holds it, forwards requests, and is the only thing that talks to the model.",
               minutes: 30,
             },
             {
               id: "ch3.c.sse-through-backend",
               title: "SSE through your backend",
               summary:
-                "Streaming tokens from the model to the browser means re-streaming through your own server, not just piping raw bytes, so you can also log, trim and handle disconnects along the way.",
+                "Streaming tokens from the model to the browser means re-streaming through your own server, not just piping raw bytes, so you can also log, trim and handle disconnects and concurrent requests along the way.",
               minutes: 35,
             },
             {
-              id: "ch3.c.conversation-trimming",
-              title: "Conversation state & trimming",
-              summary:
-                "As a conversation grows toward the context limit, you need a strategy — trimming old turns, summarizing them, or both — decided in code, not left to chance.",
-              minutes: 30,
-            },
-          ],
-        },
-        {
-          title: "Persistence & controls",
-          concepts: [
-            {
-              id: "ch3.c.persistence",
-              title: "Persisting conversations",
-              summary:
-                "Storing conversation history in a database turns a session-only demo into something a user can leave and come back to, and it's what later evals and tracing will read from.",
-              minutes: 25,
-            },
-            {
               id: "ch3.c.stop-regenerate",
-              title: "Stop & regenerate",
+              title: "Cancellation & interrupted streams",
               summary:
-                "Canceling an in-flight generation with an AbortController and offering a clean regenerate are small features that make a chat app feel controllable instead of at the mercy of the model.",
+                "Canceling an in-flight generation with an AbortController and handling a stream that drops mid-response are what make a chat app feel controllable instead of at the mercy of the connection.",
               minutes: 25,
             },
           ],
         },
-      ],
-    },
-    {
-      number: 8,
-      title: "AI-native UX",
-      focus: "Rendering uncertainty and partial results, and going beyond the chatbot.",
-      groups: [
         {
-          title: "Streaming & generative UI",
-          concepts: [
-            {
-              id: "ch3.c.streaming-ui-patterns",
-              title: "Streaming UI patterns",
-              summary:
-                "Skeleton, partial, complete and error states each need distinct treatment so a user always knows whether the app is thinking, has partially answered, or has failed.",
-              minutes: 30,
-            },
-            {
-              id: "ch3.c.partial-json",
-              title: "Parsing partial JSON",
-              summary:
-                "Structured output arrives incrementally too, so rendering it live means parsing an incomplete JSON string safely instead of waiting for the whole response.",
-              minutes: 30,
-            },
-            {
-              id: "ch3.c.generative-ui",
-              title: "Generative UI",
-              summary:
-                "When the model returns structured data or a tool call, you render real components from it instead of raw markdown, which is what makes an AI feature feel native to the app.",
-              minutes: 30,
-            },
-          ],
-        },
-        {
-          title: "Designing for uncertainty",
-          concepts: [
-            {
-              id: "ch3.c.designing-uncertainty",
-              title: "Designing for uncertainty",
-              summary:
-                "Citations, editable output, accept/reject controls and undo all communicate that the model might be wrong and give the user an easy way to correct it.",
-              minutes: 25,
-            },
-            {
-              id: "ch3.c.beyond-chatbot",
-              title: "Beyond the chatbot",
-              summary:
-                "Inline suggestions, command palettes, autofill and in-context summaries put AI where the user is already working instead of routing everything through a sidebar.",
-              minutes: 25,
-            },
-            {
-              id: "ch3.c.pair-hax",
-              title: "PAIR & HAX guidelines",
-              summary:
-                "Google's PAIR guidebook and Microsoft's HAX toolkit are research-backed checklists for setting expectations, handling errors gracefully, and building trust in AI-driven interfaces.",
-              minutes: 30,
-            },
-          ],
-        },
-      ],
-    },
-    {
-      number: 9,
-      title: "Shipping safely & cheaply",
-      focus: "XSS-safe rendering, accessibility, and the caching and budget controls that keep a feature affordable.",
-      groups: [
-        {
-          title: "Safety & accessibility",
+          title: "Safety & tracing",
           concepts: [
             {
               id: "ch3.c.safe-rendering",
@@ -138,14 +58,76 @@ export const ch3: Chapter = {
               minutes: 25,
             },
             {
-              id: "ch3.c.aria-live",
-              title: "aria-live accessibility",
+              id: "ch3.c.access-control-tracing",
+              title: "Server-side access control & redacted tracing",
               summary:
-                "Streamed content needs aria-live regions and careful focus management so a screen reader announces updates sensibly instead of re-reading the whole response on every token.",
-              minutes: 25,
+                "Permission checks belong on the server, not the client, and a trace of each model call needs sensitive content redacted before it's persisted anywhere.",
+              minutes: 30,
             },
           ],
         },
+      ],
+    },
+    {
+      number: 8,
+      title: "Multimodal extraction & correction",
+      focus: "Comparing OCR-plus-extractor against direct multimodal input, with a human correction step.",
+      build: {
+        deliverable: "Build a document/image extraction feature with a human correction step.",
+        evidence:
+          "Compare text extraction/OCR plus the existing extractor against direct multimodal input on a small labeled set, including unreadable images and tables.",
+      },
+      groups: [
+        {
+          title: "Multimodal extraction",
+          concepts: [
+            {
+              id: "ch3.c.multimodal-vision",
+              title: "Multimodal (vision) input",
+              summary:
+                "Images and rendered document pages can be sent directly as input, which skips a separate OCR step but adds meaningfully to token cost and has its own resolution limits.",
+              minutes: 25,
+            },
+            {
+              id: "ch3.c.ocr-vs-direct",
+              title: "OCR-plus-extractor vs direct multimodal",
+              summary:
+                "Text extraction/OCR feeding your existing extractor and direct multimodal input are two real architectures for the same feature, and only a labeled comparison — including unreadable images and tables — tells you which wins on accuracy and cost.",
+              minutes: 30,
+            },
+          ],
+        },
+        {
+          title: "Human correction & UX guidance",
+          concepts: [
+            {
+              id: "ch3.c.human-correction-step",
+              title: "The human correction step",
+              summary:
+                "An extraction feature that's wrong 10% of the time needs a fast, obvious way for a person to fix that 10%, or the feature quietly erodes trust instead of saving time.",
+              minutes: 25,
+            },
+            {
+              id: "ch3.c.pair-hax",
+              title: "PAIR & HAX guidelines",
+              summary:
+                "Google's PAIR guidebook and Microsoft's HAX toolkit are research-backed checklists for setting expectations, handling errors gracefully, and building trust in AI-driven correction interactions.",
+              minutes: 30,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      number: 9,
+      title: "Restricted pilot",
+      focus: "Per-user spend limits, measured responsiveness, and picking the capstone problem.",
+      build: {
+        deliverable: "Deploy a restricted pilot, enforce per-user spend limits, and measure responsiveness.",
+        evidence:
+          "Record time to first token, total latency, token usage, and cache hit/miss costs. Gather feedback and select a capstone problem with representative examples.",
+      },
+      groups: [
         {
           title: "Cost & rate controls",
           concepts: [
@@ -167,8 +149,27 @@ export const ch3: Chapter = {
               id: "ch3.c.rate-limits-budgets",
               title: "Rate limits & per-user budgets",
               summary:
-                "Provider rate limits protect the provider; your own per-user and per-tenant budgets protect you from one user's traffic or misuse driving the whole bill.",
+                "Provider rate limits protect the provider; your own per-user and per-tenant budgets, enforced server-side, protect you from one user's traffic or misuse driving the whole bill.",
               minutes: 25,
+            },
+          ],
+        },
+        {
+          title: "Measuring & piloting",
+          concepts: [
+            {
+              id: "ch3.c.latency-measurement",
+              title: "Measuring what users feel",
+              summary:
+                "Time to first token, total latency, and token usage each tell a different part of the story, and finding the actual bottleneck before touching prompts, models or concurrency saves a lot of wasted tuning.",
+              minutes: 25,
+            },
+            {
+              id: "ch3.c.capstone-selection",
+              title: "Choosing the capstone from pilot feedback",
+              summary:
+                "Real feedback from a restricted pilot, plus representative examples of what worked and failed, is what turns \"pick a capstone problem\" from a guess into a decision backed by evidence.",
+              minutes: 20,
             },
           ],
         },
@@ -176,7 +177,11 @@ export const ch3: Chapter = {
     },
   ],
   majorObjective:
-    "Ship a full-stack streaming chat app with a safe backend, and apply the same patterns to make an AI feature feel native inside a real UI.",
+    "Ship a streaming, authenticated backend and a multimodal extraction feature with a human correction step, then run a restricted pilot with enforced spend limits and measured latency.",
+  doneWhen:
+    "A user can complete and correct a real task; failed or cancelled calls have clear UI states; permissions, upload limits, retention, and spend caps are enforced server-side.",
+  decision:
+    "Choose text parsing/OCR or multimodal inference using accuracy and cost. Decide when streaming, caching, and human review improve the actual workflow.",
   resources: [
     {
       id: "ch3.r.streaming-docs",
@@ -184,8 +189,8 @@ export const ch3: Chapter = {
       url: "https://platform.claude.com/docs/en/build-with-claude/streaming",
       kind: "Docs",
       hours: 0.5,
-      required: true,
-      note: "The SSE event types your backend proxy re-streams to the browser.",
+      use: "reference",
+      note: "Implement the backend stream and cancellation path; reuse Chapter 01 error handling.",
       week: 7,
     },
     {
@@ -194,88 +199,8 @@ export const ch3: Chapter = {
       url: "https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events",
       kind: "Docs",
       hours: 0.5,
-      required: true,
-      note: "The SSE fundamentals under every streaming UI you'll build.",
-      week: 7,
-    },
-    {
-      id: "ch3.r.pair-guidebook",
-      title: "People + AI Guidebook — Google PAIR",
-      url: "https://pair.withgoogle.com/guidebook",
-      kind: "Docs",
-      hours: 2,
-      required: true,
-      note: "Patterns for trust, explanations and feedback in AI-driven interfaces.",
-      week: 8,
-    },
-    {
-      id: "ch3.r.hax-guidelines",
-      title: "Guidelines for Human-AI Interaction — Microsoft HAX",
-      url: "https://www.microsoft.com/en-us/haxtoolkit/ai-guidelines/",
-      kind: "Docs",
-      hours: 1,
-      required: true,
-      note: "18 research-backed interaction guidelines for setting expectations and handling errors.",
-      week: 8,
-    },
-    {
-      id: "ch3.r.ai-sdk-docs",
-      title: "AI SDK (open-source TypeScript library) docs",
-      url: "https://ai-sdk.dev",
-      kind: "Docs",
-      hours: 2,
-      required: false,
-      note: "Streaming UI and generative UI patterns in React; learn the patterns even if you build your own.",
-      week: 8,
-    },
-    {
-      id: "ch3.r.assistant-ui",
-      title: "assistant-ui",
-      url: "https://www.assistant-ui.com",
-      kind: "Code",
-      hours: 1,
-      required: false,
-      note: "Composable React chat primitives; study how they handle streaming state.",
-      week: 8,
-    },
-    {
-      id: "ch3.r.reduce-latency",
-      title: "Reduce latency — Claude Docs",
-      url: "https://platform.claude.com/docs/en/test-and-evaluate/strengthen-guardrails/reduce-latency",
-      kind: "Docs",
-      hours: 0.5,
-      required: true,
-      note: "The official latency checklist, directly relevant to a chat app that has to feel responsive.",
-      week: 9,
-    },
-    {
-      id: "ch3.r.prompt-caching-docs",
-      title: "Prompt caching — Claude Docs",
-      url: "https://platform.claude.com/docs/en/build-with-claude/prompt-caching",
-      kind: "Docs",
-      hours: 1,
-      required: true,
-      note: "Structure prompts for cache hits; pricing and TTLs.",
-      week: 9,
-    },
-    {
-      id: "ch3.r.rate-limits-docs",
-      title: "Rate limits — Claude Docs",
-      url: "https://platform.claude.com/docs/en/api/rate-limits",
-      kind: "Docs",
-      hours: 0.5,
-      required: true,
-      note: "How limits are measured and how to read the response headers, needed for the per-user budget requirement.",
-      week: 9,
-    },
-    {
-      id: "ch3.r.errors-docs",
-      title: "Errors — Claude Docs",
-      url: "https://platform.claude.com/docs/en/api/errors",
-      kind: "Docs",
-      hours: 0.25,
-      required: false,
-      note: "Which errors to retry and which to surface to the chat UI.",
+      use: "reference",
+      note: "Consult transport/event behavior as needed; use a client suited to your authentication and request method.",
       week: 7,
     },
     {
@@ -284,114 +209,233 @@ export const ch3: Chapter = {
       url: "https://genai.owasp.org/llm-top-10/",
       kind: "Spec",
       hours: 1,
-      required: false,
-      note: "A first read focused on improper output handling (XSS) ahead of the full treatment in chapter 7.",
+      use: "must",
+      note: "Read prompt injection, sensitive information disclosure, improper output handling, and unbounded consumption before the pilot.",
+      week: 7,
+    },
+    {
+      id: "ch3.r.langfuse-docs",
+      title: "Langfuse docs",
+      url: "https://langfuse.com/docs",
+      kind: "Tool",
+      hours: 1,
+      use: "reference",
+      note: "Instrument one end-to-end request and inspect a failure. Decide which content to redact or omit and how long traces persist.",
+      week: 7,
+    },
+    {
+      id: "ch3.r.vision-docs",
+      title: "Vision — Claude Docs",
+      url: "https://platform.claude.com/docs/en/build-with-claude/vision",
+      kind: "Docs",
+      hours: 0.5,
+      use: "reference",
+      note: "Image input, resolution/cost trade-offs, and limitations. Use images or rendered document pages for the bounded lab.",
+      week: 8,
+      suggested: true,
+    },
+    {
+      id: "ch3.r.pair-guidebook",
+      title: "People + AI Guidebook — Google PAIR",
+      url: "https://pair.withgoogle.com/guidebook",
+      kind: "Docs",
+      hours: 1,
+      use: "must",
+      note: "Select trust, feedback, and user-control guidance; implement one correction or recovery interaction.",
+      week: 8,
+    },
+    {
+      id: "ch3.r.hax-guidelines",
+      title: "Guidelines for Human-AI Interaction — Microsoft HAX",
+      url: "https://www.microsoft.com/en-us/haxtoolkit/ai-guidelines/",
+      kind: "Docs",
+      hours: 1,
+      use: "must",
+      note: "Use the guidelines to review your feature and document the changes made.",
+      week: 8,
+    },
+    {
+      id: "ch3.r.reduce-latency",
+      title: "Reduce latency — Claude Docs",
+      url: "https://platform.claude.com/docs/en/test-and-evaluate/strengthen-guardrails/reduce-latency",
+      kind: "Docs",
+      hours: 0.5,
+      use: "reference",
+      note: "Measure the bottleneck before changing prompts, models, or concurrency.",
       week: 9,
+    },
+    {
+      id: "ch3.r.prompt-caching-docs",
+      title: "Prompt caching — Claude Docs",
+      url: "https://platform.claude.com/docs/en/build-with-claude/prompt-caching",
+      kind: "Docs",
+      hours: 0.5,
+      use: "reference",
+      note: "Compare cache hits/misses and the effect of prompt structure; do not assume all workloads benefit.",
+      week: 9,
+    },
+    {
+      id: "ch3.r.rate-limits-docs",
+      title: "Rate limits — Claude Docs",
+      url: "https://platform.claude.com/docs/en/api/rate-limits",
+      kind: "Docs",
+      hours: 0.5,
+      use: "reference",
+      note: "Handle provider throttling. Implement your own per-user budgets separately from provider quotas.",
+      week: 9,
+    },
+    {
+      id: "ch3.r.ai-sdk-docs",
+      title: "AI SDK (open-source TypeScript library) docs",
+      url: "https://ai-sdk.dev",
+      kind: "Docs",
+      hours: 2,
+      use: "bonus",
+      note: "Optional streaming implementation aid; keep failure and authorization behavior explicit.",
+      week: 7,
+    },
+    {
+      id: "ch3.r.assistant-ui",
+      title: "assistant-ui",
+      url: "https://www.assistant-ui.com",
+      kind: "Code",
+      hours: 1,
+      use: "bonus",
+      note: "Optional UI primitives to save time on chat scaffolding.",
+      week: 7,
     },
   ],
   missions: [
     {
-      id: "ch3.m5",
-      number: 5,
-      title: "Streaming Chat App",
+      id: "ch3.m1",
+      number: 4,
+      title: "Streaming Assistant",
       track: "Full-stack",
-      hours: 11,
+      hours: 8,
       major: true,
       objective:
-        "Build a chat UI backed by a small server proxy that holds the API key and streams tokens to the browser, so you feel the full loop from user keystroke to streamed, rendered response.",
+        "Put the extractor or assistant behind a streaming, authenticated backend so users get incremental output over a connection that handles cancellation, concurrency and access control correctly.",
       requirements: [
-        "A backend proxy endpoint that holds the key and forwards requests; the browser never sees it",
-        "Tokens stream to the UI and render markdown incrementally",
-        "Stop generation with an AbortController, and a clean regenerate",
-        "Conversation history with trimming or summarizing as it nears the context limit",
-        "Tokens and cost shown per message and per conversation",
-        "A system-prompt editor panel to experiment with live",
+        "Authenticated backend endpoint that holds the API key and forwards streamed requests",
+        "Cancellation of an in-flight generation and handling of an interrupted stream",
+        "Concurrent-request handling verified under a small load test",
+        "Safe output rendering, verified against an attempted injection",
+        "Access control enforced server-side, tested with an unauthorized request",
+        "A trace of model calls with sensitive content redacted",
       ],
       milestones: [
-        { id: "ch3.m5.s1", title: "Backend proxy endpoint holding the key", minutes: 45 },
-        { id: "ch3.m5.s2", title: "Streamed tokens rendered as incremental markdown", minutes: 60 },
-        { id: "ch3.m5.s3", title: "Stop (AbortController) and regenerate", minutes: 40 },
-        { id: "ch3.m5.s4", title: "History trimming/summarizing near the context limit", minutes: 50 },
-        { id: "ch3.m5.s5", title: "Per-message and per-conversation token/cost display", minutes: 40 },
-        { id: "ch3.m5.s6", title: "Live system-prompt editor panel", minutes: 35 },
+        { id: "ch3.m1.s1", title: "Authenticated backend proxy streaming to the browser", minutes: 50, week: 7 },
+        { id: "ch3.m1.s2", title: "Cancellation (AbortController) and interrupted-stream handling", minutes: 45, week: 7 },
+        { id: "ch3.m1.s3", title: "Concurrent-request test showing correct isolation", minutes: 40, week: 7 },
+        { id: "ch3.m1.s4", title: "Safe output rendering verified against an injected payload", minutes: 40, week: 7 },
+        { id: "ch3.m1.s5", title: "Access control enforced server-side, tested with an unauthorized request", minutes: 40, week: 7 },
+        { id: "ch3.m1.s6", title: "Trace of model calls with sensitive content redacted", minutes: 45, week: 7 },
       ],
       deliverable:
-        "A chat app you can actually use, with the key kept server-side, live streaming, stop/regenerate, and visible cost per message.",
+        "A streaming, authenticated backend and UI where cancellation, concurrent requests, safe rendering and access control are all demonstrably enforced, with redacted traces of each call.",
       reflection: [
-        "What broke first when you tried to trim conversation history, and why?",
-        "Where did streaming change how you had to think about error handling compared to a single request/response call?",
+        "What broke first when you tested cancellation or concurrent requests?",
+        "Which OWASP LLM risk did you find you'd already mitigated, and which one required new work?",
+      ],
+      stretch: [],
+    },
+    {
+      id: "ch3.m2",
+      number: 5,
+      title: "Document & Image Extraction",
+      track: "Full-stack",
+      hours: 8,
+      major: true,
+      objective:
+        "Build a document/image extraction feature with a human correction step, comparing OCR-plus-extractor against direct multimodal input on a labeled set.",
+      requirements: [
+        "Ingest images/documents and run both an OCR-plus-extractor path and a direct multimodal path",
+        "Compare accuracy and cost on a small labeled set, including unreadable images and tables",
+        "A human correction step for extracted fields",
+        "One PAIR or HAX guideline applied to the correction interaction, with the specific change documented",
+      ],
+      milestones: [
+        { id: "ch3.m2.s1", title: "OCR + existing-extractor path implemented", minutes: 55, week: 8 },
+        { id: "ch3.m2.s2", title: "Direct multimodal-input path implemented", minutes: 50, week: 8 },
+        { id: "ch3.m2.s3", title: "Labeled set with unreadable images/tables; both paths compared", minutes: 60, week: 8 },
+        { id: "ch3.m2.s4", title: "Human correction step for extracted fields", minutes: 45, week: 8 },
+        { id: "ch3.m2.s5", title: "One PAIR or HAX guideline applied and documented", minutes: 35, week: 8 },
+      ],
+      deliverable:
+        "A document/image extraction feature with a working human correction step, plus a written comparison of OCR-plus-extractor versus direct multimodal input on accuracy and cost.",
+      reflection: [
+        "Which approach won on accuracy, and did cost change that decision?",
+        "What did the PAIR or HAX guideline you applied change about the correction interaction?",
       ],
       stretch: [
-        { id: "ch3.m5.x1", title: "Image upload (multimodal input)", minutes: 45 },
-        { id: "ch3.m5.x2", title: "Persist conversations in Postgres", minutes: 60 },
+        { id: "ch3.m2.x1", title: "Bonus build: add audio transcription and compare word/task accuracy on noisy audio", minutes: 60, week: 8 },
       ],
     },
     {
-      id: "ch3.m6",
+      id: "ch3.m3",
       number: 6,
-      title: "AI-Native Feature in a Real UI",
-      track: "Frontend",
-      hours: 12,
-      major: true,
+      title: "Restricted Pilot",
+      track: "Full-stack",
+      hours: 7,
+      major: false,
       objective:
-        "Add AI as part of the interface of a small CRM-lite or notes app — not a chat sidebar — so the model's output is rendered as real, editable, accessible UI.",
+        "Deploy a restricted pilot of the assistant with per-user spend limits, measure responsiveness, and select a capstone problem from real feedback.",
       requirements: [
-        "Inline AI suggestions for form fields, with accept/edit/reject controls",
-        "A generative-UI summary card rendered from streamed partial JSON",
-        "Explicit streaming states: skeleton, partial, complete, error, with retry",
-        "Feedback capture (thumbs and edits) logged for later evaluation use",
-        "aria-live announcements and full keyboard-only operation",
-        "Model output sanitized, with a deliberate XSS attempt from the model blocked",
+        "Deploy to a small, restricted group of real users",
+        "Enforce per-user spend limits server-side, independent of provider rate limits",
+        "Record time to first token, total latency, token usage, and cache hit/miss costs",
+        "Gather feedback and select a capstone problem with representative examples",
       ],
       milestones: [
-        { id: "ch3.m6.s1", title: "Inline suggestion UI with accept/edit/reject", minutes: 60 },
-        { id: "ch3.m6.s2", title: "Partial-JSON parser feeding a generative-UI summary card", minutes: 70 },
-        { id: "ch3.m6.s3", title: "Skeleton/partial/complete/error states with retry", minutes: 45 },
-        { id: "ch3.m6.s4", title: "Feedback capture (thumbs + edits) logged", minutes: 40 },
-        { id: "ch3.m6.s5", title: "aria-live and keyboard-only pass", minutes: 45 },
-        { id: "ch3.m6.s6", title: "Sanitization verified against an injected XSS payload", minutes: 40 },
+        { id: "ch3.m3.s1", title: "Restricted pilot deployed to a small user group", minutes: 45, week: 9 },
+        { id: "ch3.m3.s2", title: "Per-user spend limits enforced server-side", minutes: 45, week: 9 },
+        { id: "ch3.m3.s3", title: "Latency/token/cache-cost measurement report", minutes: 50, week: 9 },
+        { id: "ch3.m3.s4", title: "Feedback gathered and capstone problem selected with representative examples", minutes: 40, week: 9 },
       ],
       deliverable:
-        "A small real app where AI suggestions and summaries are first-class UI elements, accessible, safely rendered, and instrumented for feedback.",
+        "A restricted pilot deployment with enforced per-user spend limits, a measured latency/cost report, and a chosen capstone problem backed by representative examples.",
       reflection: [
-        "Which HAX or PAIR guideline changed a specific design decision you made here?",
-        "What did the XSS test teach you about trusting model output that you didn't already know?",
+        "Where did prompt caching help versus not matter for this workload?",
+        "What feedback most changed your view of the capstone problem you picked?",
       ],
-      stretch: [
-        { id: "ch3.m6.x1", title: "Undo history for AI-made changes", minutes: 50 },
-      ],
+      stretch: [],
     },
   ],
   trial: [
     {
-      id: "ch3.t.explain-proxy",
+      id: "ch3.t.server-side-enforcement",
       dimension: "Understanding",
-      statement: "You can explain why the API key must live behind a backend proxy and never in the browser bundle.",
+      statement: "You can explain why permissions, upload limits, retention and spend caps must be enforced server-side, not just in the UI.",
     },
     {
-      id: "ch3.t.build-streaming",
+      id: "ch3.t.complete-and-correct",
       dimension: "Implementation",
-      statement: "You can implement a working stop-and-regenerate flow on a streaming response.",
+      statement: "You can build a UI where a user completes and corrects a real task, with clear states for failed and cancelled calls.",
     },
     {
-      id: "ch3.t.debug-partial-json",
-      dimension: "Debugging",
-      statement: "You can debug a partial-JSON parse failure mid-stream and explain what state it left the UI in.",
-    },
-    {
-      id: "ch3.t.explain-ux-patterns",
-      dimension: "Explanation",
-      statement: "You can explain, with an example from your own build, why designing for uncertainty beats hiding it.",
-    },
-    {
-      id: "ch3.t.tradeoff-caching",
-      dimension: "Tradeoffs",
-      statement: "You can weigh prompt caching against response caching for a given feature and justify which one you'd add first.",
-    },
-    {
-      id: "ch3.t.verify-sanitization",
+      id: "ch3.t.ocr-vs-multimodal",
       dimension: "Evaluation",
-      statement: "You can demonstrate, with a real attempted payload, that your app's model-output rendering is XSS-safe.",
+      statement: "You can compare OCR-plus-extractor against direct multimodal input on accuracy and cost and justify which one you'd ship.",
+    },
+    {
+      id: "ch3.t.when-review-helps",
+      dimension: "Tradeoffs",
+      statement: "You can decide when streaming, caching and human review actually improve a workflow instead of adding complexity for its own sake.",
+    },
+    {
+      id: "ch3.t.trace-redacted",
+      dimension: "Debugging",
+      statement: "You can trace a model call end to end with sensitive content redacted and use that trace to diagnose a failure.",
+    },
+  ],
+  notes: [
+    {
+      label: "Bonus build",
+      text: "Add audio transcription and compare word/task accuracy on noisy audio. Realtime voice and video pipelines are extensions, not prerequisites for finishing the core track.",
+    },
+    {
+      label: "Deployment",
+      text: "Deploy only to an org-approved platform (Cloudflare or Google Cloud Platform); any other hosting provider needs the company's procurement and security approval first.",
     },
   ],
   skills: { building: 3, systemDesign: 1, production: 1 },

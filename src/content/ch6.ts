@@ -1,4 +1,4 @@
-// Chapter 6 — MCP & Tool Integration (weeks 16-18).
+// Chapter 6 — MCP & Tool Integration (weeks 16-17).
 import type { Chapter } from "./types";
 
 export const ch6: Chapter = {
@@ -7,17 +7,22 @@ export const ch6: Chapter = {
   title: "MCP & Tool Integration",
   tagline: "Give any agent a safe way to reach your systems.",
   description:
-    "MCP is the standard way to expose tools, data and prompts to any AI app. Build a server locally, test it against a real client, then make it remote and secure.",
+    "Expose existing tools through MCP and test local and authenticated remote integrations.",
   why:
     "Backend engineers who can expose their company's services safely as MCP servers are directly useful to every AI initiative. It's your existing API-design skill applied to a new kind of consumer.",
   weeks: [
     {
       number: 16,
-      title: "Protocol concepts",
-      focus: "Learn the architecture and lifecycle every MCP server and client follows.",
+      title: "Local MCP server",
+      focus: "Wrap the Chapter 5 tools in a local MCP server and test it against a real client.",
+      build: {
+        deliverable: "Wrap the Chapter 05 tools in a local MCP server and connect a client.",
+        evidence:
+          "Use Inspector to test schemas, errors, and capability negotiation. Demonstrate tools and explain when resources/prompts would be useful.",
+      },
       groups: [
         {
-          title: "How the pieces fit together",
+          title: "Protocol shape",
           concepts: [
             {
               id: "ch6.c.architecture",
@@ -34,42 +39,16 @@ export const ch6: Chapter = {
               minutes: 35,
             },
             {
-              id: "ch6.c.client-features",
-              title: "Client features",
-              summary:
-                "Sampling, elicitation and roots let a server ask something of the client — request a completion, ask the user a question, or learn what's on disk — instead of only answering requests.",
-              minutes: 30,
-            },
-          ],
-        },
-        {
-          title: "Connecting and observing",
-          concepts: [
-            {
               id: "ch6.c.transports",
               title: "Transports",
               summary:
                 "stdio suits a local process the host launches directly; Streamable HTTP suits a remote server that many clients connect to over the network.",
               minutes: 25,
             },
-            {
-              id: "ch6.c.lifecycle",
-              title: "Lifecycle",
-              summary:
-                "Every connection goes through initialize, capability negotiation, normal operation, then shutdown — knowing this sequence is what makes a broken handshake debuggable.",
-              minutes: 25,
-            },
           ],
         },
-      ],
-    },
-    {
-      number: 17,
-      title: "Building servers",
-      focus: "Build, test and design real tools, resources and prompts, not just wrappers over an API.",
-      groups: [
         {
-          title: "Building and testing",
+          title: "Building & testing",
           concepts: [
             {
               id: "ch6.c.mcp-inspector",
@@ -87,38 +66,17 @@ export const ch6: Chapter = {
             },
           ],
         },
-        {
-          title: "Designing for real clients",
-          concepts: [
-            {
-              id: "ch6.c.structured-tool-output",
-              title: "Structured tool output",
-              summary:
-                "Declaring an outputSchema and returning structuredContent lets a client rely on a tool's response shape instead of parsing free text.",
-              minutes: 25,
-            },
-            {
-              id: "ch6.c.outcome-oriented-design",
-              title: "Outcome-oriented tool design",
-              summary:
-                "A tool like 'summarize_repo_activity' serves a model far better than a thin 'GET /events' wrapper — design for the outcome an agent needs, with pagination and response-size limits built in.",
-              minutes: 35,
-            },
-            {
-              id: "ch6.c.distribution-config",
-              title: "Distribution & config",
-              summary:
-                "Registering a server in Claude Code (.mcp.json) or a desktop app, and versioning it sanely, is what makes it actually usable beyond your own machine.",
-              minutes: 20,
-            },
-          ],
-        },
       ],
     },
     {
-      number: 18,
+      number: 17,
       title: "Remote & secure MCP",
-      focus: "Take a server off your laptop and make it safe to expose to real clients.",
+      focus: "Deploy the same server over an authenticated remote transport and defend it against MCP-specific threats.",
+      build: {
+        deliverable: "Deploy the same small server over an authenticated remote transport.",
+        evidence:
+          "Test valid and invalid authorization, credential scope, timeouts, and client compatibility. Keep tool-level permissions independent of model instructions.",
+      },
       groups: [
         {
           title: "Going remote",
@@ -169,16 +127,20 @@ export const ch6: Chapter = {
     },
   ],
   majorObjective:
-    "By the end you can build, test and secure an MCP server, and wire an existing agent to use it as its tool source instead of hard-coded functions.",
+    "By the end you can build, test and secure an MCP server locally, then deploy it over an authenticated remote transport with permissions enforced server-side.",
+  doneWhen:
+    "The existing agent can use the server, unauthorized calls fail, and the repository records compatible protocol, SDK, and client versions.",
+  decision:
+    "Choose direct functions, an ordinary API, or MCP based on interoperability needs; compare local stdio with remote Streamable HTTP and their security boundaries.",
   resources: [
     {
       id: "ch6.r.mcp-build-server",
       title: "MCP docs: Introduction & Build a server",
       url: "https://modelcontextprotocol.io/docs/develop/build-server",
       kind: "Docs",
-      hours: 2,
-      required: true,
-      note: "Official quickstart in TypeScript or Python.",
+      hours: 1,
+      use: "reference",
+      note: "Use one language quickstart to adapt existing tools; avoid rebuilding the business logic.",
       week: 16,
     },
     {
@@ -186,10 +148,11 @@ export const ch6: Chapter = {
       title: "MCP Specification",
       url: "https://modelcontextprotocol.io/specification",
       kind: "Spec",
-      hours: 3,
-      required: true,
-      note: "Read Architecture, Transports, Authorization and Security Best Practices. Skim the rest.",
+      hours: 2,
+      use: "must",
+      note: "Read Architecture, Transports, Authorization, and Security Best Practices for the pinned version. Treat authorization as distinct from permission to execute each tool.",
       week: 16,
+      weekEnd: 17,
     },
     {
       id: "ch6.r.mcp-inspector-tool",
@@ -197,8 +160,28 @@ export const ch6: Chapter = {
       url: "https://github.com/modelcontextprotocol/inspector",
       kind: "Tool",
       hours: 0.5,
-      required: true,
-      note: "Your debugger for every server you build.",
+      use: "reference",
+      note: "Exercise real client/server interactions and failure responses.",
+      week: 16,
+    },
+    {
+      id: "ch6.r.mcp-typescript-sdk",
+      title: "MCP TypeScript SDK",
+      url: "https://github.com/modelcontextprotocol/typescript-sdk",
+      kind: "Code",
+      hours: 0.75,
+      use: "reference",
+      note: "Use the stable version compatible with your client and examples; do not mix SDK generations.",
+      week: 16,
+    },
+    {
+      id: "ch6.r.mcp-python-sdk",
+      title: "MCP Python SDK",
+      url: "https://github.com/modelcontextprotocol/python-sdk",
+      kind: "Code",
+      hours: 0.75,
+      use: "bonus",
+      note: "Use instead of the TypeScript reference if building the server in Python; choose one SDK.",
       week: 16,
     },
     {
@@ -207,28 +190,30 @@ export const ch6: Chapter = {
       url: "https://anthropic.skilljar.com/introduction-to-model-context-protocol",
       kind: "Course",
       hours: 3,
-      required: true,
-      note: "Free course: build a server and client from scratch.",
-      week: 17,
+      use: "bonus",
+      note: "Alternative guided route to the quickstart, not an additional mandatory course.",
+      week: 16,
+      weekEnd: 17,
     },
     {
-      id: "ch6.r.mcp-typescript-sdk",
-      title: "MCP TypeScript SDK",
-      url: "https://github.com/modelcontextprotocol/typescript-sdk",
-      kind: "Code",
-      hours: 1,
-      required: true,
-      note: "README and examples. Use the Python SDK instead if your backend is Python.",
-      week: 17,
+      id: "ch6.r.mcp-deeplearning-course",
+      title: "MCP: Build Rich-Context AI Apps with Anthropic — DeepLearning.AI",
+      url: "https://www.deeplearning.ai/short-courses/mcp-build-rich-context-ai-apps-with-anthropic/",
+      kind: "Course",
+      hours: 2,
+      use: "bonus",
+      note: "Another guided route; choose at most one introductory course.",
+      week: 16,
+      weekEnd: 17,
     },
     {
-      id: "ch6.r.mcp-python-sdk",
-      title: "MCP Python SDK",
-      url: "https://github.com/modelcontextprotocol/python-sdk",
+      id: "ch6.r.reference-mcp-servers",
+      title: "Reference MCP servers",
+      url: "https://github.com/modelcontextprotocol/servers",
       kind: "Code",
       hours: 1,
-      required: false,
-      note: "The FastMCP-style API for Python servers.",
+      use: "bonus",
+      note: "Inspect a relevant server for patterns; examples still need your own permission and threat review.",
       week: 17,
     },
     {
@@ -237,118 +222,83 @@ export const ch6: Chapter = {
       url: "https://anthropic.skilljar.com/model-context-protocol-advanced-topics",
       kind: "Course",
       hours: 3,
-      required: false,
-      note: "Sampling, notifications, roots and transports in depth.",
-      week: 18,
-    },
-    {
-      id: "ch6.r.mcp-deeplearning-course",
-      title: "MCP: Build Rich-Context AI Apps with Anthropic — DeepLearning.AI",
-      url: "https://www.deeplearning.ai/short-courses/mcp-build-rich-context-ai-apps-with-anthropic/",
-      kind: "Course",
-      hours: 2,
-      required: false,
-      note: "A second perspective with guided notebooks.",
-      week: 17,
-    },
-    {
-      id: "ch6.r.reference-mcp-servers",
-      title: "Reference MCP servers",
-      url: "https://github.com/modelcontextprotocol/servers",
-      kind: "Code",
-      hours: 1.5,
-      required: false,
-      note: "Read the filesystem and git servers' source to see idiomatic structure.",
+      use: "bonus",
+      note: "Sampling, notifications, and roots when required by an integration; not default scope.",
       week: 17,
     },
   ],
   missions: [
     {
       id: "ch6.m1",
-      number: 13,
-      title: "Local Notes MCP Server",
+      number: 11,
+      title: "Local MCP Server",
       track: "Backend",
       hours: 8,
       major: true,
       objective:
-        "Build a stdio MCP server over a SQLite notes or todo database that you actually use from Claude Code.",
+        "Wrap the tools from your Chapter 5 agent in a local stdio MCP server and connect a real client to it.",
       requirements: [
-        "Tools: search_notes, add_note and list_tags, with input validation.",
-        "Each note exposed as a resource, plus a 'weekly review' prompt.",
-        "Tested end to end in MCP Inspector before connecting it to anything else.",
-        "Connected to Claude Code via .mcp.json and used for a real task.",
-        "Paginated search and structured tool output (outputSchema).",
+        "Tools, a resource, and a prompt exposed from the server, wrapping existing business logic rather than rewriting it.",
+        "Every tool, resource, and prompt tested in MCP Inspector, including error paths.",
+        "Capability negotiation and the initialize → operation → shutdown lifecycle verified.",
+        "A real client (e.g. Claude Code) connected to the server and used for an actual task.",
+        "A short note on when a resource or prompt is useful versus a plain tool.",
       ],
       milestones: [
-        { id: "ch6.m1.s1", title: "Build search_notes, add_note and list_tags with input validation", minutes: 60 },
-        { id: "ch6.m1.s2", title: "Expose each note as a resource, plus a 'weekly review' prompt", minutes: 45 },
-        { id: "ch6.m1.s3", title: "Test every tool and resource end to end in MCP Inspector", minutes: 30 },
-        { id: "ch6.m1.s4", title: "Connect the server to Claude Code via .mcp.json and use it for a real task", minutes: 30 },
-        { id: "ch6.m1.s5", title: "Add pagination to search and structured output (outputSchema) to every tool", minutes: 40 },
+        { id: "ch6.m1.s1", title: "Wrap the Chapter 5 agent's tools as MCP tools with input validation", minutes: 60, week: 16 },
+        { id: "ch6.m1.s2", title: "Expose at least one resource and one prompt from the server", minutes: 45, week: 16 },
+        { id: "ch6.m1.s3", title: "Test every tool, resource, and prompt in MCP Inspector, including error paths", minutes: 45, week: 16 },
+        { id: "ch6.m1.s4", title: "Verify capability negotiation and the full connection lifecycle", minutes: 30, week: 16 },
+        { id: "ch6.m1.s5", title: "Connect a real client to the server and use it for an actual task", minutes: 30, week: 16 },
+        { id: "ch6.m1.s6", title: "Write a short note on when you'd reach for a resource or prompt instead of a tool", minutes: 20, week: 16 },
       ],
       deliverable:
-        "A working stdio MCP server over your own notes database, wired into Claude Code and used for at least one real task.",
+        "A working local stdio MCP server wrapping your Chapter 5 tools, tested in Inspector and connected to a real client for a real task.",
       reflection: [
         "What did MCP Inspector catch that you wouldn't have noticed from the client alone?",
-        "Which tool's description needed the most rewriting before the model used it correctly?",
+        "Which primitive — tool, resource, or prompt — turned out to be the right fit for which piece of functionality?",
       ],
-      stretch: [{ id: "ch6.m1.x1", title: "Write unit tests for every tool handler", minutes: 45 }],
+      stretch: [],
     },
     {
       id: "ch6.m2",
-      number: 14,
-      title: "Remote MCP Server",
+      number: 12,
+      title: "Authenticated Remote MCP",
       track: "Backend",
       hours: 11,
       major: true,
-      objective: "Wrap an API you know — GitHub, a public data API, or your own side-project API — as a remote MCP server.",
+      objective:
+        "Deploy the same small server over an authenticated remote Streamable HTTP transport, keeping tool-level permissions independent of whatever the model is told.",
       requirements: [
-        "Streamable HTTP transport, not stdio.",
-        "Bearer-token auth locally, then OAuth following the spec's authorization flow.",
-        "Outcome-level tools (e.g. 'summarize_repo_activity', not just 'GET /events').",
-        "Rate limiting and structured logs for each tool call.",
-        "Tests for each tool, including its error paths.",
+        "Streamable HTTP transport instead of stdio.",
+        "An authorization flow following the MCP spec, not an improvised scheme.",
+        "Valid and invalid authorization, credential scope, and timeout cases all tested.",
+        "Client compatibility verified against at least one real client.",
+        "Tool-level permissions enforced server-side, independent of model instructions.",
+        "Protocol, SDK, and client versions recorded in the repository.",
       ],
       milestones: [
-        { id: "ch6.m2.s1", title: "Stand up the server on Streamable HTTP transport", minutes: 60 },
-        { id: "ch6.m2.s2", title: "Add bearer-token auth, then the spec's OAuth authorization flow", minutes: 75 },
-        { id: "ch6.m2.s3", title: "Design outcome-level tools instead of thin API wrappers", minutes: 60 },
-        { id: "ch6.m2.s4", title: "Add rate limiting and structured logs for every tool call", minutes: 40 },
-        { id: "ch6.m2.s5", title: "Write tests for each tool, including error paths", minutes: 45 },
+        { id: "ch6.m2.s1", title: "Stand up the server on Streamable HTTP transport", minutes: 60, week: 17 },
+        { id: "ch6.m2.s2", title: "Implement the spec's OAuth 2.1 authorization flow", minutes: 75, week: 17 },
+        { id: "ch6.m2.s3", title: "Test valid and invalid authorization and credential scope", minutes: 45, week: 17 },
+        { id: "ch6.m2.s4", title: "Test timeouts and client compatibility against a real client", minutes: 40, week: 17 },
+        { id: "ch6.m2.s5", title: "Enforce tool-level permissions server-side, independent of model instructions", minutes: 40, week: 17 },
+        { id: "ch6.m2.s6", title: "Record the pinned protocol, SDK, and client versions in the repo", minutes: 20, week: 17 },
       ],
       deliverable:
-        "A remote MCP server over a real API, reachable over Streamable HTTP with proper auth, rate limiting and test coverage.",
+        "A remote MCP server reachable over authenticated Streamable HTTP, with tested authorization and permission enforcement independent of the model.",
       reflection: [
-        "What would a confused-deputy attack against this server look like, and what stops it?",
-        "Which of your tools is still too close to a raw API wrapper?",
+        "What would happen if you removed server-side tool permission checks and relied only on model instructions?",
+        "Where did an invalid-authorization test reveal a gap your happy-path testing missed?",
       ],
-      stretch: [{ id: "ch6.m2.x1", title: "Deploy it: use an org-approved platform (Cloudflare or Google Cloud Platform); anything else needs procurement/security approval", minutes: 60 }],
-    },
-    {
-      id: "ch6.m3",
-      number: 15,
-      title: "Wire MCP Into Your Agent",
-      track: "Backend",
-      hours: 3,
-      major: false,
-      objective: "Make your Issue Triage Agent an MCP client that uses your MCP servers instead of hard-coded tools.",
-      requirements: [
-        "The agent discovers its tools from the MCP server at startup instead of importing local functions.",
-        "Tool calls are routed through the MCP client, not local code.",
-        "The agent's existing traces and approval gates keep working unchanged.",
+      stretch: [
+        {
+          id: "ch6.m2.x1",
+          title: "Deploy it: use an org-approved platform (Cloudflare or Google Cloud Platform); anything else needs procurement/security approval",
+          minutes: 60,
+          week: 17,
+        },
       ],
-      milestones: [
-        { id: "ch6.m3.s1", title: "Replace hard-coded tool definitions with tools discovered from the MCP server at startup", minutes: 40 },
-        { id: "ch6.m3.s2", title: "Route tool calls through the MCP client instead of local functions", minutes: 35 },
-        { id: "ch6.m3.s3", title: "Confirm existing traces still capture MCP tool calls, their tokens and their time", minutes: 25 },
-        { id: "ch6.m3.s4", title: "Confirm approval gates still fire for side-effecting MCP tools", minutes: 20 },
-      ],
-      deliverable: "The triage agent from Chapter 5 running entirely on MCP-discovered tools, with no hard-coded tool list left.",
-      reflection: [
-        "What broke the first time you swapped local tools for MCP-discovered ones, and why?",
-        "What would you need to change if the agent had to connect to two MCP servers instead of one?",
-      ],
-      stretch: [],
     },
   ],
   trial: [
@@ -360,7 +310,7 @@ export const ch6: Chapter = {
     {
       id: "ch6.t.build-server",
       dimension: "Implementation",
-      statement: "You can build a working MCP server with validated tools, resources and a prompt from scratch.",
+      statement: "You can build a working MCP server with validated tools, a resource, and a prompt from scratch.",
     },
     {
       id: "ch6.t.inspector-debugging",
@@ -368,19 +318,21 @@ export const ch6: Chapter = {
       statement: "You can use MCP Inspector to diagnose why a tool call from a client isn't returning what you expect.",
     },
     {
-      id: "ch6.t.transports-explanation",
-      dimension: "Explanation",
-      statement: "You can explain the difference between stdio and Streamable HTTP transports and when to use each.",
-    },
-    {
-      id: "ch6.t.security-tradeoffs",
+      id: "ch6.t.transport-tradeoffs",
       dimension: "Tradeoffs",
-      statement: "You can name three MCP security risks (e.g. tool poisoning, confused deputy, token passthrough) and how your server avoids them.",
+      statement: "You can compare local stdio with remote Streamable HTTP and explain their different security boundaries.",
     },
     {
-      id: "ch6.t.agent-wiring",
-      dimension: "Independence",
-      statement: "You can wire an existing agent to discover and call tools from your own MCP server with no hard-coded tool list left.",
+      id: "ch6.t.auth-evaluation",
+      dimension: "Evaluation",
+      statement: "You can demonstrate that an unauthorized or invalid-credential call to your remote server fails as designed.",
+    },
+  ],
+  notes: [
+    {
+      label: "Deployment",
+      text:
+        "Deploy only to an org-approved platform (Cloudflare or Google Cloud Platform); any other hosting provider needs the company's procurement and security approval first.",
     },
   ],
   skills: { building: 2, systemDesign: 2, production: 1 },

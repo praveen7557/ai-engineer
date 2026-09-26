@@ -90,7 +90,7 @@ export const continuingSources: ContinuingSource[] = [
     title: "Hugging Face LLM Course",
     url: "https://huggingface.co/learn/llm-course",
     kind: "Course",
-    note: "Deep dive: transformers, tokenizers and fine-tuning with open models.",
+    note: "Complete the remaining course after the selected inference and adaptation labs; expand data curation and model training depth.",
     category: "Deep dives",
   },
   {

@@ -10,6 +10,7 @@ import { dayOf, localDay, type ProgressState } from "./state";
 export const XP = {
   concept: 20,
   mustRead: 15,
+  reference: 10,
   bonusRead: 5,
   milestone: 100,
   stretch: 50,
@@ -24,7 +25,7 @@ export const XP = {
 export function itemXp(m: ItemMeta): number {
   switch (m.kind) {
     case "concept": return XP.concept;
-    case "resource": return m.required ? XP.mustRead : XP.bonusRead;
+    case "resource": return m.use === "must" ? XP.mustRead : m.use === "reference" ? XP.reference : XP.bonusRead;
     case "milestone": return XP.milestone;
     case "stretch": return XP.stretch;
     case "trial": return XP.trialCriterion;
@@ -243,18 +244,18 @@ const KIND_LABEL: Record<ItemMeta["kind"], string> = {
   concept: "Study", resource: "Read", milestone: "Build", stretch: "Stretch", trial: "Prove", setup: "Prepare",
 };
 
-/** Ordered core sequence for a chapter: per week concepts → must-reads → that week's mission; then remaining missions; then the trial. */
+/** Ordered core sequence for a chapter: per week, concepts → must-reads → that week's milestones; then the trial. */
 export function chapterSequence(ch: Chapter): ItemMeta[] {
   const seq: ItemMeta[] = [];
-  const push = (id: string) => { const m = ITEMS.get(id); if (m && m.core) seq.push(m); };
-  ch.weeks.forEach((w, i) => {
+  const seen = new Set<string>();
+  const push = (id: string) => { const m = ITEMS.get(id); if (m && m.core && !seen.has(id)) { seen.add(id); seq.push(m); } };
+  for (const w of ch.weeks) {
     weekConceptIds(ch, w.number).forEach(push);
-    ch.resources.filter(r => r.required && r.week === w.number).forEach(r => push(r.id));
-    const mission = ch.missions[i];
-    if (mission && i < ch.weeks.length - 1) mission.milestones.forEach(m => push(m.id));
-  });
-  ch.missions.slice(ch.weeks.length - 1).forEach(m => m.milestones.forEach(s => push(s.id)));
-  ch.resources.filter(r => r.required && !ch.weeks.some(w => w.number === r.week)).forEach(r => push(r.id));
+    ch.resources.filter(r => r.use === "must" && r.week === w.number).forEach(r => push(r.id));
+    for (const m of ch.missions) m.milestones.filter(s => s.week === w.number).forEach(s => push(s.id));
+  }
+  ch.resources.filter(r => r.use === "must").forEach(r => push(r.id));
+  ch.missions.forEach(m => m.milestones.forEach(s => push(s.id)));
   ch.trial.forEach(t => push(t.id));
   return seq;
 }
@@ -339,7 +340,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     id: "no-shortcuts", name: "No Shortcuts", description: "Finish every must-read in a chapter before passing its trial.",
     earned: s => CHAPTERS.some(c => {
       if (!isTrialPassed(s, c)) return false;
-      const reqs = c.resources.filter(r => r.required).map(r => r.id);
+      const reqs = c.resources.filter(r => r.use === "must").map(r => r.id);
       if (!allDone(s, reqs)) return false;
       const lastRead = reqs.map(id => doneAt(s, id)).sort().pop() ?? "";
       const passed = trialIds(c).map(id => doneAt(s, id)).sort().pop() ?? "";
@@ -349,7 +350,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: "steady-hand", name: "Steady Hand", description: "Keep a seven-day streak.", earned: s => longestStreak(s) >= 7 },
   { id: "reflective", name: "Reflective", description: "Write in your journal on ten different days.", earned: s => s.journalDays.length >= 10 },
   { id: "tool-maker", name: "Tool Maker", description: "Complete every major mission in MCP & Tool Integration.", earned: s => { const c = CHAPTERS[5]; return !!c && c.missions.filter(m => m.major).every(m => isMissionComplete(s, m.id)); } },
-  { id: "measured", name: "Measured", description: "Ship your first eval suite.", earned: s => { const c = CHAPTERS[6]; return !!c && !!c.missions[0] && isMissionComplete(s, c.missions[0].id); } },
+  { id: "measured", name: "Measured", description: "Put your eval suite behind a CI gate.", earned: s => isMissionComplete(s, "ch7.m2") },
   { id: "turning-point", name: "The Turning Point", description: "Reach the AI Engineer rank.", earned: s => rankFor(xpOf(s).total).rank.index >= 6 },
   { id: "final-build", name: "Final Build", description: "Complete the capstone.", earned: s => { const c = CHAPTERS[7]; return !!c && !!c.missions[0] && isMissionComplete(s, c.missions[0].id); } },
 ];

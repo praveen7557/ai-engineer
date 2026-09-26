@@ -5,27 +5,25 @@ export const ch2: Chapter = {
   id: "ch2",
   number: 2,
   title: "Working With Models",
-  tagline: "Treat prompting and the API as engineering, not incantation.",
+  tagline: "Treat prompting and model choice as engineering, not incantation.",
   description:
-    "Three weeks turning prompting into a disciplined practice, learning the Messages API in depth, and getting structured, reliable output out of chains of calls.",
+    "Build a measured extractor and learn to choose between prompts, model families, and open-model inference.",
   why:
-    "Prompting is the cheapest lever you have and the API is the substrate everything else sits on. Engineers who treat both casually end up with brittle features; engineers who treat them as code ship features they can change with confidence.",
+    "Prompting is the cheapest lever you have, and choosing between a prompt, a model family and a fine-tune is a decision you'll make repeatedly. Engineers who measure it ship features they can improve; engineers who guess end up rewriting from scratch.",
   weeks: [
     {
       number: 4,
-      title: "Prompting as engineering",
-      focus: "Clear, structured, example-driven prompts, versioned like code.",
+      title: "Structured extraction & evals",
+      focus: "A schema-constrained extractor with a minimal eval runner, so improvement is measured, not felt.",
+      build: {
+        deliverable: "Build a Structured Extractor with a minimal eval runner.",
+        evidence:
+          "Start with 30–50 labeled examples, separate development and held-out cases, and report field accuracy, schema validity, and abstentions. Compare a simple rule-based baseline.",
+      },
       groups: [
         {
-          title: "Structure & clarity",
+          title: "Prompting the extractor",
           concepts: [
-            {
-              id: "ch2.c.system-vs-turns",
-              title: "System prompt vs user/assistant turns",
-              summary:
-                "The system prompt sets role, persona and standing instructions once; user and assistant turns carry the actual conversation, and mixing the two up causes instructions to get ignored.",
-              minutes: 25,
-            },
             {
               id: "ch2.c.clear-direct",
               title: "Be clear, direct, and give the why",
@@ -34,101 +32,16 @@ export const ch2: Chapter = {
               minutes: 25,
             },
             {
-              id: "ch2.c.xml-tags",
-              title: "XML tags to structure inputs",
-              summary:
-                "Wrapping instructions, documents and examples in distinct tags stops them from bleeding into each other, which matters most once a prompt has more than one moving part.",
-              minutes: 20,
-            },
-          ],
-        },
-        {
-          title: "Examples & reasoning",
-          concepts: [
-            {
               id: "ch2.c.few-shot",
               title: "Few-shot (multishot) examples",
               summary:
                 "A small set of diverse, representative examples steers format and tone far more reliably than describing the format in prose alone.",
               minutes: 30,
             },
-            {
-              id: "ch2.c.let-model-think",
-              title: "Let the model think",
-              summary:
-                "Asking for step-by-step reasoning before a final answer improves accuracy on multi-step problems, at the cost of extra output tokens you should account for.",
-              minutes: 25,
-            },
-            {
-              id: "ch2.c.prompts-as-code",
-              title: "Prompts as versioned code",
-              summary:
-                "Prompt templates with named variables belong in git, reviewed like any other change, so a regression in behavior is traceable to a specific commit.",
-              minutes: 20,
-            },
-          ],
-        },
-      ],
-    },
-    {
-      number: 5,
-      title: "The Messages API",
-      focus: "Anatomy, statelessness, streaming, and handling failure.",
-      groups: [
-        {
-          title: "Anatomy & state",
-          concepts: [
-            {
-              id: "ch2.c.messages-api-anatomy",
-              title: "Messages API anatomy",
-              summary:
-                "model, max_tokens, system and messages go in; content blocks, stop_reason and usage come back, and reading stop_reason correctly is what tells you whether the model finished, hit a limit, or wants a tool.",
-              minutes: 30,
-            },
-            {
-              id: "ch2.c.stateless-history",
-              title: "The API is stateless",
-              summary:
-                "Nothing persists between calls on the server side, so your application owns the full conversation history: what to resend, when to trim it, and when to summarize it.",
-              minutes: 30,
-            },
-            {
-              id: "ch2.c.streaming-basics",
-              title: "Streaming basics",
-              summary:
-                "Server-sent events deliver the response incrementally through event types like message_start and content_block_delta, which is what lets a UI render partial markdown as it arrives.",
-              minutes: 35,
-            },
           ],
         },
         {
-          title: "Failure handling",
-          concepts: [
-            {
-              id: "ch2.c.errors-retries-timeouts",
-              title: "Errors, retries & timeouts",
-              summary:
-                "429, 529 and 5xx responses call for different handling; exponential backoff with jitter, sensible client timeouts, and only retrying idempotent requests keep a bad moment from becoming an outage.",
-              minutes: 35,
-            },
-            {
-              id: "ch2.c.token-counting-api",
-              title: "Token counting in practice",
-              summary:
-                "Counting tokens before sending lets you estimate cost and truncate history proactively, instead of discovering the context limit by hitting it.",
-              minutes: 20,
-            },
-          ],
-        },
-      ],
-    },
-    {
-      number: 6,
-      title: "Structured output & prompt chains",
-      focus: "Reliable JSON, multi-step prompt pipelines, and the patterns behind them.",
-      groups: [
-        {
-          title: "Structured output",
+          title: "Structured output & evaluation",
           concepts: [
             {
               id: "ch2.c.structured-outputs",
@@ -137,37 +50,125 @@ export const ch2: Chapter = {
                 "Constraining a response to a JSON schema and then validating it in code with Zod or Pydantic turns free text into something your application can trust and act on.",
               minutes: 35,
             },
+            {
+              id: "ch2.c.eval-criteria",
+              title: "Defining success criteria",
+              summary:
+                "Before iterating on a prompt, write down what \"correct\" means per field and split your examples into development and held-out sets, or you'll tune against the same data you evaluate on.",
+              minutes: 30,
+            },
+            {
+              id: "ch2.c.rule-based-baseline",
+              title: "Why a rule-based baseline",
+              summary:
+                "A regex or simple parser baseline gives you a floor to beat and quickly shows which fields never needed a model call at all.",
+              minutes: 20,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      number: 5,
+      title: "Cross-model comparison",
+      focus: "Running the same task against two model families and deciding whether a chain is worth it.",
+      build: {
+        deliverable: "Run the same task against two model families.",
+        evidence:
+          "Use identical validation inputs and semantic checks; compare failures, latency, and cost. Add a two-step chain only if error analysis justifies it.",
+      },
+      groups: [
+        {
+          title: "Comparing models fairly",
+          concepts: [
+            {
+              id: "ch2.c.model-family-comparison",
+              title: "Comparing model families",
+              summary:
+                "A fair comparison runs identical inputs through each provider's own idioms (not a lowest-common-denominator prompt) and holds the validation set and grading fixed across both.",
+              minutes: 30,
+            },
+            {
+              id: "ch2.c.semantic-checks",
+              title: "Semantic checks, not exact match",
+              summary:
+                "Two correct answers rarely share exact text, so grading needs a semantic or rubric-based check instead of a brittle string comparison.",
+              minutes: 25,
+            },
+            {
+              id: "ch2.c.errors-retries-timeouts",
+              title: "Errors, retries & timeouts across providers",
+              summary:
+                "429, 529 and 5xx responses call for different handling per provider; comparing failure behavior is as much a part of the model comparison as accuracy is.",
+              minutes: 30,
+            },
           ],
         },
         {
-          title: "Chains & workflow patterns",
+          title: "When to add a chain",
           concepts: [
             {
               id: "ch2.c.prompt-chaining",
               title: "Prompt chaining",
               summary:
-                "Splitting a big task into sequential calls, each with a narrower job, tends to beat one giant prompt on both reliability and debuggability.",
+                "Splitting a big task into sequential calls, each with a narrower job, tends to beat one giant prompt on reliability and debuggability — but only add the second step once error analysis shows the single call is the bottleneck.",
               minutes: 30,
             },
             {
-              id: "ch2.c.routing",
-              title: "Routing",
+              id: "ch2.c.token-counting-api",
+              title: "Token counting in practice",
               summary:
-                "A first, cheap call classifies the input and picks which specialized prompt or model handles it next, instead of one prompt trying to handle every case.",
-              minutes: 25,
-            },
-            {
-              id: "ch2.c.parallelization",
-              title: "Parallelization",
-              summary:
-                "Independent subtasks can run as concurrent calls and be merged afterward, which cuts latency when steps don't depend on each other's output.",
+                "Counting tokens per provider lets you compare cost apples-to-apples, since input/output pricing and tokenization differ across model families.",
               minutes: 20,
             },
+          ],
+        },
+      ],
+    },
+    {
+      number: 6,
+      title: "Open-model inference lab",
+      focus: "Running a small open model in Python and comparing it honestly against the hosted baseline.",
+      build: {
+        deliverable: "Run a small open model in Python and expose the same task interface.",
+        evidence:
+          "Inspect tokenizer/chat template and tensor shapes; compare memory, speed, and quality with the hosted baseline. Try one supported quantized variant within the hardware budget.",
+      },
+      groups: [
+        {
+          title: "Local inference internals",
+          concepts: [
             {
-              id: "ch2.c.evaluator-optimizer",
-              title: "Evaluator-optimizer",
+              id: "ch2.c.tokenizer-chat-template",
+              title: "Tokenizer & chat template",
               summary:
-                "One call drafts, a second call critiques against explicit criteria, and the loop repeats until the draft passes — a pattern that trades latency for quality on tasks worth the extra call.",
+                "An open model's tokenizer and chat template decide exactly how your messages get turned into the token sequence it was trained on, and getting the template wrong silently degrades output quality.",
+              minutes: 30,
+            },
+            {
+              id: "ch2.c.tensor-shapes",
+              title: "Tensor shapes through a forward pass",
+              summary:
+                "Tracing batch size, sequence length and hidden dimension through a forward pass turns \"the model\" into something you can actually reason about and debug.",
+              minutes: 35,
+            },
+            {
+              id: "ch2.c.quantization-tradeoffs",
+              title: "Quantization trade-offs",
+              summary:
+                "Quantizing weights trades memory and speed against quality, and the right method depends on the hardware budget you actually have, not the best published benchmark.",
+              minutes: 30,
+            },
+          ],
+        },
+        {
+          title: "Comparing to the hosted baseline",
+          concepts: [
+            {
+              id: "ch2.c.memory-speed-quality-comparison",
+              title: "Memory, speed & quality, side by side",
+              summary:
+                "A local open model isn't free — measured against the hosted baseline on the same task, it usually trades some quality for control over cost and data locality, and that trade needs numbers, not a guess.",
               minutes: 30,
             },
           ],
@@ -176,16 +177,20 @@ export const ch2: Chapter = {
     },
   ],
   majorObjective:
-    "Turn prompting and API usage into a repeatable practice: structured outputs you can validate, chains you can debug, and failures you can recover from.",
+    "Turn prompting, structured extraction and model choice into a measured practice: an eval-backed extractor compared across model families, and against a small open model run locally in Python.",
+  doneWhen:
+    "One command compares versioned implementations, including malformed inputs, missing fields, refusals, and truncation. Iterate on development/validation data, then report results on an untouched test split after selecting the implementation. Explain the limits of a small evaluation set.",
+  decision:
+    "Choose ordinary code, a better prompt, another model, or a chain using measured errors. Identify which failures need new information (retrieval) versus behavioral adaptation (fine-tuning).",
   resources: [
     {
-      id: "ch2.r.prompt-eng-interactive-tutorial",
-      title: "Interactive Prompt Engineering Tutorial — Anthropic",
-      url: "https://github.com/anthropics/prompt-eng-interactive-tutorial",
-      kind: "Course",
-      hours: 6,
-      required: true,
-      note: "Nine chapters of hands-on notebooks with exercises. Do every exercise.",
+      id: "ch2.r.hamel-evals",
+      title: "Your AI Product Needs Evals — Hamel Husain",
+      url: "https://hamel.dev/blog/posts/evals/",
+      kind: "Article",
+      hours: 1,
+      use: "must",
+      note: "Read before iterating on prompts; use observed errors to define the first evaluation rubric.",
       week: 4,
     },
     {
@@ -193,30 +198,10 @@ export const ch2: Chapter = {
       title: "Prompt engineering overview & best practices — Claude Docs",
       url: "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/overview",
       kind: "Docs",
-      hours: 2,
-      required: true,
-      note: "The official, up-to-date techniques. Read the whole section this time, not just the preview from chapter 1.",
-      week: 4,
-    },
-    {
-      id: "ch2.r.messages-api-reference",
-      title: "Messages API reference — Claude Docs",
-      url: "https://platform.claude.com/docs/en/api/messages",
-      kind: "Docs",
       hours: 1,
-      required: true,
-      note: "Keep it open while building the Structured Extractor and the Prompt Chain Pipeline.",
-      week: 5,
-    },
-    {
-      id: "ch2.r.streaming-docs",
-      title: "Streaming Messages — Claude Docs",
-      url: "https://platform.claude.com/docs/en/build-with-claude/streaming",
-      kind: "Docs",
-      hours: 0.5,
-      required: true,
-      note: "The SSE event types you'll parse in chapter 3's chat app; understand them here first.",
-      week: 5,
+      use: "must",
+      note: "Select clarity, examples, and context sections relevant to the failures you actually see.",
+      week: 4,
     },
     {
       id: "ch2.r.structured-outputs-docs",
@@ -224,28 +209,49 @@ export const ch2: Chapter = {
       url: "https://platform.claude.com/docs/en/build-with-claude/structured-outputs",
       kind: "Docs",
       hours: 0.5,
-      required: true,
-      note: "Guaranteed-valid JSON against your schema; the backbone of the Structured Extractor mission.",
+      use: "reference",
+      note: "Use schema constraints plus semantic validation. Handle refusals and token-limit exits; valid structure does not prove correct facts.",
+      week: 4,
+    },
+    {
+      id: "ch2.r.develop-test-cases",
+      title: "Develop test cases / define success — Claude Docs",
+      url: "https://platform.claude.com/docs/en/test-and-evaluate/develop-tests",
+      kind: "Docs",
+      hours: 0.5,
+      use: "reference",
+      note: "Define success criteria and separate tuning data from held-out evaluation.",
+      week: 4,
+    },
+    {
+      id: "ch2.r.hf-llm-course",
+      title: "Hugging Face LLM Course — selected inference sections",
+      url: "https://huggingface.co/learn/llm-course",
+      kind: "Course",
+      hours: 2,
+      use: "must",
+      note: "Moved into the core path from Continuing. Read only the tokenizer, model loading, and inference sections needed for the lab; allow build time for Python/tensor practice.",
       week: 6,
     },
     {
-      id: "ch2.r.token-counting-docs",
-      title: "Token counting — Claude Docs",
-      url: "https://platform.claude.com/docs/en/build-with-claude/token-counting",
+      id: "ch2.r.quantization-overview",
+      title: "Quantization overview — Hugging Face Transformers",
+      url: "https://huggingface.co/docs/transformers/quantization/overview",
       kind: "Docs",
       hours: 0.5,
-      required: false,
-      note: "Count tokens before sending to keep conversation history within budget.",
-      week: 5,
+      use: "reference",
+      note: "Choose one method supported by your hardware; measure the memory/quality trade-off and note context/KV-cache overhead.",
+      week: 6,
+      suggested: true,
     },
     {
-      id: "ch2.r.courses-repo",
-      title: "Anthropic courses repo (API fundamentals notebooks)",
-      url: "https://github.com/anthropics/courses",
+      id: "ch2.r.prompt-eng-interactive-tutorial",
+      title: "Interactive Prompt Engineering Tutorial — Anthropic",
+      url: "https://github.com/anthropics/prompt-eng-interactive-tutorial",
       kind: "Course",
-      hours: 4,
-      required: false,
-      note: "Notebook versions of API fundamentals and prompt evaluation.",
+      hours: 2,
+      use: "bonus",
+      note: "Selected exercises only. Examples use the Claude 3 era; check current model support and measure whether each technique helps.",
       week: 4,
     },
     {
@@ -254,8 +260,8 @@ export const ch2: Chapter = {
       url: "https://lilianweng.github.io/posts/2023-03-15-prompt-engineering/",
       kind: "Article",
       hours: 1,
-      required: false,
-      note: "A research-backed survey of prompting techniques, useful background for the chaining patterns.",
+      use: "bonus",
+      note: "Historical research survey; treat individual prompting techniques as hypotheses to test.",
       week: 4,
     },
     {
@@ -264,19 +270,9 @@ export const ch2: Chapter = {
       url: "https://www.deeplearning.ai/short-courses/chatgpt-prompt-engineering-for-developers/",
       kind: "Course",
       hours: 1.5,
-      required: false,
-      note: "Provider-agnostic short course; the ideas carry over directly.",
-      week: 4,
-    },
-    {
-      id: "ch2.r.claude-cookbooks",
-      title: "Claude Cookbooks",
-      url: "https://github.com/anthropics/claude-cookbooks",
-      kind: "Code",
-      hours: 1,
-      required: false,
-      note: "Structured-output and chaining recipes worth copying into your own pipeline.",
-      week: 6,
+      use: "bonus",
+      note: "Alternative introduction using the OpenAI API. Concepts transfer, but examples and API behavior are provider-specific.",
+      week: 5,
     },
     {
       id: "ch2.r.ai-engineering-prompting",
@@ -284,106 +280,114 @@ export const ch2: Chapter = {
       url: "https://www.oreilly.com/library/view/ai-engineering/9781098166298/",
       kind: "Book",
       hours: 2,
-      required: false,
-      note: "Chapter 5 covers prompting technique in more depth than any single article.",
+      use: "bonus",
+      note: "Deeper prompting background after the extractor works.",
       week: 4,
     },
   ],
   missions: [
     {
-      id: "ch2.m3",
-      number: 3,
-      title: "Structured Extractor",
+      id: "ch2.m1",
+      number: 2,
+      title: "Measured Structured Extractor",
       track: "Backend",
-      hours: 5,
+      hours: 14,
       major: true,
       objective:
-        "Turn messy real-world text — job posts, support emails, receipts — into validated JSON with a strict schema, so you have hands-on experience with the gap between \"the model returned JSON\" and \"the JSON is correct.\"",
+        "Build a schema-validated extractor with a minimal eval runner, then run the same task against two model families with identical validation inputs and semantic checks.",
       requirements: [
-        "Define the schema in Zod or Pydantic and use structured outputs to constrain the response",
-        "Validate every response and log and count validation failures",
-        "Handle missing fields explicitly with null plus a reason instead of letting the model guess",
-        "Test on at least 30 real-world samples and record accuracy per field",
+        "Extract structured fields from real messy text using structured outputs and a Zod/Pydantic schema",
+        "Build an eval runner over 30–50 labeled examples, split into development and held-out sets",
+        "Report field accuracy, schema validity, and abstention rate; compare against a rule-based baseline",
+        "Run the same task against a second model family using identical validation inputs and semantic checks",
+        "Compare failures, latency, and cost across model families",
+        "Add a two-step chain only where error analysis on the single call justifies it",
       ],
       milestones: [
-        { id: "ch2.m3.s1", title: "Schema defined and wired into structured outputs", minutes: 40 },
-        { id: "ch2.m3.s2", title: "Response validation with failure logging", minutes: 35 },
-        { id: "ch2.m3.s3", title: "Explicit null + reason handling for missing fields", minutes: 30 },
-        { id: "ch2.m3.s4", title: "30-sample test run with per-field accuracy recorded", minutes: 60 },
+        { id: "ch2.m1.s1", title: "Schema defined and structured-output extractor implemented", minutes: 45, week: 4 },
+        { id: "ch2.m1.s2", title: "30–50 labeled examples split into development/held-out sets", minutes: 50, week: 4 },
+        { id: "ch2.m1.s3", title: "Eval runner reporting field accuracy, schema validity, abstentions", minutes: 60, week: 4 },
+        { id: "ch2.m1.s4", title: "Rule-based baseline compared against the extractor", minutes: 40, week: 4 },
+        { id: "ch2.m1.s5", title: "Same task run against a second model family, identical validation inputs", minutes: 55, week: 5 },
+        { id: "ch2.m1.s6", title: "Semantic-check comparison of failures, latency and cost across families", minutes: 50, week: 5 },
+        { id: "ch2.m1.s7", title: "Two-step chain added only where error analysis justifies it", minutes: 45, week: 5 },
       ],
       deliverable:
-        "A script that takes raw text and returns schema-validated JSON, with a report of per-field accuracy across 30+ real samples.",
+        "One command that runs the structured extractor across two model families and reports field accuracy, schema validity, abstentions, latency and cost against a held-out test split.",
       reflection: [
-        "Which fields failed most often, and was that a prompt problem or a schema problem?",
-        "What did explicit null-plus-reason handling reveal that silent guessing would have hidden?",
+        "Which failures pointed at a prompt problem, a model choice, or a genuine need for retrieval or fine-tuning?",
+        "What did the untouched test split reveal that your development-set iteration didn't?",
+        "Was the two-step chain worth its extra latency and cost, and how do you know?",
       ],
       stretch: [
-        { id: "ch2.m3.x1", title: "Compare Haiku vs Sonnet accuracy and cost on the same 30 samples", minutes: 45 },
+        { id: "ch2.m1.x1", title: "Cache extractor responses by hash of (input, model, schema version)", minutes: 40, week: 5 },
       ],
     },
     {
-      id: "ch2.m4",
-      number: 4,
-      title: "Prompt Chain Pipeline",
-      track: "Backend",
-      hours: 5,
+      id: "ch2.m2",
+      number: 3,
+      title: "Open-Model Lab",
+      track: "Python lab",
+      hours: 8,
       major: false,
       objective:
-        "Build a multi-step pipeline — for example a support email that gets classified and routed, drafted, and self-critiqued — to feel the difference between one big prompt and a chain of smaller, checkable ones.",
+        "Run a small open model locally in Python and expose the same task interface as the hosted extractor, so you can compare inference internals and quality side by side.",
       requirements: [
-        "A classification/routing step that picks a path before any drafting happens",
-        "A draft step that produces the actual response for the routed case",
-        "A self-critique (evaluator-optimizer) step that checks the draft against explicit criteria and can send it back for revision",
-        "Structured output at each step boundary so you can log and inspect intermediate results",
-        "A trace of the whole run showing which path was taken and how long each step took",
+        "Load a small open model and inspect its tokenizer, chat template and tensor shapes through a forward pass",
+        "Expose the same input/output task interface as the hosted Structured Extractor",
+        "Compare memory, speed and quality against the hosted baseline on identical inputs",
+        "Try one supported quantized variant within the hardware budget and record the trade-off",
       ],
       milestones: [
-        { id: "ch2.m4.s1", title: "Routing step classifies input into 2–3 categories", minutes: 40 },
-        { id: "ch2.m4.s2", title: "Per-category draft prompt produces a response", minutes: 40 },
-        { id: "ch2.m4.s3", title: "Evaluator-optimizer critique loop with a revision path", minutes: 50 },
-        { id: "ch2.m4.s4", title: "Structured intermediate output logged at each step", minutes: 30 },
-        { id: "ch2.m4.s5", title: "End-to-end trace showing path taken and per-step timing", minutes: 35 },
+        { id: "ch2.m2.s1", title: "Small open model loaded, tokenizer/chat template inspected", minutes: 45, week: 6 },
+        { id: "ch2.m2.s2", title: "Tensor shapes traced through a forward pass", minutes: 40, week: 6 },
+        { id: "ch2.m2.s3", title: "Same task interface wired to the open model", minutes: 50, week: 6 },
+        { id: "ch2.m2.s4", title: "Memory/speed/quality comparison against the hosted baseline", minutes: 55, week: 6 },
+        { id: "ch2.m2.s5", title: "One quantized variant tried within the hardware budget", minutes: 45, week: 6 },
       ],
       deliverable:
-        "A working pipeline that takes a raw support email and produces a routed, drafted, self-critiqued reply, with a visible trace of every step.",
+        "A Python script exposing the same extractor interface backed by a small local open model, with a written memory/speed/quality comparison against the hosted baseline.",
       reflection: [
-        "Where did splitting the task into steps catch a mistake a single prompt would have missed?",
-        "Was the extra latency from the critique step worth the quality gain, and how would you measure that?",
+        "What surprised you about tensor shapes or the chat template once you could actually inspect them?",
+        "Was the quantized variant a real trade-off for this task, or a strict downgrade?",
       ],
-      stretch: [],
+      stretch: [
+        { id: "ch2.m2.x1", title: "Try a second quantization method and compare against the first", minutes: 40, week: 6 },
+      ],
     },
   ],
   trial: [
     {
-      id: "ch2.t.structure-prompt",
+      id: "ch2.t.compare-versioned",
       dimension: "Implementation",
-      statement: "You can write a prompt with a system message, XML-tagged inputs and few-shot examples that reliably produces the format you asked for.",
+      statement: "You can run one command that compares versioned extractor implementations, including malformed inputs, missing fields, refusals and truncation.",
     },
     {
-      id: "ch2.t.explain-statelessness",
-      dimension: "Understanding",
-      statement: "You can explain why the Messages API is stateless and how your application manages history as a result.",
-    },
-    {
-      id: "ch2.t.debug-stream",
-      dimension: "Debugging",
-      statement: "You can read a stream of SSE events and identify where a partial-JSON parse would need to resume.",
-    },
-    {
-      id: "ch2.t.validate-output",
+      id: "ch2.t.held-out-report",
       dimension: "Evaluation",
-      statement: "You can measure and report per-field accuracy on a structured-extraction task, not just \"it looked right.\"",
+      statement: "You can iterate on development/validation data and then report results on an untouched test split only after selecting an implementation.",
     },
     {
-      id: "ch2.t.chain-tradeoffs",
+      id: "ch2.t.eval-set-limits",
+      dimension: "Understanding",
+      statement: "You can explain the limits of a small evaluation set and what conclusions it can't support.",
+    },
+    {
+      id: "ch2.t.choose-by-measurement",
       dimension: "Tradeoffs",
-      statement: "You can justify when a prompt chain is worth its extra latency and cost over a single call.",
+      statement: "You can choose between ordinary code, a better prompt, another model or a chain using measured errors, not intuition.",
     },
     {
-      id: "ch2.t.version-prompts",
-      dimension: "Independence",
-      statement: "You keep your prompt templates in git and can point to a diff that changed model behavior.",
+      id: "ch2.t.retrieval-vs-finetune",
+      dimension: "Explanation",
+      statement: "You can identify which failures call for new information (retrieval) versus behavioral adaptation (fine-tuning).",
     },
   ],
-  skills: { knowledge: 2, building: 1 },
+  notes: [
+    {
+      label: "Lab boundary",
+      text: "Use a small model that fits available hardware or a capped hosted notebook. This week teaches inference, not production GPU serving. Reserve training for week 18.",
+    },
+  ],
+  skills: { knowledge: 2, building: 1, evaluation: 1 },
 };

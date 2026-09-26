@@ -7,7 +7,7 @@ export const ch4: Chapter = {
   title: "RAG & Knowledge Systems",
   tagline: "Teach the model what it was never trained on.",
   description:
-    "Three weeks of search engineering: embeddings and vector search, ingestion and chunking, hybrid retrieval and reranking, and grounded answers you can measure.",
+    "Build a measured retrieval pipeline with maintainable ingestion, permission-aware search, and supported citations.",
   why:
     "\"Answer questions over our data\" is the most common AI feature request there is. The difference between a demo and a product is retrieval quality you can measure, not retrieval quality you hope for.",
   weeks: [
@@ -15,6 +15,11 @@ export const ch4: Chapter = {
       number: 10,
       title: "Embeddings, vector search & ingestion",
       focus: "What embeddings are, how vector indexes trade off recall and speed, and how raw sources become searchable chunks.",
+      build: {
+        deliverable: "Ingest a small permitted corpus and build lexical and vector search baselines.",
+        evidence:
+          "Preserve source/page metadata; handle parsing failures, duplicates, updates, and deletions. Create questions with relevant passages, including unanswerable cases.",
+      },
       groups: [
         {
           title: "Embeddings & vector search",
@@ -25,13 +30,6 @@ export const ch4: Chapter = {
               summary:
                 "An embedding maps text to a vector so that cosine similarity between vectors approximates similarity of meaning, though similar meaning is not the same thing as relevant to a query.",
               minutes: 30,
-            },
-            {
-              id: "ch4.c.choosing-embedding-model",
-              title: "Choosing an embedding model",
-              summary:
-                "Embedding models trade quality, cost and vector dimension against each other, and the MTEB leaderboard is useful evidence only if you read the retrieval-task scores specifically, not the overall rank.",
-              minutes: 25,
             },
             {
               id: "ch4.c.vector-indexes",
@@ -56,7 +54,7 @@ export const ch4: Chapter = {
               id: "ch4.c.parsing-sources",
               title: "Parsing sources",
               summary:
-                "Markdown, HTML and PDF extraction each lose or preserve structure differently, and cleaning boilerplate before chunking matters as much as the chunking strategy itself.",
+                "Markdown, HTML and PDF extraction each lose or preserve structure differently, and handling parsing failures, duplicates, updates and deletions matters as much as the chunking strategy itself.",
               minutes: 30,
             },
             {
@@ -72,8 +70,13 @@ export const ch4: Chapter = {
     },
     {
       number: 11,
-      title: "Retrieval quality",
-      focus: "Keyword search, hybrid retrieval, reranking, query transformation, and contextual retrieval.",
+      title: "Hybrid retrieval & reranking",
+      focus: "Combining keyword and vector search, adding a reranker one change at a time, and keeping access control before the prompt.",
+      build: {
+        deliverable: "Add hybrid fusion and a reranker, one change at a time.",
+        evidence:
+          "Compare recall@k or ranking quality, latency, and cost. Test tenant/document access restrictions before content enters a prompt or cache.",
+      },
       groups: [
         {
           title: "Combining signals",
@@ -82,7 +85,7 @@ export const ch4: Chapter = {
               id: "ch4.c.bm25-fulltext",
               title: "Keyword search / BM25",
               summary:
-                "Postgres full-text search and the BM25 ranking behind it catch exact terms — error codes, product names, IDs — that a pure embedding similarity search often misses.",
+                "Postgres full-text search catches exact terms — error codes, product names, IDs — that a pure embedding similarity search often misses, though ts_rank is not BM25 and shouldn't be labeled as one.",
               minutes: 30,
             },
             {
@@ -96,34 +99,27 @@ export const ch4: Chapter = {
               id: "ch4.c.reranking",
               title: "Reranking",
               summary:
-                "A cross-encoder reranker looks at the top ~50 candidates in detail and reorders them, which is cheap enough to run on a shortlist even though it's too slow to run on the whole corpus.",
+                "A cross-encoder reranker looks at the top candidates in detail and reorders them, which is cheap enough to run on a shortlist even though it's too slow to run on the whole corpus.",
               minutes: 30,
             },
           ],
         },
         {
-          title: "Improving what gets retrieved",
+          title: "Measuring & securing retrieval",
           concepts: [
-            {
-              id: "ch4.c.query-transformation",
-              title: "Query transformation",
-              summary:
-                "Rewriting the query, generating multiple queries, or using HyDE (a hypothetical answer as the search query) can each recover relevant chunks that the original phrasing missed.",
-              minutes: 30,
-            },
-            {
-              id: "ch4.c.contextual-retrieval",
-              title: "Contextual retrieval",
-              summary:
-                "Prepending a short, model-written summary of where a chunk sits in its source document before embedding it measurably improves retrieval, because the chunk alone often lacks that context.",
-              minutes: 30,
-            },
             {
               id: "ch4.c.retrieval-metrics",
               title: "Retrieval metrics",
               summary:
                 "Recall@k, MRR and precision, computed against a small labeled question-to-document set, are what let you say a retrieval change helped instead of just feeling like it did.",
               minutes: 35,
+            },
+            {
+              id: "ch4.c.permission-aware-retrieval",
+              title: "Permission-aware retrieval",
+              summary:
+                "Access control has to filter documents before retrieval runs, not after generation, or a model can end up quoting content the requesting user was never allowed to see — including through a cache.",
+              minutes: 25,
             },
           ],
         },
@@ -132,7 +128,12 @@ export const ch4: Chapter = {
     {
       number: 12,
       title: "Grounded answers & measurement",
-      focus: "Citations, saying \"I don't know,\" permission-aware retrieval, and knowing when RAG isn't the right tool.",
+      focus: "Citations, saying \"I don't know,\" and knowing when RAG isn't the right tool.",
+      build: {
+        deliverable: "Generate cited answers and compare RAG with a long-context baseline.",
+        evidence:
+          "Score retrieval separately from answer correctness and citation support. Test abstention, stale/deleted documents, and an embedding-version migration on a small copy.",
+      },
       groups: [
         {
           title: "Grounded generation",
@@ -164,17 +165,10 @@ export const ch4: Chapter = {
               minutes: 30,
             },
             {
-              id: "ch4.c.permission-aware-retrieval",
-              title: "Permission-aware retrieval",
-              summary:
-                "Access control has to filter documents before retrieval runs, not after generation, or a model can end up quoting content the requesting user was never allowed to see.",
-              minutes: 25,
-            },
-            {
               id: "ch4.c.freshness-cost",
               title: "Freshness & cost",
               summary:
-                "Re-embedding costs money and stale indexes serve wrong answers, so a real system needs a deliberate policy for cache invalidation and re-indexing, not an assumption that data never changes.",
+                "Re-embedding costs money and stale or deleted documents can serve wrong answers, so a real system needs a deliberate policy for cache invalidation, deletion, and an embedding-version migration, not an assumption that data never changes.",
               minutes: 25,
             },
           ],
@@ -184,25 +178,19 @@ export const ch4: Chapter = {
   ],
   majorObjective:
     "Build a measured retrieval pipeline — hybrid search, reranking and grounded, cited answers — and know when RAG is the wrong tool for the job.",
+  doneWhen:
+    "You can explain where a bad answer originated, reproduce retrieval comparisons, and demonstrate that unauthorized or deleted content cannot appear in answers.",
+  decision:
+    "Choose chunking, retrieval, reranking, or long context based on observed errors. Use contextual retrieval only if its measured gain justifies ingestion cost.",
   resources: [
-    {
-      id: "ch4.r.contextual-retrieval",
-      title: "Introducing Contextual Retrieval — Anthropic",
-      url: "https://www.anthropic.com/news/contextual-retrieval",
-      kind: "Article",
-      hours: 0.5,
-      required: true,
-      note: "Contextual embeddings plus BM25 plus reranking, with measured gains.",
-      week: 11,
-    },
     {
       id: "ch4.r.pgvector-readme",
       title: "pgvector README",
       url: "https://github.com/pgvector/pgvector",
       kind: "Docs",
       hours: 1,
-      required: true,
-      note: "Installation, indexes (HNSW/IVFFlat), filtering and hybrid search notes.",
+      use: "reference",
+      note: "Implement vector search, filtering, and one index appropriate to the corpus; distinguish exact from approximate search.",
       week: 10,
     },
     {
@@ -211,8 +199,8 @@ export const ch4: Chapter = {
       url: "https://www.pinecone.io/learn/retrieval-augmented-generation/",
       kind: "Article",
       hours: 1,
-      required: true,
-      note: "Clear conceptual walkthrough of the whole RAG pipeline.",
+      use: "bonus",
+      note: "Conceptual orientation if needed; its explanations do not require adopting Pinecone.",
       week: 10,
     },
     {
@@ -221,8 +209,18 @@ export const ch4: Chapter = {
       url: "https://www.pinecone.io/learn/chunking-strategies/",
       kind: "Article",
       hours: 1,
-      required: true,
-      note: "Chunking trade-offs with concrete examples.",
+      use: "must",
+      note: "Compare two sensible chunking strategies on your corpus rather than implementing every option.",
+      week: 10,
+    },
+    {
+      id: "ch4.r.embeddings-docs",
+      title: "Embeddings — Claude Docs",
+      url: "https://platform.claude.com/docs/en/build-with-claude/embeddings",
+      kind: "Docs",
+      hours: 0.5,
+      use: "reference",
+      note: "Embedding API guidance; choose using your own retrieval cases, dimensions, cost, and data-handling needs.",
       week: 10,
     },
     {
@@ -231,39 +229,9 @@ export const ch4: Chapter = {
       url: "https://www.postgresql.org/docs/current/textsearch.html",
       kind: "Docs",
       hours: 1.5,
-      required: true,
-      note: "tsvector, tsquery and ranking — the keyword half of hybrid search.",
-      week: 11,
-    },
-    {
-      id: "ch4.r.embeddings-docs",
-      title: "Embeddings — Claude Docs",
-      url: "https://platform.claude.com/docs/en/build-with-claude/embeddings",
-      kind: "Docs",
-      hours: 0.5,
-      required: true,
-      note: "Anthropic's guidance and recommended embedding providers.",
+      use: "reference",
+      note: "Build the lexical baseline. PostgreSQL ts_rank/ts_rank_cd are not BM25; label the implementation accurately.",
       week: 10,
-    },
-    {
-      id: "ch4.r.voyage-docs",
-      title: "Voyage AI docs",
-      url: "https://docs.voyageai.com",
-      kind: "Docs",
-      hours: 1,
-      required: false,
-      note: "Embedding and reranker APIs from the provider Anthropic recommends.",
-      week: 10,
-    },
-    {
-      id: "ch4.r.citations-docs",
-      title: "Citations — Claude Docs",
-      url: "https://platform.claude.com/docs/en/build-with-claude/citations",
-      kind: "Docs",
-      hours: 0.5,
-      required: true,
-      note: "Native, verifiable citations back to source passages.",
-      week: 12,
     },
     {
       id: "ch4.r.systematically-improving-rag",
@@ -271,28 +239,8 @@ export const ch4: Chapter = {
       url: "https://jxnl.co/writing/2024/05/22/systematically-improving-your-rag/",
       kind: "Article",
       hours: 1,
-      required: true,
-      note: "A practitioner's playbook: synthetic questions, metrics, segmentation.",
-      week: 11,
-    },
-    {
-      id: "ch4.r.advanced-rag-course",
-      title: "Building and Evaluating Advanced RAG — DeepLearning.AI",
-      url: "https://www.deeplearning.ai/short-courses/building-evaluating-advanced-rag/",
-      kind: "Course",
-      hours: 1.5,
-      required: false,
-      note: "Sentence-window and auto-merging retrieval, plus the RAG triad of evals.",
-      week: 11,
-    },
-    {
-      id: "ch4.r.practical-bm25",
-      title: "Practical BM25 — Elastic",
-      url: "https://www.elastic.co/blog/practical-bm25-part-2-the-bm25-algorithm-and-its-variables",
-      kind: "Article",
-      hours: 0.75,
-      required: false,
-      note: "What BM25 actually computes, explained intuitively.",
+      use: "must",
+      note: "Error segmentation and retrieval metrics. Human-check synthetic questions and prevent duplicate leakage across splits.",
       week: 11,
     },
     {
@@ -301,8 +249,8 @@ export const ch4: Chapter = {
       url: "https://github.com/pgvector/pgvector-python/blob/master/examples/hybrid_search/rrf.py",
       kind: "Code",
       hours: 0.5,
-      required: false,
-      note: "Reciprocal Rank Fusion in plain SQL plus Python.",
+      use: "reference",
+      note: "Implement Reciprocal Rank Fusion and compare against each individual retriever.",
       week: 11,
     },
     {
@@ -311,9 +259,39 @@ export const ch4: Chapter = {
       url: "https://docs.cohere.com/docs/rerank-overview",
       kind: "Docs",
       hours: 0.5,
-      required: false,
-      note: "How rerankers slot into a retrieval pipeline.",
+      use: "reference",
+      note: "Implement one reranker; account for extra latency and cost.",
       week: 11,
+    },
+    {
+      id: "ch4.r.citations-docs",
+      title: "Citations — Claude Docs",
+      url: "https://platform.claude.com/docs/en/build-with-claude/citations",
+      kind: "Docs",
+      hours: 0.5,
+      use: "reference",
+      note: "Link claims to source passages; citation presence alone does not establish support or correctness.",
+      week: 12,
+    },
+    {
+      id: "ch4.r.contextual-retrieval",
+      title: "Introducing Contextual Retrieval — Anthropic",
+      url: "https://www.anthropic.com/news/contextual-retrieval",
+      kind: "Article",
+      hours: 0.5,
+      use: "bonus",
+      note: "An additional experiment after the hybrid baseline works; reported vendor gains are not guarantees for your data.",
+      week: 11,
+    },
+    {
+      id: "ch4.r.voyage-docs",
+      title: "Voyage AI docs",
+      url: "https://docs.voyageai.com",
+      kind: "Docs",
+      hours: 1,
+      use: "bonus",
+      note: "Alternative embedding/reranker implementation reference.",
+      week: 10,
     },
     {
       id: "ch4.r.mteb-leaderboard",
@@ -321,9 +299,29 @@ export const ch4: Chapter = {
       url: "https://huggingface.co/spaces/mteb/leaderboard",
       kind: "Tool",
       hours: 0.25,
-      required: false,
-      note: "Compare embedding models; check the retrieval task scores specifically.",
+      use: "bonus",
+      note: "Shortlist candidates, then evaluate on your corpus.",
       week: 10,
+    },
+    {
+      id: "ch4.r.advanced-rag-course",
+      title: "Building and Evaluating Advanced RAG — DeepLearning.AI",
+      url: "https://www.deeplearning.ai/short-courses/building-evaluating-advanced-rag/",
+      kind: "Course",
+      hours: 1.5,
+      use: "bonus",
+      note: "Alternative retrieval strategies after error analysis indicates a need.",
+      week: 11,
+    },
+    {
+      id: "ch4.r.practical-bm25",
+      title: "Practical BM25 — Elastic",
+      url: "https://www.elastic.co/blog/practical-bm25-part-2-the-bm25-algorithm-and-its-variables",
+      kind: "Article",
+      hours: 0.75,
+      use: "bonus",
+      note: "Understand BM25 and how it differs from the PostgreSQL baseline.",
+      week: 11,
     },
     {
       id: "ch4.r.lost-in-the-middle",
@@ -331,8 +329,8 @@ export const ch4: Chapter = {
       url: "https://arxiv.org/abs/2307.03172",
       kind: "Paper",
       hours: 0.75,
-      required: false,
-      note: "Why position in the context matters, directly relevant to the RAG-vs-long-context concept.",
+      use: "bonus",
+      note: "Historical evidence motivating context-position tests; verify the behavior of your chosen model.",
       week: 12,
     },
     {
@@ -341,79 +339,49 @@ export const ch4: Chapter = {
       url: "https://arxiv.org/abs/2005.11401",
       kind: "Paper",
       hours: 1,
-      required: false,
-      note: "The original RAG paper — history and framing behind the pattern you're building.",
+      use: "bonus",
+      note: "Original research framing, optional for the practical build.",
       week: 12,
     },
   ],
   missions: [
     {
-      id: "ch4.m7",
+      id: "ch4.m1",
       number: 7,
-      title: "Semantic Search From Scratch",
-      track: "Backend",
-      hours: 6,
-      major: false,
-      objective:
-        "Embed 500+ documents from a real source — a public docs site, your own notes, or an open-source project's docs — into Postgres with pgvector, and compare keyword-only against vector-only search on real queries.",
-      requirements: [
-        "Postgres + pgvector running in Docker Compose",
-        "An ingestion script that parses, chunks, embeds and inserts documents with metadata",
-        "A /search endpoint returning top-k results with scores",
-        "Keyword-only vs vector-only results compared on at least 10 queries, with notes on where each wins",
-      ],
-      milestones: [
-        { id: "ch4.m7.s1", title: "Postgres + pgvector running in Docker Compose", minutes: 35 },
-        { id: "ch4.m7.s2", title: "Ingestion script: parse, chunk, embed, insert with metadata", minutes: 70 },
-        { id: "ch4.m7.s3", title: "/search endpoint returning top-k with scores", minutes: 45 },
-        { id: "ch4.m7.s4", title: "10-query keyword-vs-vector comparison with notes", minutes: 50 },
-      ],
-      deliverable:
-        "A working semantic search endpoint over 500+ real documents, plus a written comparison of keyword-only vs vector-only results on 10 queries.",
-      reflection: [
-        "Which of your 10 queries did keyword search win on, and why do you think vector search missed it?",
-        "What would you change about your chunking if you started over with what you know now?",
-      ],
-      stretch: [
-        { id: "ch4.m7.x1", title: "Try two chunk sizes and record the differences", minutes: 45 },
-      ],
-    },
-    {
-      id: "ch4.m8",
-      number: 8,
-      title: "Ask-My-Docs",
+      title: "Measured Retrieval Pipeline",
       track: "Full-stack",
       hours: 20,
       major: true,
       objective:
-        "Build a complete Q&A app over a real document set with hybrid retrieval, reranking, contextual retrieval and clickable citations, measured with your own recall@5 report.",
+        "Build a retrieval pipeline — ingestion, lexical and vector baselines, hybrid fusion with reranking, and cited grounded answers — measuring each change instead of assuming it helped.",
       requirements: [
-        "An ingestion pipeline for markdown/HTML/PDF with heading-aware chunking and metadata",
-        "Contextual retrieval: a model-written context summary prepended to each chunk before embedding",
-        "Hybrid search (BM25 + vector) merged with Reciprocal Rank Fusion",
-        "Reranking that narrows the top ~50 candidates down to the top 8",
-        "Answers with citations the user can click to open the source chunk, and an explicit \"I don't know\" when confidence is low",
-        "Incremental re-indexing when a source file changes, based on a content hash",
+        "Ingest a small permitted corpus preserving source/page metadata, handling parsing failures, duplicates, updates and deletions",
+        "Build lexical (full-text) and vector search baselines",
+        "Add hybrid fusion (Reciprocal Rank Fusion) and a reranker, one change at a time, measuring recall@k, latency and cost",
+        "Enforce tenant/document access restrictions before content enters a prompt or cache",
+        "Generate cited answers and compare against a long-context baseline, scoring retrieval separately from answer correctness",
+        "Test abstention, stale/deleted documents, and an embedding-version migration on a small copy",
       ],
       milestones: [
-        { id: "ch4.m8.s1", title: "Heading-aware ingestion pipeline for markdown/HTML/PDF", minutes: 90 },
-        { id: "ch4.m8.s2", title: "Contextual retrieval: model-written chunk context", minutes: 70 },
-        { id: "ch4.m8.s3", title: "Hybrid search (BM25 + vector) merged with RRF", minutes: 80 },
-        { id: "ch4.m8.s4", title: "Reranking top 50 down to top 8", minutes: 60 },
-        { id: "ch4.m8.s5", title: "Cited answers with clickable source chunks", minutes: 70 },
-        { id: "ch4.m8.s6", title: "\"I don't know\" path for low-confidence retrieval", minutes: 40 },
-        { id: "ch4.m8.s7", title: "Hash-based incremental re-indexing", minutes: 55 },
-        { id: "ch4.m8.s8", title: "30-question labeled set with a recall@5 report", minutes: 75 },
+        { id: "ch4.m1.s1", title: "Ingestion pipeline preserving source/page metadata, handling duplicates and deletions", minutes: 70, week: 10 },
+        { id: "ch4.m1.s2", title: "Lexical full-text search baseline", minutes: 50, week: 10 },
+        { id: "ch4.m1.s3", title: "Vector search baseline with pgvector", minutes: 55, week: 10 },
+        { id: "ch4.m1.s4", title: "Labeled question set built, including unanswerable cases", minutes: 45, week: 10 },
+        { id: "ch4.m1.s5", title: "Hybrid fusion (RRF) added and measured against each individual retriever", minutes: 60, week: 11 },
+        { id: "ch4.m1.s6", title: "Reranker added and measured for recall/ranking quality, latency and cost", minutes: 55, week: 11 },
+        { id: "ch4.m1.s7", title: "Tenant/document access restrictions enforced before retrieval reaches a prompt or cache", minutes: 50, week: 11 },
+        { id: "ch4.m1.s8", title: "Cited answers vs. long-context baseline, with abstention and an embedding-migration test", minutes: 75, week: 12 },
       ],
       deliverable:
-        "A Q&A app over a real document set that cites its sources, declines to answer when it shouldn't, re-indexes incrementally, and ships with a recall@5 report against a 30-question labeled set.",
+        "A retrieval pipeline with ingestion, measured lexical/vector/hybrid/reranked retrieval, permission-aware access control, and cited grounded answers benchmarked against a long-context baseline.",
       reflection: [
-        "When your app got an answer wrong, was it a retrieval failure or a generation failure — and how did you tell the difference?",
-        "What did reranking actually change in your recall@5 number, before and after?",
+        "Where did a bad answer originate — retrieval or generation — and how did you tell?",
+        "Did contextual retrieval's measured gain justify its ingestion cost, or would you skip it here?",
+        "Which failures pushed you toward a retrieval change versus a chunking or reranking change, and why?",
       ],
       stretch: [
-        { id: "ch4.m8.x1", title: "Metadata filters in the UI (by section or date)", minutes: 50 },
-        { id: "ch4.m8.x2", title: "Access-control filter applied per user before retrieval", minutes: 55 },
+        { id: "ch4.m1.x1", title: "Try contextual retrieval and measure the gain against the hybrid baseline", minutes: 55, week: 11 },
+        { id: "ch4.m1.x2", title: "Run an embedding-model migration on a copy and diff the results", minutes: 50, week: 12 },
       ],
     },
   ],
@@ -421,32 +389,27 @@ export const ch4: Chapter = {
     {
       id: "ch4.t.diagnose-failure",
       dimension: "Debugging",
-      statement: "Given a wrong answer from your RAG app, you can tell whether retrieval or generation failed.",
+      statement: "Given a wrong answer from your pipeline, you can tell whether retrieval or generation failed.",
     },
     {
-      id: "ch4.t.measure-recall",
+      id: "ch4.t.reproduce-comparisons",
       dimension: "Evaluation",
-      statement: "You can measure recall@k on your own labeled set and show a change that improved it.",
+      statement: "You can reproduce your retrieval comparisons (recall@k or ranking quality) and show which change actually helped.",
     },
     {
-      id: "ch4.t.explain-hybrid",
-      dimension: "Explanation",
-      statement: "You can explain how Reciprocal Rank Fusion combines keyword and vector result lists without a tuned blend score.",
-    },
-    {
-      id: "ch4.t.chunking-tradeoffs",
-      dimension: "Tradeoffs",
-      statement: "You can justify a chunking strategy for a given source type and describe what you'd expect to break with a different one.",
-    },
-    {
-      id: "ch4.t.know-when-not-rag",
+      id: "ch4.t.no-unauthorized-content",
       dimension: "Understanding",
-      statement: "You can state when a grep-style agentic search or a long context window beats a vector database, with a concrete example.",
+      statement: "You can demonstrate that unauthorized or deleted content cannot appear in an answer.",
     },
     {
-      id: "ch4.t.build-independently",
-      dimension: "Independence",
-      statement: "You can add a new document source to your ingestion pipeline and get it searchable without guidance.",
+      id: "ch4.t.justify-choice",
+      dimension: "Tradeoffs",
+      statement: "You can justify a chunking, retrieval, reranking or long-context choice using observed errors rather than a general preference.",
+    },
+    {
+      id: "ch4.t.contextual-retrieval-worth-it",
+      dimension: "Explanation",
+      statement: "You can explain when contextual retrieval's measured gain justifies its added ingestion cost.",
     },
   ],
   skills: { knowledge: 1, building: 2, systemDesign: 2, evaluation: 1 },

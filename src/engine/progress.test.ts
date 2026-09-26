@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { CHAPTERS, ITEMS, MISSIONS, chapterForWeek, type ItemMeta } from "../content";
+import { CHAPTERS, ITEMS, MISSIONS, chapterForWeek } from "../content";
 import { emptyState, type ProgressState } from "./state";
 import {
   XP,
@@ -52,11 +52,10 @@ describe("itemXp", () => {
     expect(itemXp({ ...base, kind: "setup" })).toBe(XP.setup);
   });
 
-  it("distinguishes required vs optional resources", () => {
-    const required: ItemMeta = { ...base, kind: "resource", required: true };
-    const optional: ItemMeta = { ...base, kind: "resource", required: false };
-    expect(itemXp(required)).toBe(XP.mustRead);
-    expect(itemXp(optional)).toBe(XP.bonusRead);
+  it("distinguishes must-read, reference and bonus resources", () => {
+    expect(itemXp({ ...base, kind: "resource", use: "must" })).toBe(XP.mustRead);
+    expect(itemXp({ ...base, kind: "resource", use: "reference" })).toBe(XP.reference);
+    expect(itemXp({ ...base, kind: "resource", use: "bonus" })).toBe(XP.bonusRead);
   });
 });
 
@@ -86,7 +85,7 @@ describe("xpOf", () => {
 
   it("awards the minor mission-complete bonus for a minor mission", () => {
     const s = freshState();
-    const mission = ch1.missions.find(m => !m.major)!;
+    const mission = [...MISSIONS.values()].find(m => !m.major)!;
     expect(mission).toBeDefined();
     const milestoneIds = missionMilestoneIds(mission.id);
     markDone(s, milestoneIds);
@@ -369,7 +368,7 @@ describe("ACHIEVEMENTS", () => {
   });
 
   it("no-shortcuts requires all must-reads done before the trial is passed", () => {
-    const reqs = ch1.resources.filter(r => r.required).map(r => r.id);
+    const reqs = ch1.resources.filter(r => r.use === "must").map(r => r.id);
     const trial = trialIds(ch1);
 
     const good = freshState();

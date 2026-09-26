@@ -10,6 +10,7 @@ import { ch8 } from "./ch8";
 import { setupItems } from "./setup";
 
 export { continuingSources, continuingPrompts } from "./continuing";
+export { guide } from "./guide";
 export { setupItems };
 export type * from "./types";
 
@@ -24,7 +25,8 @@ export interface ItemMeta {
   title: string;
   /** Counts toward completion %, pace and rank thresholds. */
   core: boolean;
-  required?: boolean;
+  /** Resources only: must / reference / bonus. */
+  use?: "must" | "reference" | "bonus";
   chapterId?: string;
   week?: number;
   missionId?: string;
@@ -48,25 +50,27 @@ for (const ch of CHAPTERS) {
   }
   for (const r of ch.resources) {
     ITEMS.set(r.id, {
-      id: r.id, kind: "resource", title: r.title, core: r.required, required: r.required,
+      id: r.id, kind: "resource", title: r.title, core: r.use === "must", use: r.use,
       chapterId: ch.id, week: r.week, minutes: Math.round(r.hours * 60),
     });
   }
-  ch.missions.forEach((m, i) => {
+  for (const m of ch.missions) {
     MISSIONS.set(m.id, { ...m, chapterId: ch.id });
-    const week = ch.weeks[Math.min(i, ch.weeks.length - 1)].number;
     for (const s of m.milestones) {
-      ITEMS.set(s.id, { id: s.id, kind: "milestone", title: s.title, core: true, chapterId: ch.id, week, missionId: m.id, minutes: s.minutes });
+      ITEMS.set(s.id, { id: s.id, kind: "milestone", title: s.title, core: true, chapterId: ch.id, week: s.week, missionId: m.id, minutes: s.minutes });
     }
     for (const s of m.stretch) {
-      ITEMS.set(s.id, { id: s.id, kind: "stretch", title: s.title, core: false, chapterId: ch.id, week, missionId: m.id, minutes: s.minutes });
+      ITEMS.set(s.id, { id: s.id, kind: "stretch", title: s.title, core: false, chapterId: ch.id, week: s.week, missionId: m.id, minutes: s.minutes });
     }
-  });
+  }
   const lastWeek = ch.weeks[ch.weeks.length - 1].number;
   for (const t of ch.trial) {
     ITEMS.set(t.id, { id: t.id, kind: "trial", title: t.statement, core: true, chapterId: ch.id, week: lastWeek, minutes: 30 });
   }
 }
+
+/** Every resource by id, including earlier chapters' resources referenced from `revisit`. */
+export const RESOURCE_BY_ID = new Map(CHAPTERS.flatMap(ch => ch.resources.map(r => [r.id, { ...r, chapterId: ch.id }] as const)));
 
 export const chapterForWeek = (week: number): Chapter =>
   CHAPTERS.find(c => c.weeks.some(w => w.number === week)) ?? CHAPTERS[CHAPTERS.length - 1];
