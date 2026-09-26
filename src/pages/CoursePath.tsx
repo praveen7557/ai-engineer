@@ -1,7 +1,8 @@
-import { COURSE_LINKS, coursePath, coursePathBudget, coursePathHours } from "../content";
+import { CHAPTER_BY_ID, COURSE_LINKS, coursePath, coursePathBudget, coursePathHours, RESOURCE_BY_ID } from "../content";
 import type { CourseLink } from "../content/coursePath";
 import { useStore } from "../store";
 import { CheckRow, Meter, pad2 } from "../ui/bits";
+import { chapterHref } from "../ui/router";
 import { PageHead } from "./Other";
 
 const usd = ([lo, hi]: readonly [number, number]) => (lo === hi ? `$${lo}` : `$${lo}–${hi}`);
@@ -69,6 +70,35 @@ export function CoursePath() {
             </div>
           </article>
         ))}
+      </section>
+
+      <section className="section" aria-labelledby="cp-map">
+        <div className="section-head"><h2 className="section-title" id="cp-map">How this maps to the chapters</h2><span className="aside">courses → the 24-week roadmap</span></div>
+        <p className="muted" style={{ maxWidth: "70ch", margin: 0 }}>{coursePath.chapterMapIntro}</p>
+        <div className="panel" style={{ padding: "2px 12px" }}>
+          {coursePath.chapterMap.map(m => {
+            const ch = CHAPTER_BY_ID.get(m.chapterId)!;
+            return (
+              <div key={m.chapterId} className="row cp-map-row" style={{ cursor: "default", gridTemplateColumns: "minmax(0,1fr) auto" }}>
+                <span>
+                  <span className="title"><a href={chapterHref(ch.id)}>{pad2(ch.number)} · {ch.title}</a></span>
+                  <span className="sub">{m.courses}</span>
+                  {m.gaps && (
+                    <span className="sub cp-gap">
+                      <span className="eyebrow">Not in any course</span> {m.gaps} Fill it with{" "}
+                      {m.gapResourceIds!.map((id, i) => {
+                        const r = RESOURCE_BY_ID.get(id)!;
+                        return <span key={id}>{i > 0 && ", "}<a href={chapterHref(r.chapterId, { week: r.week, focus: r.id, section: "intel" })}>{r.title}</a></span>;
+                      })}.
+                    </span>
+                  )}
+                </span>
+                <span className="side"><span className={`tag ${m.coverage === "Full" ? "good" : m.coverage === "Partial" ? "req" : ""}`}>{m.coverage}</span></span>
+              </div>
+            );
+          })}
+        </div>
+        <p className="muted" style={{ maxWidth: "70ch", margin: 0 }}>{coursePath.pathOnly}</p>
       </section>
 
       <section className="section" aria-labelledby="cp-budget">

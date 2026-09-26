@@ -18,6 +18,15 @@ export interface CoursePhase {
   note?: string;
 }
 
+export interface ChapterMapping {
+  chapterId: string;
+  coverage: "Full" | "Mostly" | "Partial";
+  courses: string;
+  /** What no course teaches well; the chapter's own resources below cover it. */
+  gaps?: string;
+  gapResourceIds?: string[];
+}
+
 export interface BudgetLine {
   item: string;
   usd: [min: number, max: number];
@@ -117,6 +126,25 @@ export const coursePath = {
       build: "For example, a browser agent as a Chrome extension with evals, traces, a cost dashboard and injection defenses. Write it up as a case study: architecture, failures, evals, cost.",
     },
   ] satisfies CoursePhase[],
+  chapterMapIntro:
+    "The courses teach the concepts; the chapters' builds and free docs teach the production engineering around them. Where a chapter is only partly covered, its own resources fill the gap.",
+  chapterMap: [
+    { chapterId: "ch1", coverage: "Mostly", courses: "Karpathy (tokens, next-token prediction), Donner (APIs, pricing)",
+      gaps: "Retries, backoff with jitter, timeouts and key hygiene.", gapResourceIds: ["ch1.r.errors-docs"] },
+    { chapterId: "ch2", coverage: "Full", courses: "Chip Huyen (prompting, foundation models), Scott Moss (evals), Donner (tokenizers, open models, model choice)" },
+    { chapterId: "ch3", coverage: "Partial", courses: "Donner (multimodal, prompt caching)",
+      gaps: "A TypeScript backend proxy that streams over SSE, cancellation, and human-correction UX.", gapResourceIds: ["ch3.r.streaming-docs", "ch3.r.sse-mdn", "ch3.r.pair-guidebook"] },
+    { chapterId: "ch4", coverage: "Mostly", courses: "Donner (RAG, vector DBs), CS329Z (RAG), Scott Moss (RAG)",
+      gaps: "Permission-aware retrieval and embedding-version migration.", gapResourceIds: ["ch4.r.systematically-improving-rag"] },
+    { chapterId: "ch5", coverage: "Mostly", courses: "Andrew Ng (agent patterns), Scott Moss (agent design, context), CS329Z (patterns, memory)",
+      gaps: "Idempotency keys, step/time/spend limits and approval gates on tools.", gapResourceIds: ["ch5.r.idempotency-stripe", "ch5.r.lethal-trifecta"] },
+    { chapterId: "ch6", coverage: "Partial", courses: "Anthropic Academy MCP intro",
+      gaps: "OAuth 2.1 for remote servers, token passthrough, tool poisoning.", gapResourceIds: ["ch6.r.mcp-specification"] },
+    { chapterId: "ch7", coverage: "Partial", courses: "Donner (QLoRA), Hamel & Shreya (evals, LLM-as-judge)",
+      gaps: "Wiring evals into a CI gate, load and recovery testing, staged rollout and rollback.", gapResourceIds: ["ch7.r.handling-overload", "ch7.r.otel-genai-conventions"] },
+    { chapterId: "ch8", coverage: "Full", courses: "Phase 7 flagship project (no course by design)" },
+  ] satisfies ChapterMapping[],
+  pathOnly: "Only on the Course Path: Python services (Phase 0), Karpathy's from-scratch model internals and deeper local serving with vLLM and quantization (Phase 6), and one agent framework in depth (Phase 5).",
   timeSplit: [
     { area: "Agents", pct: 25 },
     { area: "Evals, observability and reliability", pct: 20 },

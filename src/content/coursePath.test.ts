@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ALL_CORE_IDS } from "../engine/progress";
-import { ITEMS } from "./index";
+import { CHAPTERS, ITEMS, RESOURCE_BY_ID } from "./index";
 import { COURSE_LINKS, coursePath, coursePathBudget, coursePathHours } from "./coursePath";
 
 describe("course path content", () => {
@@ -37,6 +37,19 @@ describe("course path content", () => {
     for (const c of COURSE_LINKS) {
       expect(ITEMS.get(c.id)).toMatchObject({ kind: "course", core: false, title: c.title });
       expect(ALL_CORE_IDS).not.toContain(c.id);
+    }
+  });
+
+  it("maps every chapter exactly once, in order", () => {
+    expect(coursePath.chapterMap.map(m => m.chapterId)).toEqual(CHAPTERS.map(c => c.id));
+  });
+
+  it("backs every gap with real resources from that chapter, and only partial or mostly covered chapters have gaps", () => {
+    for (const m of coursePath.chapterMap) {
+      if (m.coverage === "Full") { expect(m.gaps).toBeUndefined(); continue; }
+      expect(m.gaps?.trim()).toBeTruthy();
+      expect(m.gapResourceIds?.length).toBeGreaterThan(0);
+      for (const id of m.gapResourceIds!) expect(RESOURCE_BY_ID.get(id)?.chapterId).toBe(m.chapterId);
     }
   });
 

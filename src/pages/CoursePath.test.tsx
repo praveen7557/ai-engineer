@@ -2,7 +2,7 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { coursePath } from "../content";
+import { CHAPTERS, coursePath, RESOURCE_BY_ID } from "../content";
 import { XP, xpOf } from "../engine/progress";
 import { StoreProvider, useStore } from "../store";
 import { CoursePath } from "./CoursePath";
@@ -80,4 +80,11 @@ describe("CoursePath page", () => {
     expect(container.textContent).toContain("0 / 17");
   });
 
+  it("links each chapter in the mapping and deep-links its gap resources into the chapter", () => {
+    const section = container.querySelector("[aria-labelledby=cp-map]")!;
+    for (const ch of CHAPTERS) expect(section.querySelector(`a[href="#/chapter/${ch.id}"]`)).not.toBeNull();
+    const r = RESOURCE_BY_ID.get("ch6.r.mcp-specification")!;
+    const link = [...section.querySelectorAll<HTMLAnchorElement>("a")].find(a => a.textContent === r.title)!;
+    expect(link.getAttribute("href")).toBe(`#/chapter/ch6?week=${r.week}&focus=ch6.r.mcp-specification&s=intel`);
+  });
 });
