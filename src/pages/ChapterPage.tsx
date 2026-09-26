@@ -2,10 +2,11 @@ import { motion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import { CHAPTER_BY_ID, CHAPTERS, ITEMS, RESOURCE_BY_ID, type Chapter, type Mission, type Resource } from "../content";
 import {
-  chapterPct, chapterStatus, chapterXpAvailable, isMissionComplete, isTrialPassed, isWeekComplete, itemXp, missionMilestoneIds, pct, weekConceptIds, XP,
+  chapterPct, chapterStatus, chapterStatusLabel, chapterXpAvailable, isMissionComplete, isResolved, isTrialPassed, isWeekComplete, itemXp, missionMilestoneIds, pct,
+  weekBudget, weekRequiredIds, XP,
 } from "../engine/progress";
 import { useStore } from "../store";
-import { CheckRow, fmtMinutes, fmtXp, Meter, pad2, Ring } from "../ui/bits";
+import { CheckRow, fmtMinutes, fmtXp, pad2, Ring, scrollBehavior } from "../ui/bits";
 import { Nox } from "../ui/Nox";
 import { chapterHref, type Route } from "../ui/router";
 import { useDerived } from "../ui/derived";
@@ -31,7 +32,7 @@ export function ChapterPage({ route }: { route: Route }) {
 
   const section = route.query.get("s");
   useEffect(() => {
-    if (section && !focus) document.getElementById(section)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (section && !focus) document.getElementById(section)?.scrollIntoView({ behavior: scrollBehavior(), block: "start" });
   }, [section, focus, ch.id]);
 
   const status = chapterStatus(state, ch);
@@ -47,19 +48,17 @@ export function ChapterPage({ route }: { route: Route }) {
         </div>
       )}
       <nav className="subnav" aria-label="Chapter sections">
-        {SECTIONS.map(([id, label]) => <a key={id} href={`#${id}`} onClick={e => { e.preventDefault(); document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" }); }}>{label}</a>)}
+        {SECTIONS.map(([id, label]) => <a key={id} href={`#${id}`} onClick={e => { e.preventDefault(); document.getElementById(id)?.scrollIntoView({ behavior: scrollBehavior(), block: "start" }); }}>{label}</a>)}
       </nav>
 
-      {isFinal && <FinalBuild />}
-
-      <section className="section" id="training" style={{ scrollMarginTop: 120 }}>
+      <section className="section" id="training" style={{ scrollMarginTop: 120, marginTop: 36 }}>
         <div className="section-head">
           <h2 className="section-title">Training</h2>
           <span className="aside">build first, then the concepts that build needs</span>
         </div>
         <div className="weeks-tabs" role="tablist">
           {ch.weeks.map(w => {
-            const ids = weekConceptIds(ch, w.number);
+            const ids = weekRequiredIds(ch, w.number);
             return (
               <button key={w.number} role="tab" className="week-tab" aria-selected={week === w.number} onClick={() => setWeek(w.number)}>
                 <span className="wn">WEEK {pad2(w.number)}{isWeekComplete(state, w.number) ? " · ✓" : ""}</span>
@@ -70,12 +69,14 @@ export function ChapterPage({ route }: { route: Route }) {
           })}
         </div>
         <WeekTraining ch={ch} week={week} focus={focus} />
-        {ch.notes && ch.notes.length > 0 && (
+        {(ch.notes ?? []).some(n => n.week === undefined) && (
           <div className="notes">
-            {ch.notes.map(n => <div key={n.label} className="note"><span>{n.label.toUpperCase()}</span>{n.text}</div>)}
+            {(ch.notes ?? []).filter(n => n.week === undefined).map(n => <div key={n.label} className="note"><span>{n.label.toUpperCase()}</span>{n.text}</div>)}
           </div>
         )}
       </section>
+
+      {isFinal && <FinalBuild />}
 
       <Intel ch={ch} focus={focus} />
       {ch.revisit && ch.revisit.length > 0 && <Revisit ids={ch.revisit} />}
@@ -85,7 +86,7 @@ export function ChapterPage({ route }: { route: Route }) {
           <h2 className="section-title">Missions</h2>
           <span className="aside">practical engineering: build it, then reflect</span>
         </div>
-        {ch.missions.map(m => <MissionCard key={m.id} m={m} focus={focus} />)}
+        {ch.missions.map(m => <MissionCard key={m.id} m={m} focus={focus} week={week} />)}
       </section>
 
       <Trial ch={ch} focus={focus} />
@@ -109,27 +110,28 @@ function Header({ ch }: { ch: Chapter }) {
   const pc = chapterPct(state, ch);
   const avail = chapterXpAvailable(ch);
   const status = chapterStatus(state, ch);
-  const earned = [...ITEMS.values()].filter(m => m.chapterId === ch.id && m.core && state.done[m.id]).reduce((a, m) => a + itemXp(m), 0);
+  const earned = [...ITEMS.values()].filter(m => m.chapterId === ch.id && m.core && isResolved(state, m.id)).reduce((a, m) => a + itemXp(m), 0);
   return (
-    <section className="ch-hero">
+    <section className="ch-hero compact">
       <div>
         <div className="eyebrow accent">Chapter {pad2(ch.number)} · Weeks {ch.weeks[0].number}–{ch.weeks[ch.weeks.length - 1].number}</div>
-        <h1 className="display h-lg" style={{ marginTop: 14 }}>{ch.title}</h1>
-        <p className="tagline">{ch.tagline}</p>
-        <p className="lede" style={{ marginTop: 16 }}>{ch.description}</p>
-        <p className="muted" style={{ marginTop: 10, maxWidth: "64ch" }}>{ch.why}</p>
-        <div className="objective"><span>MAJOR OBJECTIVE</span>{ch.majorObjective}</div>
-        <div className="objective quiet"><span>DONE WHEN</span>{ch.doneWhen}</div>
+        <h1 className="display h-lg" style={{ marginTop: 12 }}>{ch.title}</h1>
+        <p className="lede" style={{ marginTop: 10 }}>{ch.description}</p>
+        <details className="about">
+          <summary>About this chapter: why it matters, objective, done when</summary>
+          <p className="tagline" style={{ marginTop: 10 }}>{ch.tagline}</p>
+          <p className="muted" style={{ margin: "8px 0 0", maxWidth: "64ch" }}>{ch.why}</p>
+          <div className="objective"><span>MAJOR OBJECTIVE</span>{ch.majorObjective}</div>
+          <div className="objective quiet"><span>DONE WHEN</span>{ch.doneWhen}</div>
+        </details>
       </div>
-      <div className="panel pad" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span className={`status-pill ${status}`}>{status === "complete" ? "Complete" : status === "active" ? "In progress" : status === "sealed" ? "Ahead" : "Open"}</span>
-          <Ring value={pc} size={58} />
+      <div className="panel ch-stats">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+          <span className={`status-pill ${status}`}>{chapterStatusLabel(state, ch)}</span>
+          <Ring value={pc} size={52} />
         </div>
-        <Meter value={pc} label="Chapter completion" />
         <div className="trial-dims">
-          <span>XP earned</span><span className="num">{fmtXp(earned)}</span>
-          <span>XP available</span><span className="num">{fmtXp(avail)}</span>
+          <span>XP</span><span className="num">{fmtXp(earned)} / {fmtXp(avail)}</span>
           <span>Missions</span><span className="num">{ch.missions.filter(m => isMissionComplete(state, m.id)).length} / {ch.missions.length}</span>
           <span>Trial</span><span className={isTrialPassed(state, ch) ? "ok" : ""}>{isTrialPassed(state, ch) ? "Passed" : "Not yet"}</span>
         </div>
@@ -141,40 +143,62 @@ function Header({ ch }: { ch: Chapter }) {
 function WeekTraining({ ch, week, focus }: { ch: Chapter; week: number; focus?: string }) {
   const { state } = useStore();
   const w = ch.weeks.find(x => x.number === week) ?? ch.weeks[0];
-  const ids = weekConceptIds(ch, w.number);
-  const remaining = ids.filter(id => !state.done[id]).length * XP.concept + (isWeekComplete(state, w.number) ? 0 : XP.weekComplete);
-  const minutes = w.groups.flatMap(g => g.concepts).reduce((a, c) => a + c.minutes, 0);
+  const req = weekRequiredIds(ch, w.number);
+  const remaining = req.filter(id => !isResolved(state, id)).reduce((a, id) => a + itemXp(ITEMS.get(id)!), 0) + (isWeekComplete(state, w.number) ? 0 : XP.weekComplete);
+  const b = weekBudget(ch, w.number);
+  const weekNotes = (ch.notes ?? []).filter(n => n.week === w.number);
+  const required = w.groups.flatMap(g => g.concepts.filter(c => !c.optional));
+  const optional = w.groups.flatMap(g => g.concepts.filter(c => c.optional));
   return (
     <motion.div key={w.number} className="panel" style={{ padding: "8px 12px 12px" }} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-      <div style={{ padding: "16px 12px 4px" }}>
+      <div style={{ padding: "14px 12px 2px" }}>
         <div className="eyebrow">Week {pad2(w.number)}</div>
         <div className="display h-md" style={{ marginTop: 4 }}>{w.title}</div>
         <p className="muted" style={{ margin: "6px 0 0" }}>{w.focus}</p>
       </div>
+      <WeekBuildCard ch={ch} week={w.number} focus={focus} />
+      {weekNotes.map(n => <div key={n.label} className="note" style={{ margin: "10px 12px 0" }}><span>{n.label.toUpperCase()}</span>{n.text}</div>)}
       <ol className="how" aria-label="How to use this week">
-        <li><b>Read the build</b> below</li>
+        <li><b>Build</b> the milestones above</li>
         <li><b>Skim the concepts</b>; don't tick yet</li>
-        <li><b>Start building</b>; open the linked Intel when you're stuck</li>
-        <li><b>Tick milestones</b> as you finish them</li>
+        <li><b>Open the linked Intel</b> when you're stuck</li>
         <li><b>Tick a concept</b> once you can explain it without notes</li>
       </ol>
-      <WeekBuildCard ch={ch} week={w.number} focus={focus} />
-      {w.groups.map(g => (
-        <div key={g.title}>
-          <div className="group-title">{g.title}</div>
+      {w.groups.map(g => {
+        const cs = g.concepts.filter(c => !c.optional);
+        if (!cs.length) return null;
+        return (
+          <div key={g.title}>
+            <div className="group-title">{g.title}</div>
+            <ul className="checks">
+              {cs.map(c => (
+                <CheckRow key={c.id} id={c.id} title={c.title} target={focus === c.id}
+                  hint={{ off: "I can explain this", on: "Understood" }}
+                  sub={<>{c.summary}<ConceptLinks ids={c.resources} /></>}
+                  side={<span>{fmtMinutes(c.minutes)}</span>} />
+              ))}
+            </ul>
+          </div>
+        );
+      })}
+      {optional.length > 0 && (
+        <details className="optional-concepts" open={optional.some(c => c.id === focus)}>
+          <summary>Optional depth · {optional.length} concept{optional.length === 1 ? "" : "s"} (not needed to complete the week)</summary>
           <ul className="checks">
-            {g.concepts.map(c => (
+            {optional.map(c => (
               <CheckRow key={c.id} id={c.id} title={c.title} target={focus === c.id}
                 hint={{ off: "I can explain this", on: "Understood" }}
                 sub={<>{c.summary}<ConceptLinks ids={c.resources} /></>}
                 side={<span>{fmtMinutes(c.minutes)}</span>} />
             ))}
           </ul>
-        </div>
-      ))}
+        </details>
+      )}
       <div className="week-foot">
-        <span>~{fmtMinutes(minutes)} of concepts · finishing them adds +{XP.weekComplete} XP</span>
-        <span className="xp">{isWeekComplete(state, w.number) ? "Week complete" : `+${remaining} XP available`}</span>
+        <span title="Build share = this week's portion of mission hours (implementation, debugging, evaluation, write-up). Concept study overlaps reading, so it isn't added.">
+          Time this week ≈ {b.buildHours} h build (≈{b.milestoneHours} h focused milestone slices) + {b.readingHours} h reading · concepts (~{fmtMinutes(Math.round(b.conceptHours * 60))}) overlap reading · {required.length} required concepts
+        </span>
+        <span className="xp">{isWeekComplete(state, w.number) ? "Week complete" : `+${remaining} XP left · week complete = build milestones + required concepts`}</span>
       </div>
     </motion.div>
   );
@@ -217,15 +241,18 @@ function Intel({ ch, focus }: { ch: Chapter; focus?: string }) {
   );
 }
 
-function MissionCard({ m, focus }: { m: Mission; focus?: string }) {
+function MissionCard({ m, focus, week }: { m: Mission; focus?: string; week: number }) {
   const { state } = useStore();
   const ids = missionMilestoneIds(m.id);
   const pc = pct(state, ids);
   const complete = isMissionComplete(state, m.id);
   const xp = ids.length * XP.milestone + (m.major ? XP.missionMajor : XP.missionMinor);
-  const [open, setOpen] = useState(true);
+  const current = m.milestones.some(s => s.week === week) || m.milestones.some(s => s.id === focus) || m.stretch.some(s => s.id === focus) || focus === m.id;
+  const [open, setOpen] = useState(current && !complete);
+  useEffect(() => { if (current) setOpen(true); }, [current]);
+  const sliceHours = Math.round((m.milestones.reduce((a, s) => a + s.minutes, 0) / 60) * 10) / 10;
   useEffect(() => {
-    if (focus === m.id) document.getElementById(`mission-${m.id}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (focus === m.id) document.getElementById(`mission-${m.id}`)?.scrollIntoView({ behavior: scrollBehavior(), block: "start" });
   }, [focus, m.id]);
   return (
     <article id={`mission-${m.id}`} className={`panel mission ${complete ? "complete" : ""} ${focus === m.id ? "lit" : ""}`} style={{ scrollMarginTop: 120 }}>
@@ -238,7 +265,7 @@ function MissionCard({ m, focus }: { m: Mission; focus?: string }) {
         <Ring value={pc} />
       </div>
       {open && (
-        <div className="mission-body">
+        <div className="mission-body" id={`mission-body-${m.id}`}>
           <div>
             <p className="mlabel">Requirements</p>
             <ul className="plain">{m.requirements.map(r => <li key={r}>{r}</li>)}</ul>
@@ -249,7 +276,7 @@ function MissionCard({ m, focus }: { m: Mission; focus?: string }) {
             <JournalEditor journalKey={m.id} small placeholder="Your reflection, once you've built it." />
           </div>
           <div>
-            <p className="mlabel">Milestones · {ids.filter(id => state.done[id]).length}/{ids.length}</p>
+            <p className="mlabel">Milestones · {ids.filter(id => isResolved(state, id)).length}/{ids.length}</p>
             <ul className="checks">
               {m.milestones.map(s => <CheckRow key={s.id} id={s.id} title={s.title} side={<span>{fmtMinutes(s.minutes)} · wk {pad2(s.week)}</span>} target={focus === s.id} />)}
             </ul>
@@ -265,10 +292,10 @@ function MissionCard({ m, focus }: { m: Mission; focus?: string }) {
         </div>
       )}
       <div className="mission-foot">
-        <span>~{m.hours} h · {complete ? "Mission complete" : `${pc}% complete`}</span>
+        <span title="Mission hours are total project work; milestone minutes are the focused slices within it.">~{m.hours} h total project work (≈{sliceHours} h of milestone slices; the rest is debugging, evaluation and write-up) · {complete ? "Mission complete" : `${pc}% complete`}</span>
         <span style={{ display: "flex", gap: 14, alignItems: "center" }}>
           <span className="xp">+{fmtXp(xp)} XP{m.major ? ` (incl. +${XP.missionMajor} completion)` : ""}</span>
-          <button className="btn small ghost" onClick={() => setOpen(o => !o)}>{open ? "Collapse" : "Expand"}</button>
+          <button className="btn small ghost" aria-expanded={open} aria-controls={`mission-body-${m.id}`} onClick={() => setOpen(o => !o)}>{open ? "Hide details" : "Show details"}</button>
         </span>
       </div>
     </article>
@@ -278,7 +305,7 @@ function MissionCard({ m, focus }: { m: Mission; focus?: string }) {
 function Trial({ ch, focus }: { ch: Chapter; focus?: string }) {
   const { state } = useStore();
   const passed = isTrialPassed(state, ch);
-  const count = ch.trial.filter(t => state.done[t.id]).length;
+  const count = ch.trial.filter(t => isResolved(state, t.id)).length;
   return (
     <section className="section" id="trial" style={{ scrollMarginTop: 120 }}>
       <div className="section-head">
@@ -290,7 +317,7 @@ function Trial({ ch, focus }: { ch: Chapter; focus?: string }) {
           <ul className="checks">
             {ch.trial.map(t => (
               <CheckRow key={t.id} id={t.id} className="trial-row" target={focus === t.id}
-                title={<><span className="dim">{t.dimension}</span>{t.statement}</>} />
+                title={<><span className="dim">{t.dimension}</span>{t.statement}</>} label={`${t.dimension}: ${t.statement}`} />
             ))}
           </ul>
         </div>
@@ -316,7 +343,7 @@ const weekLabel = (r: Resource) => (r.weekEnd && r.weekEnd !== r.week ? `wk ${pa
 
 function ResourceRow({ r, target }: { r: Resource; target?: boolean }) {
   return (
-    <CheckRow id={r.id} className={`res-row ${r.use === "bonus" ? "bonus" : ""}`} target={target}
+    <CheckRow id={r.id} className={`res-row ${r.use === "bonus" ? "bonus" : ""}`} target={target} label={`${r.title} (${r.use === "must" ? "must read" : r.use})`}
       title={<><a href={r.url} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>{r.title}</a>{r.suggested && <span className="tag steel" style={{ marginLeft: 8 }}>Suggested</span>}</>}
       sub={r.note}
       side={<><span className={`tag ${r.use === "must" ? "req" : r.use === "reference" ? "steel" : ""}`}>{r.kind}</span><span>{r.hours ? `~${r.hours} h` : "ongoing"} · {weekLabel(r)}</span></>} />
@@ -347,7 +374,7 @@ function WeekBuildCard({ ch, week, focus }: { ch: Chapter; week: number; focus?:
   const w = ch.weeks.find(x => x.number === week);
   if (!w) return null;
   const ms = ch.missions.flatMap(m => m.milestones.filter(s => s.week === week).map(s => ({ s, m })));
-  const done = ms.filter(({ s }) => state.done[s.id]).length;
+  const done = ms.filter(({ s }) => isResolved(state, s.id)).length;
   return (
     <div className="build-card">
       <div className="build-head">
@@ -360,7 +387,7 @@ function WeekBuildCard({ ch, week, focus }: { ch: Chapter; week: number; focus?:
         <ul className="checks">
           {ms.map(({ s, m }) => (
             <CheckRow key={s.id} id={s.id} title={s.title} target={focus === s.id}
-              side={<><span>{fmtMinutes(s.minutes)}</span><a className="faint" href={`#mission-${m.id}`} onClick={e => { e.preventDefault(); e.stopPropagation(); document.getElementById(`mission-${m.id}`)?.scrollIntoView({ behavior: "smooth", block: "start" }); }}>M{pad2(m.number)}</a></>} />
+              side={<><span>{fmtMinutes(s.minutes)}</span><a className="faint" href={`#mission-${m.id}`} onClick={e => { e.preventDefault(); e.stopPropagation(); document.getElementById(`mission-${m.id}`)?.scrollIntoView({ behavior: scrollBehavior(), block: "start" }); }}>M{pad2(m.number)}</a></>} />
           ))}
         </ul>
       )}
@@ -408,8 +435,9 @@ function FinalBuild() {
           <Nox stage={d.stage.index} mood="focused" size={84} />
           <div className="eyebrow accent" style={{ marginTop: 8 }}>Weeks {last.weeks[0].number}–{last.weeks[last.weeks.length - 1].number} · Mission {capstone ? pad2(capstone.number) : ""}</div>
           <h2 className="display" style={{ marginTop: 10 }}>The Final Build</h2>
-          <p className="lede">Everything before this was preparation. Ship one useful product to a real audience, using only the techniques that earn their complexity.</p>
-          <div className="pillars">
+          <p className="lede">Everything before this was preparation. Ship one useful product to a real audience, using only the techniques its problem justifies.</p>
+          <div className="eyebrow" style={{ marginTop: 26 }}>Skills you've built</div>
+          <div className="pillars" style={{ marginTop: 12 }}>
             {pillars.map(([name, chs]) => {
               const on = chs.every(id => { const c = CHAPTER_BY_ID.get(id); return !!c && chapterPct(state, c) >= 80; });
               return <span key={name} className={`pillar ${on ? "on" : ""}`}><i />{name}</span>;
@@ -417,7 +445,7 @@ function FinalBuild() {
           </div>
           {capstone && (
             <p className="faint mono" style={{ marginTop: 22, fontSize: 12 }}>
-              {pct(state, missionMilestoneIds(capstone.id))}% of the final build complete · a pillar lights up once its chapter is 80% done
+              {pct(state, missionMilestoneIds(capstone.id))}% of the final build complete · a skill lights up once its chapter is 80% done. These are skills to draw on, not components your capstone must include.
             </p>
           )}
         </div>

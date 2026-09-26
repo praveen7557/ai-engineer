@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import {
-  bond, companionLine, earnedAchievements, focusChapter, isEndState, moodFor, nextSteps, overallPct, pace, rankFor, stageFor, streak, xpOf, xpThisWeek,
+  bond, companionLine, earnedAchievements, focusChapter, isEndState, moodFor, nextMilestone, nextSteps, overallPct, pace, rankFor, stageFor, streak, xpOf, xpThisWeek,
 } from "../engine/progress";
 import { useStore } from "../store";
 
@@ -29,7 +29,8 @@ export function useDerived() {
       xpWeek: xpThisWeek(state),
       tasksDone: Object.keys(state.done).length,
       focus: focusChapter(state),
-      next: nextSteps(state, 3),
+      next: nextSteps(state, 6),
+      nextMilestone: nextMilestone(state),
       achievements: earnedAchievements(state),
       endState: isEndState(state),
     };

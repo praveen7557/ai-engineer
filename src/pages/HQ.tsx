@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { CHAPTERS, TOTAL_WEEKS } from "../content";
+import { CHAPTERS, MISSIONS, TOTAL_WEEKS } from "../content";
 import {
   activityByDay, chapterPct, chapterStatus, RANKS, SKILLS, skillLevels, weeksComplete,
 } from "../engine/progress";
@@ -64,46 +64,62 @@ function Hero() {
 function NextStep() {
   const { state, setStartDate } = useStore();
   const d = useDerived();
-  if (!state.startDate) {
+  const ms = d.nextMilestone;
+  const study = d.next.filter(n => n.item.kind !== "milestone" && n.chapter.id === (ms?.chapter.id ?? n.chapter.id)).slice(0, 2);
+  const firstBuild = CHAPTERS[0].missions[0];
+  if (!Object.keys(state.done).length && !Object.keys(state.na).length && firstBuild) {
+    const first = firstBuild.milestones[0];
     return (
       <div className="panel next lit">
         <div>
           <div className="eyebrow accent">Your first step</div>
-          <div className="what">Choose the day your journey begins.</div>
-          <div className="where">The plan runs 24 weeks from that date. You can change it later; nothing here punishes you for it.</div>
+          <div className="what">Start the Prompt Lab</div>
+          <div className="where">Mission {pad2(firstBuild.number)} · {firstBuild.title}. First milestone: {first.title} (~{fmtMinutes(first.minutes)}).</div>
+          <p className="muted" style={{ margin: "10px 0 0", fontSize: 14, maxWidth: "60ch" }}>
+            Build first: make one real model call today, then study the concepts it raises. A start date is optional; it only powers the plan-vs-you comparison.
+          </p>
+          <div className="facts">
+            <label className="fact" style={{ gap: 6 }}>
+              <span>Optional start date</span>
+              <input className="input" type="date" value={state.startDate ?? ""} aria-label="Optional start date" onChange={e => setStartDate(e.target.value || null)} />
+            </label>
+            {!state.startDate && <button type="button" className="btn small ghost" style={{ alignSelf: "end" }} onClick={() => setStartDate(localDay())}>Start the clock today</button>}
+          </div>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 10, alignItems: "stretch" }}>
-          <button className="btn primary" onClick={() => setStartDate(localDay())}>Begin today <span className="arrow">→</span></button>
-          <input className="input" type="date" aria-label="Or choose a start date" onChange={e => e.target.value && setStartDate(e.target.value)} />
-        </div>
+        <a className="btn primary" href={chapterHref(CHAPTERS[0].id, { week: first.week, focus: first.id })} style={{ padding: "14px 26px", fontSize: 14 }}>Start the Prompt Lab <span className="arrow">→</span></a>
       </div>
     );
   }
-  const [first, ...then] = d.next;
-  if (!first) return null;
-  const week = first.item.week;
-  const to = chapterHref(first.chapter.id, { week, focus: first.item.id, section: first.item.kind === "trial" ? "trial" : first.item.kind === "milestone" ? "missions" : first.item.kind === "resource" ? "intel" : undefined });
+  const step = ms ?? d.next[0];
+  if (!step) return null;
+  const mission = step.item.missionId ? MISSIONS.get(step.item.missionId) : undefined;
+  const to = chapterHref(step.chapter.id, { week: step.item.week, focus: step.item.id, section: step.item.kind === "trial" ? "trial" : undefined });
   const behind = d.pace.kind === "tracked" && d.pace.delta < 0;
   return (
     <div className="panel next lit">
       <div>
-        <div className="eyebrow accent">{behind ? "The roadmap has moved ahead · your next step" : "Your next step"}</div>
-        <div className="what">{first.item.kind === "trial" ? "Prove: " : ""}{first.item.title}</div>
+        <div className="eyebrow accent">{behind ? "The roadmap has moved ahead · your next build step" : "Your next build step"}</div>
+        <div className="what">{step.item.title}</div>
         <div className="where">
-          Chapter {pad2(first.chapter.number)} · {first.chapter.title}{week ? ` · Week ${pad2(week)}` : ""}
+          {mission ? `Mission ${pad2(mission.number)} · ${mission.title} · ` : ""}Chapter {pad2(step.chapter.number)}{step.item.week ? ` · Week ${pad2(step.item.week)}` : ""}
+          {step.item.conditional ? " · conditional: complete it or mark it not applicable with a reason" : ""}
         </div>
         <div className="facts">
-          <div className="fact"><span>Task</span><b>{first.label}</b></div>
-          <div className="fact"><span>Estimated time</span><b>{fmtMinutes(first.item.minutes)}</b></div>
-          <div className="fact"><span>Reward</span><b className="acc">+{first.xp} XP</b></div>
+          <div className="fact"><span>Focused slice</span><b>{fmtMinutes(step.item.minutes)}</b></div>
+          <div className="fact"><span>Reward</span><b className="acc">+{step.xp} XP</b></div>
         </div>
-        {then.length > 0 && (
+        {study.length > 0 && (
           <div className="then">
-            <span className="eyebrow">After that</span>
-            {then.map(t => (
-              <a key={t.item.id} href={chapterHref(t.chapter.id, { week: t.item.week, focus: t.item.id })}>→ {t.item.title} <span className="faint">· {fmtMinutes(t.item.minutes)}</span></a>
+            <span className="eyebrow">Study alongside</span>
+            {study.map(t => (
+              <a key={t.item.id} href={chapterHref(t.chapter.id, { week: t.item.week, focus: t.item.id, section: t.item.kind === "resource" ? "intel" : undefined })}>→ {t.label}: {t.item.title} <span className="faint">· {fmtMinutes(t.item.minutes)}</span></a>
             ))}
           </div>
+        )}
+        {!state.startDate && (
+          <p className="faint" style={{ margin: "14px 0 0", fontSize: 13 }}>
+            No start date set, so there's no plan-vs-you comparison. <button type="button" className="linkish" onClick={() => setStartDate(localDay())}>Start the clock today</button>
+          </p>
         )}
       </div>
       <a className="btn primary" href={to} style={{ padding: "14px 26px", fontSize: 14 }}>Continue <span className="arrow">→</span></a>

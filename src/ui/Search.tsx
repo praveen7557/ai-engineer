@@ -6,6 +6,17 @@ import { chapterHref, href } from "./router";
 
 interface Hit { group: string; crumb: string; title: string; kind: string; to: string }
 
+/** Top-level pages, findable by name and by what you'd go there to do. */
+const PAGES: { title: string; path: string; crumb: string; keywords: string[] }[] = [
+  { title: "Headquarters", path: "", crumb: "Home", keywords: ["home", "dashboard", "next step", "overview"] },
+  { title: "Roadmap", path: "roadmap", crumb: "All chapters", keywords: ["chapters", "plan", "workload", "prerequisites", "getting started", "budget"] },
+  { title: "Engineer's Journal", path: "journal", crumb: "Weekly notes", keywords: ["journal", "notes", "reflection", "decision"] },
+  { title: "Nox", path: "companion", crumb: "Companion", keywords: ["companion", "bond", "mood", "stage"] },
+  { title: "Record", path: "record", crumb: "Ranks & achievements", keywords: ["ranks", "achievements", "xp", "capabilities"] },
+  { title: "Continuing", path: "continuing", crumb: "After week 24", keywords: ["sources", "specialization", "releases", "log"] },
+  { title: "Progress file", path: "data", crumb: "Save, sync, restore", keywords: ["export", "import", "sync", "gist", "backup", "snapshot", "restore", "data", "privacy"] },
+];
+
 /** Command-palette style search across chapters, weeks, concepts, resources, missions, trials and journal notes. */
 export function Search({ onClose }: { onClose: () => void }) {
   const { state } = useStore();
@@ -19,6 +30,12 @@ export function Search({ onClose }: { onClose: () => void }) {
     if (t.length < 2) return [];
     const has = (...s: (string | undefined)[]) => s.some(x => x?.toLowerCase().includes(t));
     const out: Hit[] = [];
+    for (const p of PAGES) {
+      if (has(p.title, ...p.keywords)) out.push({ group: "Pages", crumb: p.crumb, title: p.title, kind: "Page", to: href(p.path) });
+    }
+    for (const ch of CHAPTERS) {
+      if (has(`chapter ${ch.number}`, `chapter ${pad2(ch.number)}`, `ch${ch.number}`)) out.push({ group: "Pages", crumb: `Chapter ${pad2(ch.number)}`, title: ch.title, kind: "Page", to: chapterHref(ch.id) });
+    }
     for (const ch of CHAPTERS) {
       const cn = `Chapter ${pad2(ch.number)} · ${ch.title}`;
       if (has(ch.title, ch.tagline, ch.description)) out.push({ group: "Chapters", crumb: `Weeks ${ch.weeks[0].number}–${ch.weeks[ch.weeks.length - 1].number}`, title: ch.title, kind: "Chapter", to: chapterHref(ch.id) });
@@ -68,7 +85,7 @@ export function Search({ onClose }: { onClose: () => void }) {
         />
         <div className="results">
           {q.trim().length >= 2 && <div className="sr-group">{hits.length} result{hits.length === 1 ? "" : "s"}{hits.length === 60 ? "+" : ""}</div>}
-          {q.trim().length < 2 && <div className="sr-group">Try “embeddings”, “MCP”, “week 11”, “evals”, “streaming”</div>}
+          {q.trim().length < 2 && <div className="sr-group">Try “embeddings”, “MCP”, “week 11”, “evals”, “export”, “record”</div>}
           {groups.map(g => (
             <div key={g}>
               <div className="sr-group">{g}</div>

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import type React from "react";
 import { CHAPTERS, TOTAL_WEEKS } from "../content";
 import { chapterPct, chapterStatus } from "../engine/progress";
 import { useStore } from "../store";
@@ -17,6 +18,7 @@ const I = {
   cont: <path d="M4 12a8 8 0 0 1 14-5.3M20 12a8 8 0 0 1-14 5.3M18 3v4h-4M6 21v-4h4" />,
   data: <path d="M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3zm0 0v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3" />,
   search: <path d="M11 4a7 7 0 1 1 0 14 7 7 0 0 1 0-14zm9 16-4.3-4.3" />,
+  more: <path d="M5 12h.01M12 12h.01M19 12h.01" strokeWidth="3" />,
 };
 export const Icon = ({ name, className = "ico" }: { name: keyof typeof I; className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{I[name]}</svg>
@@ -33,7 +35,7 @@ export function Mark({ size = 30 }: { size?: number }) {
 }
 
 export function Shell({ route, children }: { route: Route; children: ReactNode }) {
-  const { state, pulse } = useStore();
+  const { state, pulse, gist } = useStore();
   const d = useDerived();
   const [searching, setSearching] = useState(false);
   const top = route.path[0] ?? "";
@@ -51,7 +53,13 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
   }, []);
 
   const mainRef = useRef<HTMLElement>(null);
-  useEffect(() => { window.scrollTo({ top: 0 }); }, [route.path.join("/")]);
+  const [moreOpen, setMoreOpen] = useState(false);
+  // Deep links to an item or section scroll themselves into view; don't fight them with scroll-to-top.
+  const deepTarget = route.query.get("focus") ?? route.query.get("s");
+  const pathKey = route.path.join("/");
+  useEffect(() => { if (!deepTarget) window.scrollTo({ top: 0 }); setMoreOpen(false); }, [pathKey, deepTarget]);
+  const navRef = useRef<HTMLElement>(null);
+  const lift = useOverlayClearance(navRef);
 
   const weekLabel = d.pace.kind === "tracked" ? `Week ${pad2(d.pace.plan)} / ${TOTAL_WEEKS}` : d.pace.kind === "upcoming" ? "Starts soon" : "Not started";
 
@@ -106,16 +114,35 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
             <Nox stage={d.stage.index} mood={d.mood} pulse={pulse} size={38} />
           </a>
         </header>
+        {gist.status === "conflict" && (
+          <div className="conflict-banner" role="alert">
+            <span>{gist.conflict?.reason === "first-sync" ? "Your gist and this browser hold different progress." : "Your gist and this browser both changed since the last sync."} Nothing has been overwritten.</span>
+            <a className="btn small primary" href={href("data")}>Choose a version</a>
+          </div>
+        )}
         <div className="page-inner">{children}</div>
       </main>
 
-      <nav className="bottom-nav" aria-label="Mobile navigation">
+      <nav className="bottom-nav" aria-label="Mobile navigation" ref={navRef} style={lift ? { bottom: lift } : undefined}>
         <a href={href("")} aria-current={top === "" ? "page" : undefined}><Icon name="hq" />Home</a>
         <a href={href("roadmap")} aria-current={cur("roadmap") ?? (top === "chapter" ? "page" : undefined)}><Icon name="map" />Roadmap</a>
-        <button onClick={() => setSearching(true)}><Icon name="search" />Search</button>
+        <button type="button" onClick={() => setSearching(true)}><Icon name="search" />Search</button>
         <a href={href("journal")} aria-current={cur("journal")}><Icon name="journal" />Journal</a>
-        <a href={href("companion")} aria-current={cur("companion") ?? cur("record")}><Icon name="nox" />Nox</a>
+        <button type="button" aria-haspopup="menu" aria-expanded={moreOpen} aria-controls="more-menu"
+          aria-current={["companion", "record", "continuing", "data"].includes(top) ? "page" : undefined}
+          onClick={() => setMoreOpen(o => !o)}><Icon name="more" />More</button>
       </nav>
+      {moreOpen && (
+        <div className="more-scrim" onClick={() => setMoreOpen(false)}>
+          <div id="more-menu" className="more-menu panel" role="menu" aria-label="More pages" style={lift ? { bottom: lift + 72 } : undefined}
+            onClick={e => e.stopPropagation()} onKeyDown={e => { if (e.key === "Escape") setMoreOpen(false); }}>
+            <a role="menuitem" href={href("companion")} autoFocus><Icon name="nox" />Nox<span className="faint">{d.stage.name}</span></a>
+            <a role="menuitem" href={href("record")}><Icon name="record" />Record<span className="faint">{d.achievements.length} achievement{d.achievements.length === 1 ? "" : "s"}</span></a>
+            <a role="menuitem" href={href("continuing")}><Icon name="cont" />Continuing<span className="faint">{d.endState ? "Unlocked" : "Sources open"}</span></a>
+            <a role="menuitem" href={href("data")}><Icon name="data" />Progress file<span className="faint">Save, sync, restore</span></a>
+          </div>
+        </div>
+      )}
 
       {searching && <Search onClose={() => setSearching(false)} />}
     </div>
@@ -134,10 +161,48 @@ function SyncBadge() {
       {time && <span className="faint mono" style={{ fontSize: 11 }}>Last saved {time}</span>}
       {gist.enabled && (
         <span className="st">
-          <span className={`dot ${gist.status === "error" ? "paused" : gist.gistId ? "file" : ""}`} />
-          {!gist.gistId ? "Gist: not set up" : gist.status === "syncing" ? "Gist: syncing…" : gist.status === "error" ? "Gist: sync failed" : "Gist: synced"}
+          <span className={`dot ${gist.paused ? "" : gist.status === "error" || gist.status === "conflict" ? "paused" : gist.gistId ? "file" : ""}`} />
+          {gist.paused ? "Gist: sync off in this browser" : !gist.gistId ? "Gist: not set up" : gist.status === "syncing" ? "Gist: syncing…" : gist.status === "error" ? "Gist: sync failed" : gist.status === "conflict" ? "Gist: choose a version" : "Gist: synced"}
         </span>
       )}
     </a>
   );
+}
+
+/**
+ * Keeps the mobile nav usable when something outside the app (e.g. a hosting or browser widget) is fixed over
+ * the bottom of the viewport: if an element that isn't part of this app covers the nav's slot, lift the nav above it.
+ * Platform-agnostic; it only looks at what's actually on screen.
+ */
+function useOverlayClearance(navRef: React.RefObject<HTMLElement | null>): number {
+  const [lift, setLift] = useState(0);
+  useEffect(() => {
+    const root = document.getElementById("root");
+    let raf = 0;
+    const measure = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const nav = navRef.current;
+        if (!nav || !root || getComputedStyle(nav).display === "none") { setLift(0); return; }
+        const h = nav.offsetHeight;
+        const y = window.innerHeight - h / 2;
+        let coverTop = Infinity;
+        for (const item of Array.from(nav.children) as HTMLElement[]) {
+          const r = item.getBoundingClientRect();
+          const hits = document.elementsFromPoint(r.left + r.width / 2, y);
+          const foreign = hits.find(el => el !== document.body && el !== document.documentElement && !root.contains(el));
+          if (foreign) coverTop = Math.min(coverTop, foreign.getBoundingClientRect().top);
+        }
+        const next = Number.isFinite(coverTop) ? Math.min(160, Math.max(0, Math.ceil(window.innerHeight - coverTop) + 4)) : 0;
+        setLift(prev => (prev === next ? prev : next));
+      });
+    };
+    measure();
+    const mo = new MutationObserver(measure);
+    mo.observe(document.body, { childList: true, subtree: false, attributes: true, attributeFilter: ["style", "class"] });
+    window.addEventListener("resize", measure);
+    const t = window.setInterval(measure, 3000); // late-injected widgets that don't touch <body> directly
+    return () => { cancelAnimationFrame(raf); mo.disconnect(); window.removeEventListener("resize", measure); window.clearInterval(t); };
+  }, [navRef]);
+  return lift;
 }

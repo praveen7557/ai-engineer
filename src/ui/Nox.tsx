@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import type { Mood } from "../engine/progress";
 
 /**
@@ -28,7 +28,8 @@ export function Nox({ stage, mood, pulse = 0, size = 120, className = "", title 
   const face: Mood | "joy" = react ? "joy" : mood;
   const eyeGlow = mood === "tired" ? 0.55 : 1;
   const bodyTop = mood === "tired" ? "#2A2D33" : "#33373E";
-  const uid = `nx${size}${stage}`;
+  // Unique per instance: several Nox SVGs can be on screen at once, and gradient/filter ids must not collide.
+  const uid = `nx${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
 
   return (
     <svg

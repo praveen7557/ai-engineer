@@ -1,9 +1,12 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { ITEMS } from "../content";
 import { itemXp } from "../engine/progress";
 import { useStore } from "../store";
 
 export const pad2 = (n: number) => String(n).padStart(2, "0");
+/** Smooth scrolling unless the user prefers reduced motion (or the tab is hidden, where smooth scrolls don't run). */
+export const scrollBehavior = (): ScrollBehavior =>
+  typeof window !== "undefined" && !window.matchMedia?.("(prefers-reduced-motion: reduce)").matches && document.visibilityState === "visible" ? "smooth" : "auto";
 export const fmtXp = (n: number) => n.toLocaleString("en-US");
 export const fmtMinutes = (m: number) => {
   if (m < 60) return `${m} min`;
@@ -34,42 +37,70 @@ export function Ring({ value, size = 64 }: { value: number; size?: number }) {
   );
 }
 
-/** A checklist row for any tracked item. Flashes when completed; highlights when it's the navigation target. */
-export function CheckRow({ id, title, sub, side, className = "", target, hint }: {
+/**
+ * A checklist row for any tracked item. The same item can render in several places (e.g. a milestone in the
+ * weekly build card and in its mission); each instance gets its own DOM ids while sharing one progress state.
+ * Flashes when completed; highlights when it's the navigation target. Conditional milestones can also be
+ * resolved as "Not applicable" with a written reason.
+ */
+export function CheckRow({ id, title, sub, side, className = "", target, hint, label }: {
   id: string; title: ReactNode; sub?: ReactNode; side?: ReactNode; className?: string; target?: boolean;
   /** What ticking means, e.g. { off: "I can explain this", on: "Understood" }. */
   hint?: { off: string; on: string };
+  /** Plain-text accessible name when `title` contains links or markup. */
+  label?: string;
 }) {
-  const { state, toggle } = useStore();
+  const { state, toggle, setNotApplicable } = useStore();
+  const uid = useId();
   const done = !!state.done[id];
-  const [flash, setFlash] = useState(false);
-  const ref = useRef<HTMLLabelElement>(null);
   const meta = ITEMS.get(id);
+  const na = meta?.conditional ? state.na[id] : undefined;
+  const [flash, setFlash] = useState(false);
+  const [naOpen, setNaOpen] = useState(false);
+  const [reason, setReason] = useState("");
+  const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (target && ref.current) ref.current.scrollIntoView({ block: "center", behavior: "smooth" });
+    if (target && ref.current) ref.current.scrollIntoView({ block: "center", behavior: scrollBehavior() });
   }, [target]);
+  const cbId = `cb-${uid}`, titleId = `t-${uid}`, subId = `s-${uid}`, hintId = `h-${uid}`, condId = `c-${uid}`;
+  const describedBy = [sub ? subId : "", hint ? hintId : "", meta?.conditional ? condId : ""].filter(Boolean).join(" ") || undefined;
   return (
     <li>
-      <label ref={ref} className={`row ${done ? "done" : ""} ${flash ? "flash" : ""} ${target && !done ? "target" : ""} ${className}`} htmlFor={`cb-${id}`}>
+      <div ref={ref} className={`row ${done || na ? "done" : ""} ${na ? "na" : ""} ${flash ? "flash" : ""} ${target && !done && !na ? "target" : ""} ${className}`} data-item={id}>
         <input
-          id={`cb-${id}`} type="checkbox" className="cb" checked={done}
+          id={cbId} type="checkbox" className="cb" checked={done}
+          aria-labelledby={label ? undefined : titleId} aria-label={label}
+          aria-describedby={describedBy}
           title={hint ? hint.off : undefined}
-          aria-describedby={hint ? `hint-${id}` : undefined}
           onChange={e => {
             toggle(id, e.target.checked, e.target);
             if (e.target.checked) { setFlash(true); window.setTimeout(() => setFlash(false), 1400); }
           }}
         />
         <span>
-          <span className="title">{title}</span>
-          {sub && <span className="sub">{sub}</span>}
+          <label htmlFor={cbId} className="title" id={titleId}>{title}</label>
+          {sub && <span className="sub" id={subId}>{sub}</span>}
+          {meta?.conditional && (
+            <span className="cond" id={condId}>
+              <span className="cond-k">Conditional</span> {meta.conditional}
+              {na && <span className="na-reason"> · Not applicable: “{na.reason}” <button type="button" className="linkish" onClick={() => setNotApplicable(id, null)}>Undo</button></span>}
+              {!na && !done && !naOpen && <> · <button type="button" className="linkish" onClick={() => setNaOpen(true)}>Not applicable…</button></>}
+            </span>
+          )}
+          {naOpen && !na && !done && (
+            <form className="na-form" onSubmit={e => { e.preventDefault(); if (reason.trim()) { setNotApplicable(id, reason); setNaOpen(false); setReason(""); } }}>
+              <input className="input" autoFocus value={reason} onChange={e => setReason(e.target.value)} aria-label={`Why this doesn't apply: ${meta?.title ?? id}`} placeholder="Why it doesn't apply (e.g. single call met the quality bar: 94% field accuracy)" />
+              <button className="btn small" type="submit" disabled={!reason.trim()}>Save</button>
+              <button className="btn small ghost" type="button" onClick={() => { setNaOpen(false); setReason(""); }}>Cancel</button>
+            </form>
+          )}
         </span>
         <span className="side">
-          {hint && <span id={`hint-${id}`} className={`hint ${done ? "on" : ""}`}>{done ? hint.on : hint.off}</span>}
+          {hint && <span id={hintId} className={`hint ${done ? "on" : ""}`}>{done ? hint.on : hint.off}</span>}
           {side}
-          {meta && <span className="xp">{done ? "✓ " : "+"}{itemXp(meta)} XP</span>}
+          {meta && <span className="xp">{done || na ? "✓ " : "+"}{itemXp(meta)} XP</span>}
         </span>
-      </label>
+      </div>
     </li>
   );
 }
