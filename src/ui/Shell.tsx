@@ -12,6 +12,7 @@ import { Search } from "./Search";
 const I = {
   hq: <path d="M3 10.5 12 4l9 6.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" />,
   map: <path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2zM9 4v14M15 6v14" />,
+  courses: <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5zM4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5M8 7h8M8 11h5" />,
   journal: <path d="M6 3h11a2 2 0 0 1 2 2v16l-3-2-3 2-3-2-3 2V5a2 2 0 0 1 2-2zM9 8h6M9 12h6" />,
   record: <path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.9z" />,
   nox: <path d="M7 10C5 6 5 4 6 3c2 2 3 4 4 5M17 10c2-4 2-6 1-7-2 2-3 4-4 5M5 14a7 7 0 0 0 14 0c0-3.5-3-6-7-6s-7 2.5-7 6zM9.5 13h.01M14.5 13h.01" />,
@@ -76,6 +77,7 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
         <nav className="nav">
           <a href={href("")} aria-current={top === "" ? "page" : undefined}><Icon name="hq" /><span>Headquarters</span><span /></a>
           <a href={href("roadmap")} aria-current={cur("roadmap")}><Icon name="map" /><span>Roadmap</span><span /></a>
+          <a href={href("courses")} aria-current={cur("courses")}><Icon name="courses" /><span>Course Path</span><span /></a>
           <div className="nav-label">Chapters</div>
           {CHAPTERS.map(ch => {
             const st = chapterStatus(state, ch);
@@ -129,14 +131,15 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
         <button type="button" onClick={() => setSearching(true)}><Icon name="search" />Search</button>
         <a href={href("journal")} aria-current={cur("journal")}><Icon name="journal" />Journal</a>
         <button type="button" aria-haspopup="menu" aria-expanded={moreOpen} aria-controls="more-menu"
-          aria-current={["companion", "record", "continuing", "data"].includes(top) ? "page" : undefined}
+          aria-current={["courses", "companion", "record", "continuing", "data"].includes(top) ? "page" : undefined}
           onClick={() => setMoreOpen(o => !o)}><Icon name="more" />More</button>
       </nav>
       {moreOpen && (
         <div className="more-scrim" onClick={() => setMoreOpen(false)}>
           <div id="more-menu" className="more-menu panel" role="menu" aria-label="More pages" style={lift ? { bottom: lift + 72 } : undefined}
             onClick={e => e.stopPropagation()} onKeyDown={e => { if (e.key === "Escape") setMoreOpen(false); }}>
-            <a role="menuitem" href={href("companion")} autoFocus><Icon name="nox" />Nox<span className="faint">{d.stage.name}</span></a>
+            <a role="menuitem" href={href("courses")} autoFocus><Icon name="courses" />Course Path<span className="faint">Courses &amp; budget</span></a>
+            <a role="menuitem" href={href("companion")}><Icon name="nox" />Nox<span className="faint">{d.stage.name}</span></a>
             <a role="menuitem" href={href("record")}><Icon name="record" />Record<span className="faint">{d.achievements.length} achievement{d.achievements.length === 1 ? "" : "s"}</span></a>
             <a role="menuitem" href={href("continuing")}><Icon name="cont" />Continuing<span className="faint">{d.endState ? "Unlocked" : "Sources open"}</span></a>
             <a role="menuitem" href={href("data")}><Icon name="data" />Progress file<span className="faint">Save, sync, restore</span></a>

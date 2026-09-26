@@ -12,7 +12,7 @@ import { Sigil } from "../ui/Feed";
 import { Nox } from "../ui/Nox";
 import { chapterHref } from "../ui/router";
 
-const PageHead = ({ eyebrow, title, lede }: { eyebrow: string; title: string; lede?: string }) => (
+export const PageHead = ({ eyebrow, title, lede }: { eyebrow: string; title: string; lede?: string }) => (
   <section style={{ paddingTop: 56 }}>
     <div className="eyebrow accent">{eyebrow}</div>
     <h1 className="display h-lg" style={{ marginTop: 12 }}>{title}</h1>

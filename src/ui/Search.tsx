@@ -10,6 +10,7 @@ interface Hit { group: string; crumb: string; title: string; kind: string; to: s
 const PAGES: { title: string; path: string; crumb: string; keywords: string[] }[] = [
   { title: "Headquarters", path: "", crumb: "Home", keywords: ["home", "dashboard", "next step", "overview"] },
   { title: "Roadmap", path: "roadmap", crumb: "All chapters", keywords: ["chapters", "plan", "workload", "prerequisites", "getting started", "budget"] },
+  { title: "Course Path", path: "courses", crumb: "Courses & budget", keywords: ["courses", "course", "budget", "cost", "udemy", "stanford", "karpathy", "evals", "python", "learning path"] },
   { title: "Engineer's Journal", path: "journal", crumb: "Weekly notes", keywords: ["journal", "notes", "reflection", "decision"] },
   { title: "Nox", path: "companion", crumb: "Companion", keywords: ["companion", "bond", "mood", "stage"] },
   { title: "Record", path: "record", crumb: "Ranks & achievements", keywords: ["ranks", "achievements", "xp", "capabilities"] },

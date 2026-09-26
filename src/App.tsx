@@ -1,4 +1,5 @@
 import { ChapterPage } from "./pages/ChapterPage";
+import { CoursePath } from "./pages/CoursePath";
 import { HQ } from "./pages/HQ";
 import { JournalPage } from "./pages/Journal";
 import { Companion, Continuing, DataPage, Record, Roadmap } from "./pages/Other";
@@ -16,6 +17,7 @@ function Routed() {
   let page;
   switch (top) {
     case "roadmap": page = <Roadmap />; break;
+    case "courses": page = <CoursePath />; break;
     case "chapter": page = <ChapterPage route={route} />; break;
     case "journal": page = <JournalPage route={route} />; break;
     case "companion": page = <Companion />; break;

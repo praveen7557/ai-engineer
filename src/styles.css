@@ -655,3 +655,24 @@ code { font-family: var(--mono); font-size: .88em; padding: 1px 5px; border-radi
   #training h2.section-title { font-size: 24px; }
   .subnav { margin-top: 16px; }
 }
+
+/* ---------------- course path ---------------- */
+.cp-stat { display: flex; flex-direction: column; gap: 6px; }
+.cp-stat > b { font-family: var(--display); font-weight: 500; font-size: 38px; line-height: 1; color: var(--text); }
+.cp-phase { display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: 24px; }
+.cp-phase .big-n { font-family: var(--display); font-size: 58px; line-height: 1; color: var(--accent); }
+.cp-body { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.cp-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.cp-top h3 { font-family: var(--display); font-weight: 500; font-size: 28px; }
+.cp-meta { display: inline-flex; align-items: center; gap: 10px; font-size: 12px; }
+.cp-res { border: 1px solid var(--line); border-radius: var(--r); padding: 0 10px; }
+.cp-build { margin: 0; display: grid; gap: 4px; }
+.cp-split { display: grid; grid-template-columns: 260px minmax(0, 1fr) 44px; gap: 14px; align-items: center; font-size: 14.5px; }
+.cp-split .mono { text-align: right; font-size: 12.5px; }
+@media (max-width: 860px) {
+  .grid.three:has(.cp-stat) { grid-template-columns: 1fr; }
+  .cp-phase { grid-template-columns: 1fr; gap: 8px; }
+  .cp-phase .big-n { font-size: 40px; }
+  .cp-split { grid-template-columns: minmax(0, 1fr) 44px; gap: 4px 12px; }
+  .cp-split .meter { grid-column: 1 / -1; grid-row: 2; }
+}

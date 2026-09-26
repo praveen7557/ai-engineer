@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-/** Hash routes: #/, #/roadmap, #/chapter/ch4?week=11&focus=<itemId>, #/journal, #/companion, #/record, #/continuing, #/data */
+/** Hash routes: #/, #/roadmap, #/courses, #/chapter/ch4?week=11&focus=<itemId>, #/journal, #/companion, #/record, #/continuing, #/data */
 export interface Route {
   path: string[];
   query: URLSearchParams;
