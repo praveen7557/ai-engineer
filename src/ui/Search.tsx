@@ -31,7 +31,7 @@ export function Search({ onClose }: { onClose: () => void }) {
         if (j && has(j.text)) out.push({ group: "Your notes", crumb: `${ch.title} · Week ${pad2(w.number)} journal`, title: snippet(j.text, t), kind: "Journal", to: href("journal", { week: w.number }) });
       }
       for (const r of ch.resources) {
-        if (has(r.title, r.note, r.kind)) out.push({ group: "Resources", crumb: `${ch.title} · Week ${pad2(r.week)} · ${r.required ? "Must read" : "Bonus"}`, title: r.title, kind: r.kind, to: chapterHref(ch.id, { week: r.week, focus: r.id, section: "intel" }) });
+        if (has(r.title, r.note, r.kind)) out.push({ group: "Resources", crumb: `${ch.title} · Week ${pad2(r.week)} · ${r.use === "must" ? "Must read" : r.use === "reference" ? "Reference" : "Bonus"}`, title: r.title, kind: r.kind, to: chapterHref(ch.id, { week: r.week, focus: r.id, section: "intel" }) });
       }
       for (const m of ch.missions) {
         const hitM = has(m.title, m.objective, m.deliverable, ...m.requirements);

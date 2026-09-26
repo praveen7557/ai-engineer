@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useRef, useState } from "react";
-import { CHAPTERS, continuingPrompts, continuingSources, setupItems } from "../content";
+import { CHAPTERS, continuingPrompts, continuingSources, guide, setupItems } from "../content";
 import {
   ACHIEVEMENTS, chapterPct, chapterStatus, chapterXpAvailable, isEndState, RANKS, SKILLS, skillLevels, STAGES, XP,
 } from "../engine/progress";
@@ -25,7 +25,8 @@ export function Roadmap() {
   const { state } = useStore();
   return (
     <>
-      <PageHead eyebrow="24 weeks · 8 chapters" title="The Roadmap" lede="Each chapter is three weeks: training, intel, hands-on missions, and a trial that proves you understood it. Everything is readable at any time; later chapters simply open fully as you reach them." />
+      <PageHead eyebrow="24 weeks · 8 chapters" title="The Roadmap" lede={guide.intro} />
+      <p className="muted" style={{ maxWidth: "70ch", marginTop: 12 }}>{guide.audience}</p>
       <section className="section" style={{ gap: 14 }}>
         {CHAPTERS.map((ch, i) => {
           const st = chapterStatus(state, ch);
@@ -44,11 +45,33 @@ export function Roadmap() {
                 <span className={`status-pill ${st}`}>{st === "complete" ? "Complete" : st === "active" ? "In progress" : st === "sealed" ? "Ahead" : "Open"}</span>
                 <Meter value={pc} tone={pc === 100 ? "good" : undefined} label={`${ch.title} completion`} />
                 <span>{pc}% · {fmtXp(chapterXpAvailable(ch))} XP available</span>
-                <span>{ch.missions.length} missions · {ch.trial.length} trial criteria</span>
+                <span>{ch.weeks.length} weeks · {ch.missions.length} mission{ch.missions.length === 1 ? "" : "s"} · {ch.trial.length} trial criteria</span>
               </div>
             </motion.a>
           );
         })}
+      </section>
+      <section className="section">
+        <div className="section-head"><h2 className="section-title">How to use this roadmap</h2></div>
+        <div className="panel pad" style={{ display: "grid", gap: 18 }}>
+          <ul className="guide-list">
+            {guide.howToUse.map(h => <li key={h.label}><b>{h.label}</b><span>{h.text}</span></li>)}
+            <li><b>Resource allowance</b><span>{guide.resourceAllowance}</span></li>
+            <li><b>Prerequisites</b><span>{guide.prerequisites}</span></li>
+            <li><b>Deployment</b><span>{guide.deployment}</span></li>
+          </ul>
+        </div>
+      </section>
+      <section className="section">
+        <div className="section-head"><h2 className="section-title">Shared reference shelf</h2><span className="aside">consult when a build raises a question</span></div>
+        <div className="panel" style={{ padding: "2px 12px" }}>
+          {guide.shelf.map(s => (
+            <div key={s.url} className="row res-row" style={{ cursor: "default", gridTemplateColumns: "minmax(0,1fr) auto" }}>
+              <span><span className="title"><a href={s.url} target="_blank" rel="noopener noreferrer">{s.title}</a></span><span className="sub">{s.note}</span></span>
+              <span className="side"><span className="tag">{s.kind}</span></span>
+            </div>
+          ))}
+        </div>
       </section>
       <section className="section">
         <div className="section-head"><h2 className="section-title">Before you start</h2></div>
@@ -159,6 +182,7 @@ export function Record() {
         <div className="panel pad trial-dims" style={{ gridTemplateColumns: "1fr auto", maxWidth: 520 }}>
           <span>Concept</span><span className="xp">+{XP.concept}</span>
           <span>Must-read resource</span><span className="xp">+{XP.mustRead}</span>
+          <span>Reference resource</span><span className="xp">+{XP.reference}</span>
           <span>Bonus resource</span><span className="xp">+{XP.bonusRead}</span>
           <span>Mission milestone</span><span className="xp">+{XP.milestone}</span>
           <span>Stretch goal</span><span className="xp">+{XP.stretch}</span>
@@ -187,7 +211,7 @@ export function Continuing() {
   return (
     <>
       <PageHead eyebrow={unlocked ? "Unlocked" : "Sealed until the final build"} title="Continuing"
-        lede="The 24-week roadmap builds the foundation. This section keeps you current: new releases, models, frameworks, papers, techniques, projects and experiments." />
+        lede={`The 24-week roadmap builds the foundation. This section keeps you current. ${guide.continuingIntro}`} />
       {!unlocked && (
         <div className="sealed-note" style={{ marginTop: 24 }}>
           <Nox stage={d.stage.index} mood="calm" size={44} />

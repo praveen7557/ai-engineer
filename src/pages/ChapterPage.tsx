@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
-import { CHAPTER_BY_ID, CHAPTERS, ITEMS, type Chapter, type Mission } from "../content";
+import { CHAPTER_BY_ID, CHAPTERS, ITEMS, RESOURCE_BY_ID, type Chapter, type Mission, type Resource } from "../content";
 import {
   chapterPct, chapterStatus, chapterXpAvailable, isMissionComplete, isTrialPassed, isWeekComplete, itemXp, missionMilestoneIds, pct, weekConceptIds, XP,
 } from "../engine/progress";
@@ -55,7 +55,7 @@ export function ChapterPage({ route }: { route: Route }) {
       <section className="section" id="training" style={{ scrollMarginTop: 120 }}>
         <div className="section-head">
           <h2 className="section-title">Training</h2>
-          <span className="aside">concepts to understand, week by week</span>
+          <span className="aside">build first, then the concepts that build needs</span>
         </div>
         <div className="weeks-tabs" role="tablist">
           {ch.weeks.map(w => {
@@ -70,9 +70,15 @@ export function ChapterPage({ route }: { route: Route }) {
           })}
         </div>
         <WeekTraining ch={ch} week={week} focus={focus} />
+        {ch.notes && ch.notes.length > 0 && (
+          <div className="notes">
+            {ch.notes.map(n => <div key={n.label} className="note"><span>{n.label.toUpperCase()}</span>{n.text}</div>)}
+          </div>
+        )}
       </section>
 
       <Intel ch={ch} focus={focus} />
+      {ch.revisit && ch.revisit.length > 0 && <Revisit ids={ch.revisit} />}
 
       <section className="section" id="missions" style={{ scrollMarginTop: 120 }}>
         <div className="section-head">
@@ -89,6 +95,7 @@ export function ChapterPage({ route }: { route: Route }) {
           <h2 className="section-title">Engineer's Journal · Week {pad2(week)}</h2>
           <span className="aside">notes, mistakes, discoveries, questions</span>
         </div>
+        <div className="objective quiet" style={{ marginTop: 0 }}><span>ENGINEERING DECISION</span>{ch.decision}</div>
         <JournalEditor journalKey={`w${week}`} placeholder={`Week ${week}: what did you learn, what broke, what surprised you?`} />
       </section>
 
@@ -112,6 +119,7 @@ function Header({ ch }: { ch: Chapter }) {
         <p className="lede" style={{ marginTop: 16 }}>{ch.description}</p>
         <p className="muted" style={{ marginTop: 10, maxWidth: "64ch" }}>{ch.why}</p>
         <div className="objective"><span>MAJOR OBJECTIVE</span>{ch.majorObjective}</div>
+        <div className="objective quiet"><span>DONE WHEN</span>{ch.doneWhen}</div>
       </div>
       <div className="panel pad" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -143,6 +151,7 @@ function WeekTraining({ ch, week, focus }: { ch: Chapter; week: number; focus?: 
         <div className="display h-md" style={{ marginTop: 4 }}>{w.title}</div>
         <p className="muted" style={{ margin: "6px 0 0" }}>{w.focus}</p>
       </div>
+      <WeekBuildCard ch={ch} week={w.number} focus={focus} />
       {w.groups.map(g => (
         <div key={g.title}>
           <div className="group-title">{g.title}</div>
@@ -154,7 +163,7 @@ function WeekTraining({ ch, week, focus }: { ch: Chapter; week: number; focus?: 
         </div>
       ))}
       <div className="week-foot">
-        <span>~{fmtMinutes(minutes)} of study · completing every concept adds +{XP.weekComplete} XP</span>
+        <span>~{fmtMinutes(minutes)} of concepts · finishing them adds +{XP.weekComplete} XP</span>
         <span className="xp">{isWeekComplete(state, w.number) ? "Week complete" : `+${remaining} XP available`}</span>
       </div>
     </motion.div>
@@ -165,37 +174,33 @@ function Intel({ ch, focus }: { ch: Chapter; focus?: string }) {
   const { state } = useStore();
   const [filter, setFilter] = useState<"all" | "todo">("all");
   const list = ch.resources.filter(r => filter === "all" || !state.done[r.id]);
-  const req = list.filter(r => r.required), bonus = list.filter(r => !r.required);
-  const reqHours = ch.resources.filter(r => r.required).reduce((a, r) => a + r.hours, 0);
+  const reqHours = ch.resources.filter(r => r.use === "must").reduce((a, r) => a + r.hours, 0);
+  const refHours = ch.resources.filter(r => r.use === "reference").reduce((a, r) => a + r.hours, 0);
+  const tiers: [Resource["use"], string, string][] = [["must", "Must read", "needed for the build"], ["reference", "Reference", "consult while implementing"], ["bonus", "Bonus", "optional depth"]];
   return (
     <section className="section" id="intel" style={{ scrollMarginTop: 120 }}>
       <div className="section-head">
         <h2 className="section-title">Intel</h2>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <span className="aside">~{Math.round(reqHours * 10) / 10} h must-read</span>
+          <span className="aside">~{Math.round(reqHours * 10) / 10} h must-read · ~{Math.round(refHours * 10) / 10} h reference</span>
           <button className="chip" aria-pressed={filter === "all"} onClick={() => setFilter("all")}>All</button>
           <button className="chip" aria-pressed={filter === "todo"} onClick={() => setFilter("todo")}>Not done</button>
         </div>
       </div>
       <div className="panel" style={{ padding: "4px 12px 10px" }}>
-        {req.length > 0 && <div className="res-group-title req">Must read · {ch.resources.filter(r => r.required && state.done[r.id]).length}/{ch.resources.filter(r => r.required).length}</div>}
-        <ul className="checks">
-          {req.map(r => (
-            <CheckRow key={r.id} id={r.id} className="res-row" target={focus === r.id}
-              title={<a href={r.url} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>{r.title}</a>}
-              sub={r.note}
-              side={<><span className="tag req">{r.kind}</span><span>{r.hours ? `~${r.hours} h` : "ongoing"} · wk {pad2(r.week)}</span></>} />
-          ))}
-        </ul>
-        {bonus.length > 0 && <div className="res-group-title">Bonus · {ch.resources.filter(r => !r.required && state.done[r.id]).length}/{ch.resources.filter(r => !r.required).length}</div>}
-        <ul className="checks">
-          {bonus.map(r => (
-            <CheckRow key={r.id} id={r.id} className="res-row bonus" target={focus === r.id}
-              title={<a href={r.url} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>{r.title}</a>}
-              sub={r.note}
-              side={<><span className="tag">{r.kind}</span><span>{r.hours ? `~${r.hours} h` : "ongoing"} · wk {pad2(r.week)}</span></>} />
-          ))}
-        </ul>
+        {tiers.map(([use, label, hint]) => {
+          const rows = list.filter(r => r.use === use);
+          if (!rows.length) return null;
+          const all = ch.resources.filter(r => r.use === use);
+          return (
+            <div key={use}>
+              <div className={`res-group-title ${use === "must" ? "req" : ""}`}>{label} · {all.filter(r => state.done[r.id]).length}/{all.length} <span className="faint" style={{ letterSpacing: ".1em", textTransform: "none" }}>· {hint}</span></div>
+              <ul className="checks">
+                {rows.map(r => <ResourceRow key={r.id} r={r} target={focus === r.id} />)}
+              </ul>
+            </div>
+          );
+        })}
         {!list.length && <p className="muted" style={{ padding: "16px 12px", margin: 0 }}>Everything here is done.</p>}
       </div>
     </section>
@@ -236,7 +241,7 @@ function MissionCard({ m, focus }: { m: Mission; focus?: string }) {
           <div>
             <p className="mlabel">Milestones · {ids.filter(id => state.done[id]).length}/{ids.length}</p>
             <ul className="checks">
-              {m.milestones.map(s => <CheckRow key={s.id} id={s.id} title={s.title} side={<span>{fmtMinutes(s.minutes)}</span>} target={focus === s.id} />)}
+              {m.milestones.map(s => <CheckRow key={s.id} id={s.id} title={s.title} side={<span>{fmtMinutes(s.minutes)} · wk {pad2(s.week)}</span>} target={focus === s.id} />)}
             </ul>
             {m.stretch.length > 0 && (
               <>
@@ -297,10 +302,72 @@ function Trial({ ch, focus }: { ch: Chapter; focus?: string }) {
 }
 const FragmentRow = ({ label, ok }: { label: string; ok: boolean }) => (<><span>{label.toUpperCase()}</span><span className={ok ? "ok" : ""}>{ok ? "✓" : "□"}</span></>);
 
+const weekLabel = (r: Resource) => (r.weekEnd && r.weekEnd !== r.week ? `wk ${pad2(r.week)}–${pad2(r.weekEnd)}` : `wk ${pad2(r.week)}`);
+
+function ResourceRow({ r, target }: { r: Resource; target?: boolean }) {
+  return (
+    <CheckRow id={r.id} className={`res-row ${r.use === "bonus" ? "bonus" : ""}`} target={target}
+      title={<><a href={r.url} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>{r.title}</a>{r.suggested && <span className="tag steel" style={{ marginLeft: 8 }}>Suggested</span>}</>}
+      sub={r.note}
+      side={<><span className={`tag ${r.use === "must" ? "req" : r.use === "reference" ? "steel" : ""}`}>{r.kind}</span><span>{r.hours ? `~${r.hours} h` : "ongoing"} · {weekLabel(r)}</span></>} />
+  );
+}
+
+function WeekBuildCard({ ch, week, focus }: { ch: Chapter; week: number; focus?: string }) {
+  const { state } = useStore();
+  const w = ch.weeks.find(x => x.number === week);
+  if (!w) return null;
+  const ms = ch.missions.flatMap(m => m.milestones.filter(s => s.week === week).map(s => ({ s, m })));
+  const done = ms.filter(({ s }) => state.done[s.id]).length;
+  return (
+    <div className="build-card">
+      <div className="build-head">
+        <span className="eyebrow accent">This week's build</span>
+        {ms.length > 0 && <span className="faint mono" style={{ fontSize: 11 }}>{done}/{ms.length} milestones</span>}
+      </div>
+      <p className="build-what">{w.build.deliverable}</p>
+      <p className="build-evidence"><span>EVIDENCE TO KEEP</span>{w.build.evidence}</p>
+      {ms.length > 0 && (
+        <ul className="checks">
+          {ms.map(({ s, m }) => (
+            <CheckRow key={s.id} id={s.id} title={s.title} target={focus === s.id}
+              side={<><span>{fmtMinutes(s.minutes)}</span><a className="faint" href={`#mission-${m.id}`} onClick={e => { e.preventDefault(); e.stopPropagation(); document.getElementById(`mission-${m.id}`)?.scrollIntoView({ behavior: "smooth", block: "start" }); }}>M{pad2(m.number)}</a></>} />
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function Revisit({ ids }: { ids: string[] }) {
+  const items = ids.map(id => RESOURCE_BY_ID.get(id)).filter((r): r is NonNullable<typeof r> => !!r);
+  if (!items.length) return null;
+  return (
+    <section className="section">
+      <div className="section-head">
+        <h2 className="section-title">Revisit</h2>
+        <span className="aside">apply earlier resources; don't restart the reading list</span>
+      </div>
+      <div className="panel" style={{ padding: "4px 14px" }}>
+        {items.map(r => {
+          const c = CHAPTER_BY_ID.get(r.chapterId)!;
+          return (
+            <div key={r.id} className="row res-row" style={{ cursor: "default", gridTemplateColumns: "minmax(0,1fr) auto" }}>
+              <span><span className="title"><a href={r.url} target="_blank" rel="noopener noreferrer">{r.title}</a></span><span className="sub">{r.note}</span></span>
+              <span className="side"><a className="faint" href={chapterHref(c.id, { focus: r.id, section: "intel" })}>Ch {pad2(c.number)}</a></span>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 function FinalBuild() {
   const { state } = useStore();
   const d = useDerived();
-  const capstone = CHAPTERS[CHAPTERS.length - 1].missions[0];
+  const last = CHAPTERS[CHAPTERS.length - 1];
+  const capstone = last.missions[0];
   const pillars: [string, string[]][] = [
     ["LLMs", ["ch1"]], ["Prompting", ["ch2"]], ["Applications", ["ch3"]], ["RAG", ["ch4"]], ["Tool calling", ["ch5"]], ["Agents", ["ch5"]],
     ["MCP", ["ch6"]], ["Evaluation", ["ch7"]], ["Observability", ["ch7"]], ["Production architecture", ["ch7", "ch8"]],
@@ -310,9 +377,9 @@ function FinalBuild() {
       <div className="panel final">
         <div style={{ position: "relative" }}>
           <Nox stage={d.stage.index} mood="focused" size={84} />
-          <div className="eyebrow accent" style={{ marginTop: 8 }}>Weeks 22–24 · Mission {capstone ? pad2(capstone.number) : ""}</div>
+          <div className="eyebrow accent" style={{ marginTop: 8 }}>Weeks {last.weeks[0].number}–{last.weeks[last.weeks.length - 1].number} · Mission {capstone ? pad2(capstone.number) : ""}</div>
           <h2 className="display" style={{ marginTop: 10 }}>The Final Build</h2>
-          <p className="lede">Everything before this was preparation. Combine every capability you've built into one system you'd put your name on.</p>
+          <p className="lede">Everything before this was preparation. Ship one useful product to a real audience, using only the techniques that earn their complexity.</p>
           <div className="pillars">
             {pillars.map(([name, chs]) => {
               const on = chs.every(id => { const c = CHAPTER_BY_ID.get(id); return !!c && chapterPct(state, c) >= 80; });
