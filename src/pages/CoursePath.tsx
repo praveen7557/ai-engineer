@@ -1,11 +1,24 @@
-import { coursePath, coursePathBudget, coursePathHours } from "../content";
-import { Meter, pad2 } from "../ui/bits";
+import { COURSE_LINKS, coursePath, coursePathBudget, coursePathHours } from "../content";
+import type { CourseLink } from "../content/coursePath";
+import { useStore } from "../store";
+import { CheckRow, Meter, pad2 } from "../ui/bits";
 import { PageHead } from "./Other";
 
 const usd = ([lo, hi]: readonly [number, number]) => (lo === hi ? `$${lo}` : `$${lo}–${hi}`);
 
+function CourseRow({ link, sub }: { link: Pick<CourseLink, "id" | "title" | "url">; sub: string }) {
+  return (
+    <CheckRow id={link.id} className="res-row" label={link.title} sub={sub}
+      title={<a href={link.url} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>{link.title}</a>} />
+  );
+}
+
 export function CoursePath() {
+  const { state } = useStore();
   const [lo, hi] = coursePathBudget;
+  const done = (ids: string[]) => ids.filter(id => state.done[id]).length;
+  const finished = done(COURSE_LINKS.map(c => c.id));
+  const pct = Math.round((finished / COURSE_LINKS.length) * 100);
   return (
     <>
       <PageHead eyebrow={`${coursePath.phases.length} phases · ~${coursePathHours} hours · researched ${coursePath.researched}`} title="The Course Path" lede={coursePath.intro} />
@@ -13,6 +26,12 @@ export function CoursePath() {
 
       <section className="section" aria-labelledby="cp-glance">
         <div className="section-head"><h2 className="section-title" id="cp-glance">At a glance</h2></div>
+        <div className="panel pad cp-stat">
+          <span className="eyebrow accent">Courses and resources</span>
+          <b>{finished} / {COURSE_LINKS.length}</b>
+          <Meter value={pct} tone={pct === 100 ? "good" : undefined} label="Courses finished" />
+          <span className="muted">Tick one when you've finished it. Courses earn XP; they don't change chapter completion or pace.</span>
+        </div>
         <div className="grid three">
           <div className="panel pad cp-stat"><span className="eyebrow accent">Total</span><b>~{coursePathHours} h</b><span className="muted">including the builds</span></div>
           <div className="panel pad cp-stat"><span className="eyebrow accent">Spend</span><b>{usd([lo, hi])}</b><span className="muted">of a ${coursePath.budgetCap} yearly budget</span></div>
@@ -33,18 +52,17 @@ export function CoursePath() {
             <div className="cp-body">
               <div className="cp-top">
                 <h3 id={`cp-phase-${p.number}`}>{p.title}</h3>
-                <span className="cp-meta"><span className={`tag ${p.tier === "must" ? "req" : ""}`}>{p.tier === "must" ? "Must learn" : "Nice to know"}</span><span className="faint mono">~{p.hours} h</span></span>
+                <span className="cp-meta">
+                  <span className={`tag ${p.tier === "must" ? "req" : ""}`}>{p.tier === "must" ? "Must learn" : "Nice to know"}</span>
+                  <span className="faint mono">~{p.hours} h</span>
+                  {p.resources.length > 0 && <span className="faint mono">{done(p.resources.map(r => r.id))}/{p.resources.length} done</span>}
+                </span>
               </div>
               <p className="muted" style={{ margin: 0 }}>{p.why}</p>
               {p.resources.length > 0 && (
-                <div className="cp-res">
-                  {p.resources.map(r => (
-                    <div key={r.url} className="row res-row" style={{ cursor: "default", gridTemplateColumns: "minmax(0,1fr) auto" }}>
-                      <span><span className="title"><a href={r.url} target="_blank" rel="noopener noreferrer">{r.title}</a></span><span className="sub">{r.provider}</span></span>
-                      <span className="side"><span className={`tag ${r.cost === "Free" ? "good" : ""}`}>{r.cost}</span></span>
-                    </div>
-                  ))}
-                </div>
+                <ul className="checks cp-res" aria-label={`${p.title} courses`}>
+                  {p.resources.map(r => <CourseRow key={r.id} link={r} sub={`${r.provider} · ${r.cost}`} />)}
+                </ul>
               )}
               <p className="cp-build"><span className="eyebrow accent">Build</span>{p.build}</p>
               {p.note && <p className="faint" style={{ margin: 0, fontSize: 13.5 }}>{p.note}</p>}
@@ -91,13 +109,9 @@ export function CoursePath() {
 
       <section className="section" aria-labelledby="cp-after">
         <div className="section-head"><h2 className="section-title" id="cp-after">After the path</h2><span className="aside">nice to know</span></div>
-        <div className="panel" style={{ padding: "2px 12px" }}>
-          {coursePath.afterwards.map(a => (
-            <div key={a.url} className="row res-row" style={{ cursor: "default", gridTemplateColumns: "minmax(0,1fr)" }}>
-              <span><span className="title"><a href={a.url} target="_blank" rel="noopener noreferrer">{a.title}</a></span><span className="sub">{a.note}</span></span>
-            </div>
-          ))}
-        </div>
+        <ul className="checks panel" style={{ padding: "2px 12px" }} aria-label="After the path">
+          {coursePath.afterwards.map(a => <CourseRow key={a.id} link={a} sub={a.note} />)}
+        </ul>
       </section>
     </>
   );

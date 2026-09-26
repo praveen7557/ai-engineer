@@ -3,23 +3,34 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { coursePath } from "../content";
+import { XP, xpOf } from "../engine/progress";
+import { StoreProvider, useStore } from "../store";
 import { CoursePath } from "./CoursePath";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 let container: HTMLDivElement;
 let root: Root;
+let ctx: ReturnType<typeof useStore>;
+function Grab() { ctx = useStore(); return null; }
 
 beforeEach(async () => {
+  localStorage.clear();
   container = document.createElement("div");
   document.body.append(container);
   root = createRoot(container);
-  await act(async () => { root.render(<CoursePath />); });
+  await act(async () => { root.render(<StoreProvider><Grab /><CoursePath /></StoreProvider>); });
 });
 afterEach(async () => {
   await act(async () => root.unmount());
   container.remove();
 });
+
+const boxFor = (title: string) => {
+  const box = [...container.querySelectorAll<HTMLInputElement>("input[type=checkbox]")].find(b => b.getAttribute("aria-label") === title);
+  if (!box) throw new Error(`no checkbox for ${title}`);
+  return box;
+};
 
 describe("CoursePath page", () => {
   it("renders every phase as a labelled article in order", () => {
@@ -48,4 +59,25 @@ describe("CoursePath page", () => {
       expect(a.rel).toContain("noopener");
     }
   });
+
+  it("gives every course and resource a checkbox", () => {
+    const titles = [...coursePath.phases.flatMap(p => p.resources), ...coursePath.afterwards].map(r => r.title);
+    for (const t of titles) expect(boxFor(t)).toBeTruthy();
+    expect(container.textContent).toContain(`0 / ${titles.length}`);
+  });
+
+  it("ticking a course saves it, earns course XP and updates both counters", async () => {
+    const course = coursePath.phases[4].resources[0];
+    await act(async () => { boxFor(course.title).click(); });
+    expect(ctx.state.done[course.id]).toBeTruthy();
+    expect(xpOf(ctx.state).total).toBe(XP.course);
+    expect(container.textContent).toContain("1 / 17");
+    const phase = [...container.querySelectorAll("article")][4];
+    expect(phase.textContent).toContain("1/1 done");
+
+    await act(async () => { boxFor(course.title).click(); });
+    expect(ctx.state.done[course.id]).toBeFalsy();
+    expect(container.textContent).toContain("0 / 17");
+  });
+
 });
