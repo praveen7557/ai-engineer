@@ -16,6 +16,7 @@ export const XP = {
   stretch: 50,
   trialCriterion: 50,
   setup: 10,
+  course: 15,
   missionMajor: 250,
   missionMinor: 100,
   weekComplete: 100,
@@ -30,6 +31,7 @@ export function itemXp(m: ItemMeta): number {
     case "stretch": return XP.stretch;
     case "trial": return XP.trialCriterion;
     case "setup": return XP.setup;
+    case "course": return XP.course;
   }
 }
 
@@ -250,7 +252,7 @@ export interface NextStep {
 }
 
 const KIND_LABEL: Record<ItemMeta["kind"], string> = {
-  concept: "Study", resource: "Read", milestone: "Build", stretch: "Stretch", trial: "Prove", setup: "Prepare",
+  concept: "Study", resource: "Read", milestone: "Build", stretch: "Stretch", trial: "Prove", setup: "Prepare", course: "Learn",
 };
 
 /** Build-first core sequence for a chapter: per week, the build's milestones → must-reads → concepts; then the trial. */

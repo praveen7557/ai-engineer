@@ -7,10 +7,11 @@ import { ch5 } from "./ch5";
 import { ch6 } from "./ch6";
 import { ch7 } from "./ch7";
 import { ch8 } from "./ch8";
+import { COURSE_LINKS } from "./coursePath";
 import { setupItems } from "./setup";
 
 export { continuingSources, continuingPrompts, continuingTracks } from "./continuing";
-export { coursePath, coursePathBudget, coursePathHours } from "./coursePath";
+export { COURSE_LINKS, coursePath, coursePathBudget, coursePathHours } from "./coursePath";
 export { guide } from "./guide";
 export { setupItems };
 export type * from "./types";
@@ -18,7 +19,7 @@ export type * from "./types";
 export const CHAPTERS: Chapter[] = [ch1, ch2, ch3, ch4, ch5, ch6, ch7, ch8];
 export const TOTAL_WEEKS = 24;
 
-export type ItemKind = "concept" | "resource" | "milestone" | "stretch" | "trial" | "setup";
+export type ItemKind = "concept" | "resource" | "milestone" | "stretch" | "trial" | "setup" | "course";
 
 export interface ItemMeta {
   id: string;
@@ -41,6 +42,7 @@ export const MISSIONS = new Map<string, Mission & { chapterId: string }>();
 export const CHAPTER_BY_ID = new Map<string, Chapter>();
 
 for (const s of setupItems) ITEMS.set(s.id, { id: s.id, kind: "setup", title: s.title, core: false, minutes: 15 });
+for (const c of COURSE_LINKS) ITEMS.set(c.id, { id: c.id, kind: "course", title: c.title, core: false, minutes: 0 });
 
 for (const ch of CHAPTERS) {
   CHAPTER_BY_ID.set(ch.id, ch);

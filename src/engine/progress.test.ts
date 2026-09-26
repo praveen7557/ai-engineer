@@ -53,6 +53,7 @@ describe("itemXp", () => {
     expect(itemXp({ ...base, kind: "stretch" })).toBe(XP.stretch);
     expect(itemXp({ ...base, kind: "trial" })).toBe(XP.trialCriterion);
     expect(itemXp({ ...base, kind: "setup" })).toBe(XP.setup);
+    expect(itemXp({ ...base, kind: "course" })).toBe(XP.course);
   });
 
   it("distinguishes must-read, reference and bonus resources", () => {

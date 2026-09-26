@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { CHAPTERS, continuingSources, guide, ITEMS, MISSIONS, RESOURCE_BY_ID, setupItems, TOTAL_WEEKS } from "./index";
+import { CHAPTERS, continuingSources, COURSE_LINKS, guide, ITEMS, MISSIONS, RESOURCE_BY_ID, setupItems, TOTAL_WEEKS } from "./index";
 
 const allIds = () => {
-  const ids: string[] = setupItems.map(s => s.id);
+  const ids: string[] = [...setupItems.map(s => s.id), ...COURSE_LINKS.map(c => c.id)];
   for (const ch of CHAPTERS) {
     ch.weeks.forEach(w => w.groups.forEach(g => g.concepts.forEach(c => ids.push(c.id))));
     ch.resources.forEach(r => ids.push(r.id));
@@ -41,6 +41,7 @@ describe("roadmap content", () => {
       ch.trial.forEach(t => expect(t.id).toMatch(new RegExp(`^${ch.id}\\.t\\.[a-z0-9-]+$`)));
     }
     setupItems.forEach(s => expect(s.id).toMatch(/^setup\.[a-z0-9-]+$/));
+    COURSE_LINKS.forEach(c => expect(c.id).toMatch(/^course\.(p\d+|after)\.[a-z0-9-]+$/));
   });
 
   it("numbers missions 1..N across the roadmap", () => {

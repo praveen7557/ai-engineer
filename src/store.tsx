@@ -75,7 +75,7 @@ let feedSeq = 1;
 
 const LABEL: Record<string, string> = {
   concept: "Concept mastered", resource: "Intel gathered", milestone: "Objective complete",
-  stretch: "Stretch objective", trial: "Trial criterion met", setup: "Preparation",
+  stretch: "Stretch objective", trial: "Trial criterion met", setup: "Preparation", course: "Course finished",
 };
 
 export function StoreProvider({ children }: { children: ReactNode }) {

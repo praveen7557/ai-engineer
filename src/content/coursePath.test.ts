@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { coursePath, coursePathBudget, coursePathHours } from "./coursePath";
+import { ALL_CORE_IDS } from "../engine/progress";
+import { ITEMS } from "./index";
+import { COURSE_LINKS, coursePath, coursePathBudget, coursePathHours } from "./coursePath";
 
 describe("course path content", () => {
   it("numbers phases 0..n in order", () => {
@@ -24,6 +26,18 @@ describe("course path content", () => {
     const urls = [...coursePath.phases.flatMap(p => p.resources.map(r => r.url)), ...coursePath.afterwards.map(a => a.url)];
     for (const u of urls) expect(new URL(u).protocol).toBe("https:");
     expect(new Set(urls).size).toBe(urls.length);
+  });
+
+  it("puts each course id under its own phase", () => {
+    for (const p of coursePath.phases) for (const r of p.resources) expect(r.id.startsWith(`course.p${p.number}.`)).toBe(true);
+    for (const a of coursePath.afterwards) expect(a.id.startsWith("course.after.")).toBe(true);
+  });
+
+  it("tracks every course as a non-core item, so ticking one never changes chapter completion or pace", () => {
+    for (const c of COURSE_LINKS) {
+      expect(ITEMS.get(c.id)).toMatchObject({ kind: "course", core: false, title: c.title });
+      expect(ALL_CORE_IDS).not.toContain(c.id);
+    }
   });
 
   it("gives every phase a build", () => {
