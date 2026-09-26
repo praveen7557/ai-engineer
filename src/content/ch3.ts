@@ -30,6 +30,7 @@ export const ch3: Chapter = {
               summary:
                 "The browser never holds the API key; a small, authenticated backend endpoint holds it, forwards requests, and is the only thing that talks to the model.",
               minutes: 30,
+              resources: ["ch3.r.streaming-docs"],
             },
             {
               id: "ch3.c.sse-through-backend",
@@ -37,6 +38,7 @@ export const ch3: Chapter = {
               summary:
                 "Streaming tokens from the model to the browser means re-streaming through your own server, not just piping raw bytes, so you can also log, trim and handle disconnects and concurrent requests along the way.",
               minutes: 35,
+              resources: ["ch3.r.streaming-docs", "ch3.r.sse-mdn"],
             },
             {
               id: "ch3.c.stop-regenerate",
@@ -44,6 +46,7 @@ export const ch3: Chapter = {
               summary:
                 "Canceling an in-flight generation with an AbortController and handling a stream that drops mid-response are what make a chat app feel controllable instead of at the mercy of the connection.",
               minutes: 25,
+              resources: ["ch3.r.streaming-docs"],
             },
           ],
         },
@@ -56,6 +59,7 @@ export const ch3: Chapter = {
               summary:
                 "Model output is untrusted content: sanitize any markdown or HTML before rendering it, and never pipe model text into innerHTML directly.",
               minutes: 25,
+              resources: ["ch3.r.owasp-preview"],
             },
             {
               id: "ch3.c.access-control-tracing",
@@ -63,6 +67,7 @@ export const ch3: Chapter = {
               summary:
                 "Permission checks belong on the server, not the client, and a trace of each model call needs sensitive content redacted before it's persisted anywhere.",
               minutes: 30,
+              resources: ["ch3.r.owasp-preview", "ch3.r.langfuse-docs"],
             },
           ],
         },
@@ -87,6 +92,7 @@ export const ch3: Chapter = {
               summary:
                 "Images and rendered document pages can be sent directly as input, which skips a separate OCR step but adds meaningfully to token cost and has its own resolution limits.",
               minutes: 25,
+              resources: ["ch3.r.vision-docs"],
             },
             {
               id: "ch3.c.ocr-vs-direct",
@@ -94,6 +100,7 @@ export const ch3: Chapter = {
               summary:
                 "Text extraction/OCR feeding your existing extractor and direct multimodal input are two real architectures for the same feature, and only a labeled comparison — including unreadable images and tables — tells you which wins on accuracy and cost.",
               minutes: 30,
+              resources: ["ch3.r.vision-docs"],
             },
           ],
         },
@@ -106,6 +113,7 @@ export const ch3: Chapter = {
               summary:
                 "An extraction feature that's wrong 10% of the time needs a fast, obvious way for a person to fix that 10%, or the feature quietly erodes trust instead of saving time.",
               minutes: 25,
+              resources: ["ch3.r.pair-guidebook"],
             },
             {
               id: "ch3.c.pair-hax",
@@ -113,6 +121,7 @@ export const ch3: Chapter = {
               summary:
                 "Google's PAIR guidebook and Microsoft's HAX toolkit are research-backed checklists for setting expectations, handling errors gracefully, and building trust in AI-driven correction interactions.",
               minutes: 30,
+              resources: ["ch3.r.pair-guidebook", "ch3.r.hax-guidelines"],
             },
           ],
         },
@@ -137,6 +146,7 @@ export const ch3: Chapter = {
               summary:
                 "Putting static content — system prompts, tool definitions, reference documents — first in a request lets the model provider cache it, cutting cost and latency on repeat calls.",
               minutes: 30,
+              resources: ["ch3.r.prompt-caching-docs"],
             },
             {
               id: "ch3.c.response-caching",
@@ -144,6 +154,7 @@ export const ch3: Chapter = {
               summary:
                 "Caching whole responses for identical or near-identical requests avoids paying for the same generation twice, especially for common queries.",
               minutes: 20,
+              resources: [],
             },
             {
               id: "ch3.c.rate-limits-budgets",
@@ -151,6 +162,7 @@ export const ch3: Chapter = {
               summary:
                 "Provider rate limits protect the provider; your own per-user and per-tenant budgets, enforced server-side, protect you from one user's traffic or misuse driving the whole bill.",
               minutes: 25,
+              resources: ["ch3.r.rate-limits-docs"],
             },
           ],
         },
@@ -163,6 +175,7 @@ export const ch3: Chapter = {
               summary:
                 "Time to first token, total latency, and token usage each tell a different part of the story, and finding the actual bottleneck before touching prompts, models or concurrency saves a lot of wasted tuning.",
               minutes: 25,
+              resources: ["ch3.r.reduce-latency"],
             },
             {
               id: "ch3.c.capstone-selection",
@@ -170,6 +183,7 @@ export const ch3: Chapter = {
               summary:
                 "Real feedback from a restricted pilot, plus representative examples of what worked and failed, is what turns \"pick a capstone problem\" from a guess into a decision backed by evidence.",
               minutes: 20,
+              resources: [],
             },
           ],
         },

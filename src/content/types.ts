@@ -31,6 +31,8 @@ export interface Concept {
   summary: string;
   /** Estimated study time in minutes (typically 15–60). */
   minutes: number;
+  /** Ids of resources that teach this concept (most useful first): this chapter's own, or ones in its `revisit` list. May be empty when the build itself teaches it. */
+  resources?: string[];
 }
 
 export interface ConceptGroup {

@@ -30,6 +30,7 @@ export const ch7: Chapter = {
               summary:
                 "A fine-tune earns its complexity only on a task narrow enough to have a clear, measurable win over prompting — pick one such task rather than a general capability.",
               minutes: 25,
+              resources: ["ch7.r.hf-llm-course-training"],
             },
             {
               id: "ch7.c.dataset-dedup-splits",
@@ -37,6 +38,7 @@ export const ch7: Chapter = {
               summary:
                 "Train/validation/test splits with duplicates removed and clear data provenance are what make a fine-tuning comparison trustworthy instead of accidentally inflated.",
               minutes: 35,
+              resources: ["ch7.r.hf-llm-course-training"],
             },
           ],
         },
@@ -49,6 +51,7 @@ export const ch7: Chapter = {
               summary:
                 "Training a small low-rank adapter instead of the full model cuts memory and time dramatically, and saving/reloading it is what makes the experiment reproducible.",
               minutes: 40,
+              resources: ["ch7.r.peft-quicktour"],
             },
             {
               id: "ch7.c.reproducible-training-runs",
@@ -56,6 +59,7 @@ export const ch7: Chapter = {
               summary:
                 "Recording training settings, the exact model revision, and reloadable weights is what turns 'it worked once' into a result someone else — including future you — can reproduce.",
               minutes: 30,
+              resources: ["ch7.r.peft-quicktour"],
             },
           ],
         },
@@ -80,6 +84,7 @@ export const ch7: Chapter = {
               summary:
                 "A regression in your eval score should block the merge, the same way a failing test does; tracking scores over time per prompt and model version is what lets you change either with confidence.",
               minutes: 40,
+              resources: ["ch7.r.promptfoo-docs"],
             },
             {
               id: "ch7.c.golden-datasets",
@@ -87,6 +92,7 @@ export const ch7: Chapter = {
               summary:
                 "A golden set mixes real examples with synthetic ones for coverage — edge cases, unanswerable questions and adversarial inputs — and needs its own version history alongside the rubric that grades it.",
               minutes: 40,
+              resources: ["ch7.r.evals-faq"],
             },
           ],
         },
@@ -99,6 +105,7 @@ export const ch7: Chapter = {
               summary:
                 "A judge that gives a binary pass/fail with a written critique is only trustworthy once you've checked its agreement against your own labels, including its false-positive and false-negative rates.",
               minutes: 45,
+              resources: ["ch7.r.llm-as-judge-hamel"],
             },
             {
               id: "ch7.c.uncertainty-reporting",
@@ -106,6 +113,7 @@ export const ch7: Chapter = {
               summary:
                 "Segment failures and confidence intervals tell you more than one aggregate number, and rerunning a variable case is how you tell a real regression from noise.",
               minutes: 30,
+              resources: ["ch7.r.evals-faq", "ch7.r.ai-engineering-evals"],
             },
           ],
         },
@@ -130,6 +138,7 @@ export const ch7: Chapter = {
               summary:
                 "p95 (or p99) latency and throughput under realistic concurrency tell you what your users actually experience, which an average latency number hides.",
               minutes: 35,
+              resources: ["ch7.r.handling-overload"],
             },
             {
               id: "ch7.c.tracing-otel",
@@ -137,6 +146,7 @@ export const ch7: Chapter = {
               summary:
                 "Mapping model, retrieval, and tool operations to portable, pinned-version telemetry spans is what makes a load-test failure traceable to a specific step.",
               minutes: 35,
+              resources: ["ch7.r.otel-genai-conventions"],
             },
           ],
         },
@@ -149,6 +159,7 @@ export const ch7: Chapter = {
               summary:
                 "Timeouts, retries with jitter, fallbacks to another model or provider, and circuit breakers keep your app working through 429s, 529s and outright outages instead of cascading into failure.",
               minutes: 40,
+              resources: ["ch7.r.handling-overload", "ch7.r.llm-patterns-eugene"],
             },
             {
               id: "ch7.c.backpressure-load-shedding",
@@ -156,6 +167,7 @@ export const ch7: Chapter = {
               summary:
                 "Bounded queues, client-side throttling, and deliberately shedding low-priority load are what keep a system merely degraded instead of falling over entirely under overload.",
               minutes: 35,
+              resources: ["ch7.r.handling-overload"],
             },
           ],
         },
@@ -180,6 +192,7 @@ export const ch7: Chapter = {
               summary:
                 "The industry checklist for LLM-application risks — prompt injection, sensitive information disclosure, excessive agency, improper output handling and more — is the baseline every shipped app should be checked against.",
               minutes: 60,
+              resources: ["ch7.r.owasp-llm-top10"],
             },
             {
               id: "ch7.c.prompt-injection",
@@ -187,6 +200,7 @@ export const ch7: Chapter = {
               summary:
                 "Direct injection comes from the user; indirect injection hides in a document, a web page, an issue or a tool result the model reads — the second kind is far easier to miss.",
               minutes: 35,
+              resources: ["ch7.r.owasp-llm-top10", "ch7.r.mitigate-jailbreaks"],
             },
             {
               id: "ch7.c.data-isolation-excessive-spend",
@@ -194,6 +208,7 @@ export const ch7: Chapter = {
               summary:
                 "Verifying that one tenant's data can't leak into another's answer, and that spend caps actually hold under an adversarial or runaway request, are two of the most consequential checks in a release rehearsal.",
               minutes: 30,
+              resources: ["ch7.r.owasp-llm-top10"],
             },
           ],
         },
@@ -206,6 +221,7 @@ export const ch7: Chapter = {
               summary:
                 "Prompt and model versions behind feature flags, rolled out gradually and shadow-tested against your evals, turn a risky change into a reversible one.",
               minutes: 30,
+              resources: [],
             },
             {
               id: "ch7.c.incident-runbook-alerts",
@@ -213,6 +229,7 @@ export const ch7: Chapter = {
               summary:
                 "Alerts that fire on the metrics you actually care about, paired with a runbook that tells the on-call engineer what to do next, are what turn a rollback plan from theory into something you can execute at 2am.",
               minutes: 30,
+              resources: [],
             },
           ],
         },

@@ -31,6 +31,7 @@ export const ch5: Chapter = {
               summary:
                 "A workflow is a fixed code path that happens to call an LLM; an agent lets the model decide what happens next. Start with the simplest one that works.",
               minutes: 30,
+              resources: ["ch5.r.building-effective-agents"],
             },
             {
               id: "ch5.c.five-workflow-patterns",
@@ -38,6 +39,7 @@ export const ch5: Chapter = {
               summary:
                 "Prompt chaining, routing, parallelization, orchestrator-workers and evaluator-optimizer cover most real production LLM systems without needing a fully autonomous agent.",
               minutes: 40,
+              resources: ["ch5.r.building-effective-agents"],
             },
           ],
         },
@@ -50,6 +52,7 @@ export const ch5: Chapter = {
               summary:
                 "The core loop is stop_reason = tool_use → run the tool → send back tool_result → repeat until end_turn; this loop is the entire mechanism behind every agent you'll build.",
               minutes: 40,
+              resources: ["ch5.r.tool-use-overview", "ch5.r.react-paper"],
             },
             {
               id: "ch5.c.tool-definitions",
@@ -57,6 +60,7 @@ export const ch5: Chapter = {
               summary:
                 "A tool has a name, a description and a JSON-schema input; the description is a prompt in disguise, so write it like documentation the model can act on.",
               minutes: 30,
+              resources: ["ch5.r.tool-use-overview", "ch5.r.writing-tools-for-agents"],
             },
             {
               id: "ch5.c.lethal-trifecta",
@@ -64,6 +68,7 @@ export const ch5: Chapter = {
               summary:
                 "Private data, untrusted input, and a way to send data out together make an exfiltration risk; identify all three legs before granting any tool access.",
               minutes: 25,
+              resources: ["ch5.r.lethal-trifecta"],
             },
           ],
         },
@@ -88,6 +93,7 @@ export const ch5: Chapter = {
               summary:
                 "Fewer, higher-level tools with token-efficient, paginated responses and meaningful errors make an agent noticeably more reliable than a thin wrapper over your existing API.",
               minutes: 40,
+              resources: ["ch5.r.writing-tools-for-agents"],
             },
             {
               id: "ch5.c.idempotent-tools",
@@ -95,6 +101,7 @@ export const ch5: Chapter = {
               summary:
                 "Every side-effecting tool needs an idempotency key so a retry after a crash can't double-send or double-charge; test failure after the effect happens but before it's acknowledged.",
               minutes: 30,
+              resources: ["ch5.r.idempotency-stripe"],
             },
             {
               id: "ch5.c.stopping-conditions",
@@ -102,6 +109,7 @@ export const ch5: Chapter = {
               summary:
                 "Max iterations, token or dollar caps, and timeouts stop an agent that's stuck in a loop from silently burning your budget.",
               minutes: 25,
+              resources: ["ch5.r.12-factor-agents"],
             },
           ],
         },
@@ -114,6 +122,7 @@ export const ch5: Chapter = {
               summary:
                 "Any side effect that sends, deletes, pays or posts needs an approval gate that shows exactly what will happen before it happens.",
               minutes: 25,
+              resources: ["ch5.r.12-factor-agents"],
             },
             {
               id: "ch5.c.outcome-trajectory-checks",
@@ -121,6 +130,7 @@ export const ch5: Chapter = {
               summary:
                 "Checking the real side effects and the path the agent took to get there — not just a success message — is what an honest agent evaluation actually verifies.",
               minutes: 30,
+              resources: ["ch5.r.demystifying-agent-evals"],
             },
           ],
         },
@@ -145,6 +155,7 @@ export const ch5: Chapter = {
               summary:
                 "Logging every step — the model's reasoning, each tool's input and output, tokens and time — is what turns 'the agent did something weird' into a diagnosable bug.",
               minutes: 30,
+              resources: ["ch5.r.demystifying-agent-evals"],
             },
             {
               id: "ch5.c.common-failure-modes",
@@ -152,6 +163,7 @@ export const ch5: Chapter = {
               summary:
                 "Loops, hallucinated tool arguments, calling the wrong tool, context bloat and quitting too early are the failure modes you'll see over and over; learn to recognize each in a trace.",
               minutes: 30,
+              resources: ["ch5.r.ai-engineering-agents"],
             },
             {
               id: "ch5.c.context-engineering",
@@ -159,6 +171,7 @@ export const ch5: Chapter = {
               summary:
                 "What enters the context window, and when, matters more than the prompt's wording: just-in-time retrieval, compaction and memory files keep an agent from drowning in its own history.",
               minutes: 45,
+              resources: ["ch5.r.context-engineering"],
             },
           ],
         },
@@ -171,6 +184,7 @@ export const ch5: Chapter = {
               summary:
                 "The Agent SDK packages built-in tools, permission modes, hooks and sessions around the same loop you just wrote by hand — it's the same foundation Claude Code itself is built on.",
               minutes: 40,
+              resources: ["ch5.r.agent-sdk-overview"],
             },
             {
               id: "ch5.c.subagents",
@@ -178,6 +192,7 @@ export const ch5: Chapter = {
               summary:
                 "Fanning work out to subagents helps for broad, parallelizable research, but it adds cost, coordination overhead and lost shared context — reach for it deliberately, not by default.",
               minutes: 35,
+              resources: ["ch5.r.multi-agent-research-system"],
             },
           ],
         },

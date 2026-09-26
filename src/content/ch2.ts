@@ -30,6 +30,7 @@ export const ch2: Chapter = {
               summary:
                 "Explaining the audience, goal and constraints behind a request steers a model further than clever phrasing does, because the model can reason about intent instead of guessing at it.",
               minutes: 25,
+              resources: ["ch2.r.prompt-eng-overview"],
             },
             {
               id: "ch2.c.few-shot",
@@ -37,6 +38,7 @@ export const ch2: Chapter = {
               summary:
                 "A small set of diverse, representative examples steers format and tone far more reliably than describing the format in prose alone.",
               minutes: 30,
+              resources: ["ch2.r.prompt-eng-overview"],
             },
           ],
         },
@@ -49,6 +51,7 @@ export const ch2: Chapter = {
               summary:
                 "Constraining a response to a JSON schema and then validating it in code with Zod or Pydantic turns free text into something your application can trust and act on.",
               minutes: 35,
+              resources: ["ch2.r.structured-outputs-docs"],
             },
             {
               id: "ch2.c.eval-criteria",
@@ -56,6 +59,7 @@ export const ch2: Chapter = {
               summary:
                 "Before iterating on a prompt, write down what \"correct\" means per field and split your examples into development and held-out sets, or you'll tune against the same data you evaluate on.",
               minutes: 30,
+              resources: ["ch2.r.hamel-evals", "ch2.r.develop-test-cases"],
             },
             {
               id: "ch2.c.rule-based-baseline",
@@ -63,6 +67,7 @@ export const ch2: Chapter = {
               summary:
                 "A regex or simple parser baseline gives you a floor to beat and quickly shows which fields never needed a model call at all.",
               minutes: 20,
+              resources: ["ch2.r.hamel-evals"],
             },
           ],
         },
@@ -87,6 +92,7 @@ export const ch2: Chapter = {
               summary:
                 "A fair comparison runs identical inputs through each provider's own idioms (not a lowest-common-denominator prompt) and holds the validation set and grading fixed across both.",
               minutes: 30,
+              resources: ["ch2.r.hamel-evals"],
             },
             {
               id: "ch2.c.semantic-checks",
@@ -94,6 +100,7 @@ export const ch2: Chapter = {
               summary:
                 "Two correct answers rarely share exact text, so grading needs a semantic or rubric-based check instead of a brittle string comparison.",
               minutes: 25,
+              resources: ["ch2.r.hamel-evals"],
             },
             {
               id: "ch2.c.errors-retries-timeouts",
@@ -101,6 +108,7 @@ export const ch2: Chapter = {
               summary:
                 "429, 529 and 5xx responses call for different handling per provider; comparing failure behavior is as much a part of the model comparison as accuracy is.",
               minutes: 30,
+              resources: [],
             },
           ],
         },
@@ -113,6 +121,7 @@ export const ch2: Chapter = {
               summary:
                 "Splitting a big task into sequential calls, each with a narrower job, tends to beat one giant prompt on reliability and debuggability — but only add the second step once error analysis shows the single call is the bottleneck.",
               minutes: 30,
+              resources: ["ch2.r.prompt-eng-overview"],
             },
             {
               id: "ch2.c.token-counting-api",
@@ -120,6 +129,7 @@ export const ch2: Chapter = {
               summary:
                 "Counting tokens per provider lets you compare cost apples-to-apples, since input/output pricing and tokenization differ across model families.",
               minutes: 20,
+              resources: [],
             },
           ],
         },
@@ -144,6 +154,7 @@ export const ch2: Chapter = {
               summary:
                 "An open model's tokenizer and chat template decide exactly how your messages get turned into the token sequence it was trained on, and getting the template wrong silently degrades output quality.",
               minutes: 30,
+              resources: ["ch2.r.hf-llm-course"],
             },
             {
               id: "ch2.c.tensor-shapes",
@@ -151,6 +162,7 @@ export const ch2: Chapter = {
               summary:
                 "Tracing batch size, sequence length and hidden dimension through a forward pass turns \"the model\" into something you can actually reason about and debug.",
               minutes: 35,
+              resources: ["ch2.r.hf-llm-course"],
             },
             {
               id: "ch2.c.quantization-tradeoffs",
@@ -158,6 +170,7 @@ export const ch2: Chapter = {
               summary:
                 "Quantizing weights trades memory and speed against quality, and the right method depends on the hardware budget you actually have, not the best published benchmark.",
               minutes: 30,
+              resources: ["ch2.r.quantization-overview"],
             },
           ],
         },
@@ -170,6 +183,7 @@ export const ch2: Chapter = {
               summary:
                 "A local open model isn't free — measured against the hosted baseline on the same task, it usually trades some quality for control over cost and data locality, and that trade needs numbers, not a guess.",
               minutes: 30,
+              resources: ["ch2.r.hf-llm-course"],
             },
           ],
         },

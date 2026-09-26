@@ -30,6 +30,7 @@ export const ch6: Chapter = {
               summary:
                 "A host (the app) talks to one client per server, and each client talks to its server over JSON-RPC — understanding this three-layer shape explains most of MCP's design decisions.",
               minutes: 30,
+              resources: ["ch6.r.mcp-specification"],
             },
             {
               id: "ch6.c.server-primitives",
@@ -37,6 +38,7 @@ export const ch6: Chapter = {
               summary:
                 "Tools are model-invoked, resources are app-attached context, and prompts are user-invoked templates — three different jobs, and mixing them up leads to the wrong design.",
               minutes: 35,
+              resources: ["ch6.r.mcp-specification", "ch6.r.mcp-build-server"],
             },
             {
               id: "ch6.c.transports",
@@ -44,6 +46,7 @@ export const ch6: Chapter = {
               summary:
                 "stdio suits a local process the host launches directly; Streamable HTTP suits a remote server that many clients connect to over the network.",
               minutes: 25,
+              resources: ["ch6.r.mcp-specification"],
             },
           ],
         },
@@ -56,6 +59,7 @@ export const ch6: Chapter = {
               summary:
                 "Inspector lets you call tools, read resources and watch the raw JSON-RPC messages your server sends — it's your debugger for every server you build.",
               minutes: 25,
+              resources: ["ch6.r.mcp-inspector-tool"],
             },
             {
               id: "ch6.c.building-primitives",
@@ -63,6 +67,7 @@ export const ch6: Chapter = {
               summary:
                 "Building all three primitives on a real server — a validated tool, an exposed resource, and a user-invoked prompt template — is what turns the spec into something you actually understand.",
               minutes: 60,
+              resources: ["ch6.r.mcp-build-server", "ch6.r.mcp-typescript-sdk"],
             },
           ],
         },
@@ -87,6 +92,7 @@ export const ch6: Chapter = {
               summary:
                 "Streamable HTTP is the transport for a remote server that many clients connect to over the network, replacing the older SSE-based transport.",
               minutes: 30,
+              resources: ["ch6.r.mcp-specification"],
             },
             {
               id: "ch6.c.oauth-per-spec",
@@ -94,6 +100,7 @@ export const ch6: Chapter = {
               summary:
                 "The MCP spec defines an OAuth 2.1 authorization flow for remote servers; following it exactly, rather than improvising your own auth, is what keeps a server safe to expose.",
               minutes: 40,
+              resources: ["ch6.r.mcp-specification"],
             },
             {
               id: "ch6.c.integrating-mcp",
@@ -101,6 +108,7 @@ export const ch6: Chapter = {
               summary:
                 "An agent that discovers tools from an MCP server at startup, instead of hard-coding them, can gain new capabilities just by connecting to a new server.",
               minutes: 30,
+              resources: [],
             },
           ],
         },
@@ -113,6 +121,7 @@ export const ch6: Chapter = {
               summary:
                 "A malicious or compromised server can smuggle instructions in its tool descriptions, and a server acting on a client's behalf can be tricked into misusing its own authority — both are classic MCP-specific risks.",
               minutes: 35,
+              resources: ["ch6.r.mcp-specification"],
             },
             {
               id: "ch6.c.token-passthrough",
@@ -120,6 +129,7 @@ export const ch6: Chapter = {
               summary:
                 "Forwarding a client's access token straight through to a downstream API is explicitly forbidden by the spec, because it breaks audience and scope guarantees the token was issued under.",
               minutes: 20,
+              resources: ["ch6.r.mcp-specification"],
             },
           ],
         },

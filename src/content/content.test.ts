@@ -86,6 +86,22 @@ describe("roadmap content", () => {
     urls.forEach(u => expect(u).toMatch(/^https:\/\/[^\s]+$/));
   });
 
+  it("links concepts only to their own chapter's resources or its revisit list, with most concepts linked", () => {
+    for (const ch of CHAPTERS) {
+      const own = new Set([...ch.resources.map(r => r.id), ...(ch.revisit ?? [])]);
+      const concepts = ch.weeks.flatMap(w => w.groups.flatMap(g => g.concepts));
+      for (const c of concepts) {
+        const ids = c.resources ?? [];
+        expect(new Set(ids).size, `${c.id} duplicate links`).toBe(ids.length);
+        ids.forEach(id => expect(own.has(id), `${c.id} -> ${id}`).toBe(true));
+      }
+      if (own.size >= 5) {
+        const linked = concepts.filter(c => (c.resources ?? []).length > 0).length;
+        expect(linked / concepts.length, `${ch.id} coverage`).toBeGreaterThanOrEqual(0.6);
+      }
+    }
+  });
+
   it("resolves every revisit id to an earlier chapter's resource", () => {
     for (const ch of CHAPTERS) for (const id of ch.revisit ?? []) {
       const r = RESOURCE_BY_ID.get(id);

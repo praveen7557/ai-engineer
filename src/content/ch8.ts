@@ -30,6 +30,7 @@ export const ch8: Chapter = {
               summary:
                 "Wiring prompting, tool calling, retrieval, an agent step and at least one MCP-exposed capability into one working system is where every earlier chapter's shortcuts finally show up.",
               minutes: 60,
+              resources: ["ch5.r.demystifying-agent-evals"],
             },
             {
               id: "ch8.c.reuse-proven-components",
@@ -37,6 +38,7 @@ export const ch8: Chapter = {
               summary:
                 "The extractor, dataset, UI and tooling you already built and measured are the fastest path to finishing — rebuilding them from scratch here is scope you don't need to spend.",
               minutes: 30,
+              resources: [],
             },
           ],
         },
@@ -49,6 +51,7 @@ export const ch8: Chapter = {
               summary:
                 "A held-out test set and written acceptance criteria, frozen before the final push, are what keep 'done' from quietly drifting as you finish the build.",
               minutes: 30,
+              resources: ["ch2.r.develop-test-cases", "ch7.r.promptfoo-docs"],
             },
             {
               id: "ch8.c.baseline-comparison-capstone",
@@ -56,6 +59,7 @@ export const ch8: Chapter = {
               summary:
                 "Measuring your capstone against an ordinary-code or manual baseline is what proves the AI approach earned its complexity, instead of assuming it did.",
               minutes: 30,
+              resources: ["ch2.r.develop-test-cases"],
             },
           ],
         },
@@ -80,6 +84,7 @@ export const ch8: Chapter = {
               summary:
                 "Deploy to an org-approved platform — Cloudflare or Google Cloud Platform; anything else needs your company's procurement and security approval before you touch it, even for a personal project you'd bring to work.",
               minutes: 45,
+              resources: [],
             },
             {
               id: "ch8.c.release-checklist",
@@ -87,6 +92,7 @@ export const ch8: Chapter = {
               summary:
                 "Access and security tests, load results, monitoring/alerts, cost limits, and restore/rollback steps only count as evidence once you've run them against the actual deployment, not a local copy.",
               minutes: 45,
+              resources: ["ch3.r.owasp-preview", "ch7.r.handling-overload"],
             },
           ],
         },
@@ -99,6 +105,7 @@ export const ch8: Chapter = {
               summary:
                 "A written threat model plus injection tests that actually pass is the bar every other chapter's security work was building toward.",
               minutes: 50,
+              resources: ["ch3.r.owasp-preview", "ch5.r.lethal-trifecta", "ch6.r.mcp-specification"],
             },
             {
               id: "ch8.c.tracing-cost-dashboard",
@@ -106,6 +113,7 @@ export const ch8: Chapter = {
               summary:
                 "Per-request and per-user tracing and a cost dashboard are what let you answer 'why is this slow' or 'why did this cost so much' with data instead of a guess.",
               minutes: 40,
+              resources: ["ch3.r.langfuse-docs"],
             },
             {
               id: "ch8.c.cost-latency-pass-capstone",
@@ -113,6 +121,7 @@ export const ch8: Chapter = {
               summary:
                 "A measured before/after on cost and latency, with the eval score held steady, is the same discipline from Chapter 07 applied one more time, to your own finished product.",
               minutes: 40,
+              resources: ["ch7.r.handling-overload"],
             },
           ],
         },
@@ -137,6 +146,7 @@ export const ch8: Chapter = {
               summary:
                 "Watching what real users actually hit, then fixing the single highest-impact failure rather than a dozen small ones, is what turns a pilot into evidence you can act on.",
               minutes: 45,
+              resources: ["ch3.r.pair-guidebook", "ch3.r.langfuse-docs"],
             },
             {
               id: "ch8.c.recording-demo",
@@ -144,6 +154,7 @@ export const ch8: Chapter = {
               summary:
                 "A short, honest walkthrough that shows the system actually working is worth more to a reviewer or interviewer than any amount of written description.",
               minutes: 30,
+              resources: [],
             },
           ],
         },
@@ -156,6 +167,7 @@ export const ch8: Chapter = {
               summary:
                 "A scoped proposal with measured benefits, failure cases, cost, ownership and a rollback plan is what turns 'I built something' into a project someone can decide to fund.",
               minutes: 45,
+              resources: ["ch8.r.applied-llms-strategy"],
             },
             {
               id: "ch8.c.staying-current",
@@ -163,6 +175,7 @@ export const ch8: Chapter = {
               summary:
                 "Rerunning your evals on every major model release, doing one small build a month, and writing up what you learn are the habits that keep this whole skill set from going stale.",
               minutes: 30,
+              resources: [],
             },
           ],
         },

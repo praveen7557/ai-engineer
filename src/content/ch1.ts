@@ -31,6 +31,7 @@ export const ch1: Chapter = {
               summary:
                 "A model is trained to predict the next token given everything before it; every capability it has emerges from that one objective repeated at scale.",
               minutes: 30,
+              resources: ["ch1.r.karpathy-deep-dive"],
             },
             {
               id: "ch1.c.attention-intuition",
@@ -38,6 +39,7 @@ export const ch1: Chapter = {
               summary:
                 "Attention lets each token look at every other token and weigh how relevant it is, which is how a model tracks pronouns, code structure and long-range dependencies without a fixed window.",
               minutes: 40,
+              resources: ["ch1.r.3blue1brown-attention", "ch1.r.karpathy-deep-dive"],
             },
           ],
         },
@@ -50,6 +52,7 @@ export const ch1: Chapter = {
               summary:
                 "Sending one Messages API request end to end — model, system prompt, a user message, and reading the response's content, stop_reason and usage — is the smallest unit of everything that follows.",
               minutes: 30,
+              resources: ["ch1.r.messages-api-reference"],
             },
             {
               id: "ch1.c.sampling-temperature",
@@ -57,6 +60,7 @@ export const ch1: Chapter = {
               summary:
                 "Temperature and top_p control how much randomness enters token selection; lower them for extraction and classification, raise them for brainstorming and creative variation.",
               minutes: 30,
+              resources: ["ch1.r.messages-api-reference"],
             },
             {
               id: "ch1.c.tokenization",
@@ -64,6 +68,7 @@ export const ch1: Chapter = {
               summary:
                 "Text is split into sub-word tokens before the model ever sees it, which is why it can miscount letters in a word and why input and output tokens are billed separately at different rates.",
               minutes: 30,
+              resources: ["ch1.r.karpathy-deep-dive", "ch1.r.token-counting"],
             },
           ],
         },
@@ -88,6 +93,7 @@ export const ch1: Chapter = {
               summary:
                 "Everything you send costs money and attention: cost scales with context size, and content in the middle of a very long prompt tends to get less effective attention than content at the edges.",
               minutes: 30,
+              resources: ["ch1.r.token-counting", "ch1.r.pricing"],
             },
             {
               id: "ch1.c.cost-estimation",
@@ -95,6 +101,7 @@ export const ch1: Chapter = {
               summary:
                 "A feature's monthly cost is estimated as requests per day times average tokens per request times the per-token price for that model, and a predicted estimate should be checked against what was actually billed.",
               minutes: 35,
+              resources: ["ch1.r.pricing", "ch1.r.token-counting"],
             },
           ],
         },
@@ -107,6 +114,7 @@ export const ch1: Chapter = {
               summary:
                 "The same prompt at the same temperature can still produce different outputs on different calls, so any claim about \"the\" output should really be a claim about a distribution of outputs.",
               minutes: 25,
+              resources: [],
             },
             {
               id: "ch1.c.hallucination",
@@ -114,6 +122,7 @@ export const ch1: Chapter = {
               summary:
                 "The model is predicting plausible text, not looking up facts, so a confident wrong answer costs it nothing during training; grounding, citations and letting it say \"I don't know\" are the practical mitigations.",
               minutes: 25,
+              resources: ["ch1.r.karpathy-deep-dive"],
             },
             {
               id: "ch1.c.model-tiers-intro",
@@ -121,6 +130,7 @@ export const ch1: Chapter = {
               summary:
                 "Opus, Sonnet and Haiku trade quality against latency and cost; the engineering skill is picking the smallest tier that still passes your checks, not defaulting to the biggest model.",
               minutes: 20,
+              resources: ["ch1.r.pricing"],
             },
           ],
         },
@@ -145,6 +155,7 @@ export const ch1: Chapter = {
               summary:
                 "A 429 or 529 calls for backoff and another attempt; a 400 means the request itself is wrong and retrying it unchanged will just fail again the same way.",
               minutes: 25,
+              resources: ["ch1.r.errors-docs"],
             },
             {
               id: "ch1.c.retries-backoff",
@@ -152,6 +163,7 @@ export const ch1: Chapter = {
               summary:
                 "Exponential backoff with jitter and a hard request timeout keep a slow or throttled provider from turning into an unbounded retry loop that stalls or bankrupts the caller.",
               minutes: 30,
+              resources: ["ch1.r.errors-docs"],
             },
             {
               id: "ch1.c.testing-failure-modes",
@@ -159,6 +171,7 @@ export const ch1: Chapter = {
               summary:
                 "Refusals and truncated (max-tokens) output are not errors the client throws — they're stop reasons the application has to check for and handle explicitly, so they need their own test cases.",
               minutes: 25,
+              resources: ["ch1.r.errors-docs", "ch1.r.messages-api-reference"],
             },
           ],
         },
@@ -171,6 +184,7 @@ export const ch1: Chapter = {
               summary:
                 "API keys stay server-side and never ship inside a frontend bundle or a log line; set a hard spend limit on any personal account before you start making real calls.",
               minutes: 15,
+              resources: [],
             },
             {
               id: "ch1.c.pinned-deps",
@@ -178,6 +192,7 @@ export const ch1: Chapter = {
               summary:
                 "A CLI that only runs on \"my machine\" isn't done: pinned dependency versions and externalized configuration are what let it run the same way from a fresh clone.",
               minutes: 20,
+              resources: [],
             },
           ],
         },

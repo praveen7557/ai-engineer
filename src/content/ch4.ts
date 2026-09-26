@@ -30,6 +30,7 @@ export const ch4: Chapter = {
               summary:
                 "An embedding maps text to a vector so that cosine similarity between vectors approximates similarity of meaning, though similar meaning is not the same thing as relevant to a query.",
               minutes: 30,
+              resources: ["ch4.r.embeddings-docs", "ch4.r.rag-pinecone"],
             },
             {
               id: "ch4.c.vector-indexes",
@@ -37,6 +38,7 @@ export const ch4: Chapter = {
               summary:
                 "HNSW and IVFFlat in pgvector make different recall/speed/memory trade-offs, and picking one is a real engineering decision, not a default to leave alone.",
               minutes: 30,
+              resources: ["ch4.r.pgvector-readme"],
             },
             {
               id: "ch4.c.pgvector-practice",
@@ -44,6 +46,7 @@ export const ch4: Chapter = {
               summary:
                 "Schema design, indexing, metadata filters and top-k queries in plain SQL are what turn pgvector from a library into a working search feature.",
               minutes: 35,
+              resources: ["ch4.r.pgvector-readme"],
             },
           ],
         },
@@ -56,6 +59,7 @@ export const ch4: Chapter = {
               summary:
                 "Markdown, HTML and PDF extraction each lose or preserve structure differently, and handling parsing failures, duplicates, updates and deletions matters as much as the chunking strategy itself.",
               minutes: 30,
+              resources: [],
             },
             {
               id: "ch4.c.chunking-strategies",
@@ -63,6 +67,7 @@ export const ch4: Chapter = {
               summary:
                 "Fixed-size-with-overlap, structure-aware (by heading) and semantic chunking each change what gets retrieved together, and chunk size alone can swing retrieval quality more than the embedding model does.",
               minutes: 35,
+              resources: ["ch4.r.chunking-pinecone"],
             },
           ],
         },
@@ -87,6 +92,7 @@ export const ch4: Chapter = {
               summary:
                 "Postgres full-text search catches exact terms — error codes, product names, IDs — that a pure embedding similarity search often misses, though ts_rank is not BM25 and shouldn't be labeled as one.",
               minutes: 30,
+              resources: ["ch4.r.postgres-fulltext", "ch4.r.practical-bm25"],
             },
             {
               id: "ch4.c.hybrid-rrf",
@@ -94,6 +100,7 @@ export const ch4: Chapter = {
               summary:
                 "Merging a keyword result list and a vector result list with Reciprocal Rank Fusion combines their strengths without needing to tune a single blended score.",
               minutes: 30,
+              resources: ["ch4.r.hybrid-rrf-code"],
             },
             {
               id: "ch4.c.reranking",
@@ -101,6 +108,7 @@ export const ch4: Chapter = {
               summary:
                 "A cross-encoder reranker looks at the top candidates in detail and reorders them, which is cheap enough to run on a shortlist even though it's too slow to run on the whole corpus.",
               minutes: 30,
+              resources: ["ch4.r.rerank-overview"],
             },
           ],
         },
@@ -113,6 +121,7 @@ export const ch4: Chapter = {
               summary:
                 "Recall@k, MRR and precision, computed against a small labeled question-to-document set, are what let you say a retrieval change helped instead of just feeling like it did.",
               minutes: 35,
+              resources: ["ch4.r.systematically-improving-rag"],
             },
             {
               id: "ch4.c.permission-aware-retrieval",
@@ -120,6 +129,7 @@ export const ch4: Chapter = {
               summary:
                 "Access control has to filter documents before retrieval runs, not after generation, or a model can end up quoting content the requesting user was never allowed to see — including through a cache.",
               minutes: 25,
+              resources: [],
             },
           ],
         },
@@ -144,6 +154,7 @@ export const ch4: Chapter = {
               summary:
                 "Answering only from the retrieved context, citing sources, and saying \"I don't know\" when the context doesn't support an answer is what separates a grounded RAG app from a model freely associating.",
               minutes: 30,
+              resources: ["ch4.r.systematically-improving-rag"],
             },
             {
               id: "ch4.c.citations",
@@ -151,6 +162,7 @@ export const ch4: Chapter = {
               summary:
                 "Model-native citation features and your own chunk-ID citations both let a user verify an answer, and rendering them as clickable links back to the source is what makes that verification actually happen.",
               minutes: 25,
+              resources: ["ch4.r.citations-docs"],
             },
           ],
         },
@@ -163,6 +175,7 @@ export const ch4: Chapter = {
               summary:
                 "A big enough context window or a grep-like agentic search tool can beat a vector database outright for some corpora, and knowing which situation you're in is as important as building the pipeline.",
               minutes: 30,
+              resources: ["ch4.r.lost-in-the-middle", "ch4.r.rag-paper"],
             },
             {
               id: "ch4.c.freshness-cost",
@@ -170,6 +183,7 @@ export const ch4: Chapter = {
               summary:
                 "Re-embedding costs money and stale or deleted documents can serve wrong answers, so a real system needs a deliberate policy for cache invalidation, deletion, and an embedding-version migration, not an assumption that data never changes.",
               minutes: 25,
+              resources: [],
             },
           ],
         },
