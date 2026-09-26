@@ -10,6 +10,7 @@ import { ch8 } from "./ch8";
 import { setupItems } from "./setup";
 
 export { continuingSources, continuingPrompts, continuingTracks } from "./continuing";
+export { coursePath, coursePathBudget, coursePathHours } from "./coursePath";
 export { guide } from "./guide";
 export { setupItems };
 export type * from "./types";
