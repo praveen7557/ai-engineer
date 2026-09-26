@@ -37,7 +37,7 @@ export const ch1: Chapter = {
               id: "ch1.c.attention-intuition",
               title: "Attention, intuitively",
               summary:
-                "Attention lets each token look at every other token and weigh how relevant it is, which is how a model tracks pronouns, code structure and long-range dependencies without a fixed window.",
+                "Attention lets each token look at every other token within the context window and weigh how relevant it is, which is how a model tracks pronouns, code structure and long-range dependencies — but the context window is finite: everything has to fit inside it, and longer contexts cost more and tend to degrade.",
               minutes: 40,
               resources: ["ch1.r.3blue1brown-attention", "ch1.r.karpathy-deep-dive"],
             },
@@ -99,7 +99,7 @@ export const ch1: Chapter = {
               id: "ch1.c.cost-estimation",
               title: "Pricing & cost estimation",
               summary:
-                "A feature's monthly cost is estimated as requests per day times average tokens per request times the per-token price for that model, and a predicted estimate should be checked against what was actually billed.",
+                "A feature's monthly cost is estimated as requests_per_day × days × (input_tokens × input_rate + output_tokens × output_rate), keeping input and output priced separately and noting any cache charges, and a predicted estimate should be checked against what was actually billed.",
               minutes: 35,
               resources: ["ch1.r.pricing", "ch1.r.token-counting"],
             },

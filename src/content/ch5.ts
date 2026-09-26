@@ -120,7 +120,7 @@ export const ch5: Chapter = {
               id: "ch5.c.human-in-the-loop",
               title: "Human-in-the-loop",
               summary:
-                "Any side effect that sends, deletes, pays or posts needs an approval gate that shows exactly what will happen before it happens.",
+                "Approval should track consequence, not mere side effects: a high-consequence or irreversible action (sending, deleting, paying, publishing, changing permissions) needs an approval gate that shows exactly what will happen before it happens, while a low-risk, reversible or read-only action can run under its own limits without one.",
               minutes: 25,
               resources: ["ch5.r.12-factor-agents"],
             },
@@ -143,7 +143,7 @@ export const ch5: Chapter = {
       build: {
         deliverable: "Improve the weakest behavior and optionally port the loop to an SDK.",
         evidence:
-          "Evaluate outcomes and traces; compare context compaction/retrieval when history grows. If porting, demonstrate the behavior the SDK supplies or changes.",
+          "Evaluate outcomes and traces; compare context compaction/retrieval only if context-related failures show up in the traces or evals. If porting, demonstrate the behavior the SDK supplies or changes.",
       },
       groups: [
         {
@@ -153,7 +153,7 @@ export const ch5: Chapter = {
               id: "ch5.c.tracing-agent-runs",
               title: "Tracing an agent run",
               summary:
-                "Logging every step — the model's reasoning, each tool's input and output, tokens and time — is what turns 'the agent did something weird' into a diagnosable bug.",
+                "Logging every step — each tool call, its arguments and result, timings, token usage, errors, and the decisions visible in the model's outputs — is what turns 'the agent did something weird' into a diagnosable bug. Keep the trace observable and redacted; don't assume access to hidden model reasoning.",
               minutes: 30,
               resources: ["ch5.r.demystifying-agent-evals"],
             },
@@ -185,6 +185,7 @@ export const ch5: Chapter = {
                 "The Agent SDK packages built-in tools, permission modes, hooks and sessions around the same loop you just wrote by hand — it's the same foundation Claude Code itself is built on.",
               minutes: 40,
               resources: ["ch5.r.agent-sdk-overview"],
+              optional: true,
             },
             {
               id: "ch5.c.subagents",
@@ -193,6 +194,7 @@ export const ch5: Chapter = {
                 "Fanning work out to subagents helps for broad, parallelizable research, but it adds cost, coordination overhead and lost shared context — reach for it deliberately, not by default.",
               minutes: 35,
               resources: ["ch5.r.multi-agent-research-system"],
+              optional: true,
             },
           ],
         },
@@ -393,14 +395,14 @@ export const ch5: Chapter = {
         "Two or three real, side-effecting tools wired into the agent from Workflow vs Hand-Built Agent.",
         "Idempotency keys on every side-effecting tool so a retry can't duplicate the effect.",
         "Step, time, and spend limits that halt a run predictably.",
-        "An approval gate in front of every side-effecting call.",
+        "An approval gate in front of every high-consequence or irreversible call (sending, deleting, paying, publishing, changing permissions); low-risk, reversible or read-only calls may run under limits without approval.",
         "Injected tool failures, duplicate calls, and untrusted instructions used as test cases.",
         "Safe resume after a partial failure, verified by test.",
       ],
       milestones: [
         { id: "ch5.m2.s1", title: "Wire two or three real tools, each with an idempotency key", minutes: 60, week: 14 },
         { id: "ch5.m2.s2", title: "Add step, time, and spend limits that halt the run predictably", minutes: 45, week: 14 },
-        { id: "ch5.m2.s3", title: "Add an approval gate in front of every side-effecting call", minutes: 45, week: 14 },
+        { id: "ch5.m2.s3", title: "Add an approval gate in front of every high-consequence or irreversible call, and let low-risk, reversible or read-only calls run under limits without one", minutes: 45, week: 14 },
         { id: "ch5.m2.s4", title: "Inject a tool failure mid-run and verify safe resume without duplicating the effect", minutes: 50, week: 14 },
         { id: "ch5.m2.s5", title: "Inject duplicate calls and an untrusted instruction and verify the agent doesn't act on them", minutes: 45, week: 14 },
         { id: "ch5.m2.s6", title: "Rewrite tool descriptions and responses based on observed selection or argument failures", minutes: 40, week: 14 },
@@ -425,12 +427,18 @@ export const ch5: Chapter = {
       requirements: [
         "Outcomes and full traces from the agent in Bounded Tools & Recovery evaluated for weak spots.",
         "The single weakest behavior identified with evidence from the traces, not a guess.",
-        "Context compaction or retrieval compared if context growth is a contributing factor.",
+        "Context compaction or retrieval compared, only if context-related failures show up in your traces or evals.",
         "The fix implemented and re-evaluated against the same cases to show measured improvement.",
       ],
       milestones: [
         { id: "ch5.m3.s1", title: "Evaluate outcomes and traces to find the weakest behavior", minutes: 60, week: 15 },
-        { id: "ch5.m3.s2", title: "Compare context compaction or retrieval strategies if context growth is a factor", minutes: 45, week: 15 },
+        {
+          id: "ch5.m3.s2",
+          title: "Compare context compaction or retrieval strategies",
+          minutes: 45,
+          week: 15,
+          conditional: "Only if context-related failures show up in your traces or evals",
+        },
         { id: "ch5.m3.s3", title: "Implement the fix for the identified weak behavior", minutes: 60, week: 15 },
         { id: "ch5.m3.s4", title: "Re-run the evaluation and show the measured improvement", minutes: 40, week: 15 },
       ],

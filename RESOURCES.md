@@ -14,6 +14,7 @@ Build something useful every week. Use the resources to unblock an implementatio
 - **Use Claude as the default teaching stack, then compare alternatives.** Week 5 requires another model family and week 6 an open model. Compare native behavior before introducing a provider abstraction. Check current API pricing, supported features, data handling, model licenses, and SDK versions rather than copying old defaults.
 - **Deploy only to an org-approved platform** (Cloudflare or Google Cloud Platform). Any other hosting provider needs procurement and security approval first, even for a pilot.
 - **Keep the capstone narrow.** Identify a useful problem and prospective users by week 9, collect representative examples during later builds, and reuse whichever components earn their complexity. RAG, agents, MCP, and fine-tuning are choices, not a required stack.
+- **Reading the time estimates:** milestone minutes are focused implementation slices, not the whole week — they naturally sum to less than a mission's total project-work hours. Reading hours are tracked separately from build time; concept-study time overlaps with reading rather than adding to it. Evaluation/write-up and buffer time come out of the same weekly budget above them; don't add all these numbers on top of each other.
 
 **Core resource allowance:** approximately 25 hours of focused must-read material plus 19 hours of implementation references across 24 weeks. These estimates exclude builds and optional courses; use the weekly total budget above.
 
@@ -58,7 +59,7 @@ _Build a measured extractor and learn to choose between prompts, model families,
 | Week | Deliverable | Evidence to keep |
 |---|---|---|
 | 4 | Build a Structured Extractor with a minimal eval runner. | Start with 30–50 labeled examples, separate development and held-out cases, and report field accuracy, schema validity, and abstentions. Compare a simple rule-based baseline. |
-| 5 | Run the same task against two model families. | Use identical validation inputs and semantic checks; compare failures, latency, and cost. Add a two-step chain only if error analysis justifies it. |
+| 5 | Run the same task against two model families. | Use identical validation inputs and semantic checks; compare failures, latency, and cost. Add a chain only if error analysis justifies it; otherwise record why not. |
 | 6 | Run a small open model in Python and expose the same task interface. | Inspect tokenizer/chat template and tensor shapes; compare memory, speed, and quality with the hosted baseline. Try one supported quantized variant within the hardware budget. |
 
 **Done when:** One command compares versioned implementations, including malformed inputs, missing fields, refusals, and truncation. Iterate on development/validation data, then report results on an untouched test split after selecting the implementation. Explain the limits of a small evaluation set.
@@ -91,8 +92,8 @@ _Ship a streaming interface and a useful image/document feature with observable,
 | Week | Deliverable | Evidence to keep |
 |---|---|---|
 | 7 | Put the extractor or assistant behind a streaming UI and authenticated backend. | Test cancellation, interrupted streams, concurrent requests, safe output rendering, and access control. Trace model calls with sensitive content redacted. |
-| 8 | Build a document/image extraction feature with a human correction step. | Compare text extraction/OCR plus the existing extractor against direct multimodal input on a small labeled set, including unreadable images and tables. |
-| 9 | Deploy a restricted pilot, enforce per-user spend limits, and measure responsiveness. | Record time to first token, total latency, token usage, and cache hit/miss costs. Gather feedback and select a capstone problem with representative examples. |
+| 8 | Build a document/image extraction feature with a human correction step. | Compare text extraction/OCR plus the existing extractor against direct multimodal input on a small labeled set, including unreadable images and tables. Enforce and test server-side upload size/type limits. |
+| 9 | Deploy a restricted pilot, enforce per-user spend limits, and measure responsiveness. | Record time to first token, total latency, token usage, and cache hit/miss costs. Document and test retention/deletion behavior for uploaded files and traces. Gather feedback and select a capstone problem with representative examples. |
 
 **Done when:** A user can complete and correct a real task; failed or cancelled calls have clear UI states; permissions, upload limits, retention, and spend caps are enforced server-side.
 
@@ -163,8 +164,8 @@ _Build and debug a bounded tool-calling agent, and justify whether it improves o
 | Week | Deliverable | Evidence to keep |
 |---|---|---|
 | 13 | Implement the task as a fixed workflow, then build a small tool-calling loop by hand. | Run both on the same task set. Record task completion, tool calls, side effects, latency, and cost. |
-| 14 | Add execution limits and recovery around two or three useful tools. | Inject tool failures, duplicate calls, and untrusted instructions. Verify permissions, approvals, idempotency, step/time/spend limits, and safe resume behavior. |
-| 15 | Improve the weakest behavior and optionally port the loop to an SDK. | Evaluate outcomes and traces; compare context compaction/retrieval when history grows. If porting, demonstrate the behavior the SDK supplies or changes. |
+| 14 | Add execution limits and recovery around two or three useful tools. | Inject tool failures, duplicate calls, and untrusted instructions. Verify approval gates (for high-consequence/irreversible actions), idempotency, step/time/spend limits, and safe resume behavior. |
+| 15 | Improve the weakest behavior and optionally port the loop to an SDK. | Evaluate outcomes and traces; compare context compaction/retrieval only if context-related failures show up in the traces or evals. If porting, demonstrate the behavior the SDK supplies or changes. |
 
 **Done when:** The agent stops predictably, cannot exceed tool permissions, and recovers from a partial failure without duplicating a consequential action. A fixed workflow remains a measured baseline.
 
@@ -198,7 +199,7 @@ _Expose existing tools through MCP and test local and authenticated remote integ
 | Week | Deliverable | Evidence to keep |
 |---|---|---|
 | 16 | Wrap the Chapter 05 tools in a local MCP server and connect a client. | Use Inspector to test schemas, errors, and capability negotiation. Demonstrate tools and explain when resources/prompts would be useful. |
-| 17 | Deploy the same small server over an authenticated remote transport. | Test valid and invalid authorization, credential scope, timeouts, and client compatibility. Keep tool-level permissions independent of model instructions. |
+| 17 | Deploy the same small server over an authenticated remote transport, using an existing authorization provider or identity platform rather than building OAuth yourself. Prerequisites: an HTTPS endpoint, a test client, and a provider account or local test issuer. | Test valid/invalid token handling, scopes, and tool-level permission checks, plus credential scope, timeouts, and client compatibility. Keep tool-level permissions independent of model instructions. |
 
 **Done when:** The existing agent can use the server, unauthorized calls fail, and the repository records compatible protocol, SDK, and client versions.
 
@@ -227,7 +228,7 @@ _Run a small adaptation experiment, then harden the evaluations and operating be
 | Week | Deliverable | Evidence to keep |
 |---|---|---|
 | 18 | Fine-tune a small open model or adapter on one narrow task. | Use permitted, deduplicated train/validation/test data. Compare the base model, tuned model, and best prompt baseline on held-out cases; save training settings, model revision, and reloadable weights/adapter. |
-| 19 | Make the eval suite a useful CI gate. | Version datasets/rubrics; calibrate a judge against human labels where needed. Report segment failures and uncertainty; rerun variable cases rather than treating tiny score changes as reliable gains. |
+| 19 | Make the eval suite a useful CI gate. | Version datasets/rubrics; grade with deterministic/code-based checks wherever possible, and calibrate an LLM judge against human labels only for criteria that can't be graded deterministically. Report segment failures and uncertainty; rerun variable cases rather than treating tiny score changes as reliable gains. Gate CI on a minimum score or allowed regression margin, not on every score decrease. |
 | 20 | Load-test the deployed feature and exercise recovery. | Measure p95 latency and throughput; inject throttling, timeouts, and provider failure. Test queues/backpressure, bounded retries, circuit breaking or graceful degradation, and any chosen fallback. |
 | 21 | Perform a security and release rehearsal. | Test injection, data isolation, unsafe output, and excessive spending. Demonstrate a staged rollout and rollback; record alerts, an incident runbook, and cost per successful task. |
 
@@ -261,7 +262,7 @@ _Ship one useful product to a small real audience and make an evidence-backed pr
 
 | Week | Deliverable | Evidence to keep |
 |---|---|---|
-| 22 | Finish one end-to-end workflow for the problem chosen in week 9. | Reuse proven components; freeze a held-out test set and acceptance criteria. Compare with an ordinary-code or manual baseline and record the architecture decisions. |
+| 22 | Finish one end-to-end workflow for the problem chosen in week 9, using only the techniques that problem justifies (retrieval, an agent, MCP, fine-tuning, or none of these). | Reuse proven components; freeze a held-out test set and acceptance criteria. Compare with an ordinary-code or manual baseline and record a written justification for each technique used. |
 | 23 | Deploy a pilot and run the release checklist against the actual deployment. | Record access/security tests, load results, monitoring/alerts, cost limits, restore/rollback steps, and known limitations. Exercise any RAG, agent, or MCP surface actually used. |
 | 24 | Observe real usage, fix the highest-impact failure, and present the result. | Show a demo, user feedback, before/after task outcomes, cost per successful task, operational ownership, and a scoped next-step proposal. |
 
@@ -306,3 +307,11 @@ Choose one specialization or one recurring source at a time. Product work and re
 | Deep dives | [Build a Large Language Model (From Scratch) — Sebastian Raschka](https://www.manning.com/books/build-a-large-language-model-from-scratch) | Book | Deep dive: a book-length companion to Zero to Hero, including fine-tuning. |
 | Deep dives | [Hugging Face LLM Course](https://huggingface.co/learn/llm-course) | Course | Complete the remaining course after the selected inference and adaptation labs; expand data curation and model training depth. |
 | Deep dives | [Practical Deep Learning for Coders — fast.ai](https://course.fast.ai) | Course | Deep dive: top-down, code-first deep learning. |
+
+### Next steps by specialization
+
+- **Model internals & training** — Neural Networks: Zero to Hero, Build a Large Language Model (From Scratch), the remaining Hugging Face LLM Course, Practical Deep Learning for Coders (fast.ai).
+- **Evaluation & reliability** — Using LLM-as-a-Judge and the LLM Evals FAQ (Hamel Husain), Promptfoo docs, Patterns for Building LLM-based Systems (Eugene Yan).
+- **Security** — OWASP Top 10 for LLM Applications, the lethal trifecta for AI agents, Simon Willison's prompt injection archive.
+- **Agents & tools** — Building Effective Agents, Effective context engineering for AI agents, the MCP Specification.
+- **Staying current** — Claude release notes, Simon Willison's weblog, Latent Space, Artificial Analysis.

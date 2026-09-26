@@ -28,7 +28,7 @@ export const ch4: Chapter = {
               id: "ch4.c.what-embeddings-are",
               title: "What embeddings are",
               summary:
-                "An embedding maps text to a vector so that cosine similarity between vectors approximates similarity of meaning, though similar meaning is not the same thing as relevant to a query.",
+                "An embedding maps text to a vector so that cosine similarity between vectors approximates similarity of meaning, though similar meaning is not the same thing as relevant to a query; retrieval only changes what the model sees at request time, not its weights, so no training happens and the knowledge updates the moment the index does.",
               minutes: 30,
               resources: ["ch4.r.embeddings-docs", "ch4.r.rag-pinecone"],
             },
@@ -384,7 +384,11 @@ export const ch4: Chapter = {
         { id: "ch4.m1.s5", title: "Hybrid fusion (RRF) added and measured against each individual retriever", minutes: 60, week: 11 },
         { id: "ch4.m1.s6", title: "Reranker added and measured for recall/ranking quality, latency and cost", minutes: 55, week: 11 },
         { id: "ch4.m1.s7", title: "Tenant/document access restrictions enforced before retrieval reaches a prompt or cache", minutes: 50, week: 11 },
-        { id: "ch4.m1.s8", title: "Cited answers vs. long-context baseline, with abstention and an embedding-migration test", minutes: 75, week: 12 },
+        { id: "ch4.m1.s8", title: "Cited answers generated over retrieved passages, scored separately from retrieval", minutes: 20, week: 12 },
+        { id: "ch4.m1.s9", title: "RAG compared against a long-context baseline on the same task set", minutes: 20, week: 12 },
+        { id: "ch4.m1.s10", title: "Abstention verified: model says it doesn't know when context doesn't support an answer", minutes: 15, week: 12 },
+        { id: "ch4.m1.s11", title: "Stale/deleted documents tested to confirm they cannot appear in an answer", minutes: 15, week: 12 },
+        { id: "ch4.m1.s12", title: "Embedding-version migration run on a small copy and diffed against the original", minutes: 20, week: 12 },
       ],
       deliverable:
         "A retrieval pipeline with ingestion, measured lexical/vector/hybrid/reranked retrieval, permission-aware access control, and cited grounded answers benchmarked against a long-context baseline.",
@@ -395,7 +399,6 @@ export const ch4: Chapter = {
       ],
       stretch: [
         { id: "ch4.m1.x1", title: "Try contextual retrieval and measure the gain against the hybrid baseline", minutes: 55, week: 11 },
-        { id: "ch4.m1.x2", title: "Run an embedding-model migration on a copy and diff the results", minutes: 50, week: 12 },
       ],
     },
   ],

@@ -78,9 +78,10 @@ export const ch6: Chapter = {
       title: "Remote & secure MCP",
       focus: "Deploy the same server over an authenticated remote transport and defend it against MCP-specific threats.",
       build: {
-        deliverable: "Deploy the same small server over an authenticated remote transport.",
+        deliverable:
+          "Deploy the same small server over an authenticated remote transport, using an existing authorization provider or identity platform rather than building OAuth yourself. Prerequisites: an HTTPS endpoint, a test client, and a provider account or local test issuer.",
         evidence:
-          "Test valid and invalid authorization, credential scope, timeouts, and client compatibility. Keep tool-level permissions independent of model instructions.",
+          "Test valid/invalid token handling, scopes, and tool-level permission checks, plus credential scope, timeouts, and client compatibility. Keep tool-level permissions independent of model instructions.",
       },
       groups: [
         {
@@ -98,7 +99,7 @@ export const ch6: Chapter = {
               id: "ch6.c.oauth-per-spec",
               title: "OAuth 2.1 per the spec",
               summary:
-                "The MCP spec defines an OAuth 2.1 authorization flow for remote servers; following it exactly, rather than improvising your own auth, is what keeps a server safe to expose.",
+                "The MCP spec defines an OAuth 2.1 authorization flow for remote servers. Use an existing authorization provider or identity platform rather than building OAuth yourself; the goal is correct valid/invalid token handling, scopes, and tool-level permission checks, not implementing the flow from scratch.",
               minutes: 40,
               resources: ["ch6.r.mcp-specification"],
             },
@@ -275,22 +276,23 @@ export const ch6: Chapter = {
       number: 12,
       title: "Authenticated Remote MCP",
       track: "Backend",
-      hours: 11,
+      hours: 8,
       major: true,
       objective:
-        "Deploy the same small server over an authenticated remote Streamable HTTP transport, keeping tool-level permissions independent of whatever the model is told.",
+        "Deploy the same small server over an authenticated remote Streamable HTTP transport, using an existing authorization provider or identity platform, and keep tool-level permissions independent of whatever the model is told.",
       requirements: [
-        "Streamable HTTP transport instead of stdio.",
-        "An authorization flow following the MCP spec, not an improvised scheme.",
-        "Valid and invalid authorization, credential scope, and timeout cases all tested.",
+        "Streamable HTTP transport instead of stdio, deployed to an org-approved platform (Cloudflare or Google Cloud Platform).",
+        "An authorization flow following the MCP spec via an existing authorization provider or identity platform, not a hand-built OAuth implementation.",
+        "Prerequisites in place: an HTTPS endpoint, a test client, and a provider account or local test issuer.",
+        "Valid/invalid token handling, scopes, and tool-level permission checks tested, plus credential scope and timeout cases.",
         "Client compatibility verified against at least one real client.",
         "Tool-level permissions enforced server-side, independent of model instructions.",
         "Protocol, SDK, and client versions recorded in the repository.",
       ],
       milestones: [
-        { id: "ch6.m2.s1", title: "Stand up the server on Streamable HTTP transport", minutes: 60, week: 17 },
-        { id: "ch6.m2.s2", title: "Implement the spec's OAuth 2.1 authorization flow", minutes: 75, week: 17 },
-        { id: "ch6.m2.s3", title: "Test valid and invalid authorization and credential scope", minutes: 45, week: 17 },
+        { id: "ch6.m2.s1", title: "Stand up the server on Streamable HTTP transport behind an HTTPS endpoint, deployed to an org-approved platform (Cloudflare or Google Cloud Platform)", minutes: 60, week: 17 },
+        { id: "ch6.m2.s2", title: "Wire the spec's OAuth 2.1 authorization flow to an existing authorization provider or identity platform (or a local test issuer)", minutes: 75, week: 17 },
+        { id: "ch6.m2.s3", title: "Test valid/invalid token handling, scopes, and tool-level permission checks", minutes: 45, week: 17 },
         { id: "ch6.m2.s4", title: "Test timeouts and client compatibility against a real client", minutes: 40, week: 17 },
         { id: "ch6.m2.s5", title: "Enforce tool-level permissions server-side, independent of model instructions", minutes: 40, week: 17 },
         { id: "ch6.m2.s6", title: "Record the pinned protocol, SDK, and client versions in the repo", minutes: 20, week: 17 },
@@ -303,8 +305,8 @@ export const ch6: Chapter = {
       ],
       stretch: [
         {
-          id: "ch6.m2.x1",
-          title: "Deploy it: use an org-approved platform (Cloudflare or Google Cloud Platform); anything else needs procurement/security approval",
+          id: "ch6.m2.x2",
+          title: "Connect a second, different real client to the deployed server and verify it behaves the same way",
           minutes: 60,
           week: 17,
         },

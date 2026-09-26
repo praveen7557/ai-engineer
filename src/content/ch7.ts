@@ -72,7 +72,7 @@ export const ch7: Chapter = {
       build: {
         deliverable: "Make the eval suite a useful CI gate.",
         evidence:
-          "Version datasets/rubrics; calibrate a judge against human labels where needed. Report segment failures and uncertainty; rerun variable cases rather than treating tiny score changes as reliable gains.",
+          "Version datasets/rubrics; grade with deterministic/code-based checks wherever possible, and calibrate an LLM judge against human labels only for criteria that can't be graded deterministically. Report segment failures and uncertainty; rerun variable cases rather than treating tiny score changes as reliable gains.",
       },
       groups: [
         {
@@ -82,7 +82,7 @@ export const ch7: Chapter = {
               id: "ch7.c.evals-in-ci",
               title: "Evals in CI",
               summary:
-                "A regression in your eval score should block the merge, the same way a failing test does; tracking scores over time per prompt and model version is what lets you change either with confidence.",
+                "Grade with deterministic, code-based checks (exact match, schema validation, regex, unit-style checks) wherever the criterion allows; reach for an LLM judge only for genuinely subjective criteria, and calibrate it first. A regression in your eval score should block the merge, the same way a failing test does; tracking scores over time per prompt and model version is what lets you change either with confidence.",
               minutes: 40,
               resources: ["ch7.r.promptfoo-docs"],
             },
@@ -103,7 +103,7 @@ export const ch7: Chapter = {
               id: "ch7.c.calibrated-llm-judge",
               title: "Calibrated LLM-as-judge",
               summary:
-                "A judge that gives a binary pass/fail with a written critique is only trustworthy once you've checked its agreement against your own labels, including its false-positive and false-negative rates.",
+                "Reach for an LLM judge only when a criterion can't be graded deterministically. A judge that gives a binary pass/fail with a written critique is only trustworthy once you've checked its agreement against your own labels, including its false-positive and false-negative rates.",
               minutes: 45,
               resources: ["ch7.r.llm-as-judge-hamel"],
             },
@@ -111,7 +111,7 @@ export const ch7: Chapter = {
               id: "ch7.c.uncertainty-reporting",
               title: "Reporting uncertainty, not just a score",
               summary:
-                "Segment failures and confidence intervals tell you more than one aggregate number, and rerunning a variable case is how you tell a real regression from noise.",
+                "Segment failures and confidence intervals tell you more than one aggregate number, and rerunning a variable case is how you tell a real regression from noise. Gate CI on a minimum score or an allowed regression margin, with repeated runs for variable cases and a hard fail reserved for critical cases — don't block the merge on every score decrease.",
               minutes: 30,
               resources: ["ch7.r.evals-faq", "ch7.r.ai-engineering-evals"],
             },
@@ -398,17 +398,24 @@ export const ch7: Chapter = {
         "Turn your eval suite into a versioned, calibrated CI gate that catches a deliberately introduced regression before it merges.",
       requirements: [
         "Versioned datasets and rubrics.",
-        "A judge calibrated against human labels where an LLM grader is used.",
+        "Deterministic, code-based graders (exact match, schema, regex, unit-style checks) used for every criterion that allows it.",
+        "A judge calibrated against human labels only for criteria that can't be graded deterministically.",
         "Segment failure reporting and uncertainty, not a single aggregate score.",
         "Variable cases rerun rather than trusting a tiny score change.",
-        "A CI job that fails the build on a deliberately introduced regression.",
+        "A CI job that fails the build on a deliberately introduced regression, gated on a threshold or allowed regression margin rather than any score decrease.",
       ],
       milestones: [
-        { id: "ch7.m2.s1", title: "Version your eval datasets and rubrics", minutes: 30, week: 19 },
-        { id: "ch7.m2.s2", title: "Calibrate an LLM judge against human labels and report agreement", minutes: 75, week: 19 },
+        { id: "ch7.m2.s1", title: "Version your eval datasets and rubrics, and wire in deterministic/code-based graders wherever a criterion allows", minutes: 30, week: 19 },
+        {
+          id: "ch7.m2.s2",
+          title: "Calibrate an LLM judge against human labels and report agreement",
+          minutes: 75,
+          week: 19,
+          conditional: "Only if a criterion can't be graded deterministically",
+        },
         { id: "ch7.m2.s3", title: "Report segment failures and uncertainty instead of one aggregate score", minutes: 45, week: 19 },
         { id: "ch7.m2.s4", title: "Rerun variable cases and confirm tiny score changes aren't treated as real gains", minutes: 30, week: 19 },
-        { id: "ch7.m2.s5", title: "Wire the suite into CI and confirm it fails on a deliberately introduced regression", minutes: 60, week: 19 },
+        { id: "ch7.m2.s5", title: "Wire the suite into CI with a threshold gate (minimum score or allowed regression margin, hard fail on critical cases) and confirm it fails on a deliberately introduced regression without blocking on every score decrease", minutes: 60, week: 19 },
       ],
       deliverable:
         "A CI-gated eval suite with versioned data, a calibrated judge, and a demonstrated catch of an injected regression.",
@@ -489,7 +496,8 @@ export const ch7: Chapter = {
     {
       id: "ch7.t.ci-gate-implementation",
       dimension: "Implementation",
-      statement: "You can build a versioned, CI-gated eval suite with a calibrated judge and segment-level reporting.",
+      statement:
+        "You can build a versioned, CI-gated eval suite that grades deterministically wherever possible, reserves a calibrated judge for subjective criteria, and reports at the segment level.",
     },
     {
       id: "ch7.t.load-drill-debugging",
@@ -512,6 +520,7 @@ export const ch7: Chapter = {
       label: "Lab boundary",
       text:
         "Week 18 is one small training run plus a baseline comparison, not a hyperparameter sweep. A tiny model/task is acceptable on constrained hardware; richer experiments are optional. Estimate compute cost before training and include model/license/data provenance in the result. Production cost accounting includes model calls, retries, embeddings, reranking, tools, storage/hosting, and evaluation overhead; report one-time training separately.",
+      week: 18,
     },
   ],
   skills: { evaluation: 3, production: 3, knowledge: 1 },

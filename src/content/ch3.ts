@@ -80,7 +80,7 @@ export const ch3: Chapter = {
       build: {
         deliverable: "Build a document/image extraction feature with a human correction step.",
         evidence:
-          "Compare text extraction/OCR plus the existing extractor against direct multimodal input on a small labeled set, including unreadable images and tables.",
+          "Compare text extraction/OCR plus the existing extractor against direct multimodal input on a small labeled set, including unreadable images and tables. Enforce and test server-side upload size/type limits.",
       },
       groups: [
         {
@@ -134,7 +134,7 @@ export const ch3: Chapter = {
       build: {
         deliverable: "Deploy a restricted pilot, enforce per-user spend limits, and measure responsiveness.",
         evidence:
-          "Record time to first token, total latency, token usage, and cache hit/miss costs. Gather feedback and select a capstone problem with representative examples.",
+          "Record time to first token, total latency, token usage, and cache hit/miss costs. Document and test retention/deletion behavior for uploaded files and traces. Gather feedback and select a capstone problem with representative examples.",
       },
       groups: [
         {
@@ -152,7 +152,7 @@ export const ch3: Chapter = {
               id: "ch3.c.response-caching",
               title: "Response caching",
               summary:
-                "Caching whole responses for identical or near-identical requests avoids paying for the same generation twice, especially for common queries.",
+                "Caching whole responses for identical or near-identical requests avoids paying for the same generation twice, but the cache key must be scoped by tenant/user permissions — never serve one user's cached answer to another — and entries must be invalidated when source data, prompts, or model versions change.",
               minutes: 20,
               resources: [],
             },
@@ -367,6 +367,7 @@ export const ch3: Chapter = {
         "Compare accuracy and cost on a small labeled set, including unreadable images and tables",
         "A human correction step for extracted fields",
         "One PAIR or HAX guideline applied to the correction interaction, with the specific change documented",
+        "Enforce server-side upload size and type limits, tested with an oversized or invalid file",
       ],
       milestones: [
         { id: "ch3.m2.s1", title: "OCR + existing-extractor path implemented", minutes: 55, week: 8 },
@@ -374,6 +375,7 @@ export const ch3: Chapter = {
         { id: "ch3.m2.s3", title: "Labeled set with unreadable images/tables; both paths compared", minutes: 60, week: 8 },
         { id: "ch3.m2.s4", title: "Human correction step for extracted fields", minutes: 45, week: 8 },
         { id: "ch3.m2.s5", title: "One PAIR or HAX guideline applied and documented", minutes: 35, week: 8 },
+        { id: "ch3.m2.s6", title: "Server-side upload size/type limits enforced, tested with an oversized or invalid file", minutes: 35, week: 8 },
       ],
       deliverable:
         "A document/image extraction feature with a working human correction step, plus a written comparison of OCR-plus-extractor versus direct multimodal input on accuracy and cost.",
@@ -399,12 +401,14 @@ export const ch3: Chapter = {
         "Enforce per-user spend limits server-side, independent of provider rate limits",
         "Record time to first token, total latency, token usage, and cache hit/miss costs",
         "Gather feedback and select a capstone problem with representative examples",
+        "Document and test retention/deletion behavior for uploaded files and model-call traces",
       ],
       milestones: [
         { id: "ch3.m3.s1", title: "Restricted pilot deployed to a small user group", minutes: 45, week: 9 },
         { id: "ch3.m3.s2", title: "Per-user spend limits enforced server-side", minutes: 45, week: 9 },
         { id: "ch3.m3.s3", title: "Latency/token/cache-cost measurement report", minutes: 50, week: 9 },
         { id: "ch3.m3.s4", title: "Feedback gathered and capstone problem selected with representative examples", minutes: 40, week: 9 },
+        { id: "ch3.m3.s5", title: "Retention/deletion behavior for uploaded files and traces documented and tested", minutes: 35, week: 9 },
       ],
       deliverable:
         "A restricted pilot deployment with enforced per-user spend limits, a measured latency/cost report, and a chosen capstone problem backed by representative examples.",

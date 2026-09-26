@@ -43,6 +43,43 @@ export const guide: Guide = {
         "Keep the capstone narrow. Identify a useful problem and prospective users by week 9, collect representative examples during later builds, and reuse whichever components earn their complexity. RAG, agents, MCP, and fine-tuning are choices, not a required stack.",
     },
   ],
+  timeEstimates: [
+    {
+      label: "Milestone slices",
+      text:
+        "A milestone's minutes are a focused implementation slice — one step of the build, not the whole week. They sum to less than the mission's total hours; don't expect them to add up to it.",
+    },
+    {
+      label: "Project work (mission hours)",
+      text:
+        "A mission's hours are the total project work for the weeks it spans: implementation, debugging, evaluation, and write-up together, at roughly 6–8 build hours per week spanned.",
+    },
+    {
+      label: "Reading (resource hours)",
+      text:
+        "Resource-table hours are focused reading/viewing time only, separate from build time. They're spent alongside the build, not on top of it.",
+    },
+    {
+      label: "Concepts",
+      text:
+        "Concept study time overlaps with reading the linked resources; it isn't a separate block to add on top of the resource hours.",
+    },
+    {
+      label: "Evaluation & write-up",
+      text:
+        "Recording results, decisions, and evidence comes out of the same weekly budget as the build, not an extra allowance.",
+    },
+    {
+      label: "Buffer",
+      text:
+        "A small buffer for the week's inevitable snag also comes out of the weekly budget; it isn't free time beyond it.",
+    },
+    {
+      label: "Worked example",
+      text:
+        "A week budgeted at ~12 h breaks down as roughly 7 h build (of which ~2–3 h are milestone slices) + ~2 h reading + ~1.5 h evaluation/write-up + ~1.5 h buffer — don't add these on top of each other again when they already overlap.",
+    },
+  ],
   resourceAllowance:
     "Core resource allowance: approximately 25 hours of focused must-read material plus 19 hours of implementation references across 24 weeks. These estimates exclude builds and optional courses; use the weekly total budget above.",
   prerequisites:

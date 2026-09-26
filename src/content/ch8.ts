@@ -28,7 +28,7 @@ export const ch8: Chapter = {
               id: "ch8.c.integrating-pieces",
               title: "Integrating the pieces end to end",
               summary:
-                "Wiring prompting, tool calling, retrieval, an agent step and at least one MCP-exposed capability into one working system is where every earlier chapter's shortcuts finally show up.",
+                "Wire together only the techniques your week-9 problem justifies — retrieval, an agent step, MCP, or none of these beyond prompting — and write down why each one earns its place; the goal is one working system, not a checklist of every earlier chapter's techniques.",
               minutes: 60,
               resources: ["ch5.r.demystifying-agent-evals"],
             },
@@ -183,7 +183,7 @@ export const ch8: Chapter = {
     },
   ],
   majorObjective:
-    "By the end you'll have shipped one capstone product end to end, spanning LLMs through production architecture, deployed it to a real audience, and made an evidence-backed proposal for its next stage.",
+    "By the end you'll have shipped one capstone product end to end, using only the techniques your problem justifies (each with a written justification), deployed it to a real audience, and made an evidence-backed proposal for its next stage.",
   doneWhen:
     "A real user can complete the target workflow, the deployment is reproducible, and the proposal includes measured benefits, failure cases, cost, ownership, and a rollback plan.",
   decision:
@@ -218,12 +218,13 @@ export const ch8: Chapter = {
       number: 17,
       title: "The Final Build",
       track: "Full-stack",
-      hours: 40,
+      hours: 24,
       major: true,
       objective:
-        "Design, build, deploy and present one complete AI product for the problem you chose in week 9, spanning the roadmap's skills end to end, and make an evidence-backed proposal for its next stage.",
+        "Design, build, deploy and present one complete AI product for the problem you chose in week 9, using only the techniques that problem justifies, and make an evidence-backed proposal for its next stage.",
       requirements: [
         "One end-to-end workflow finished for the week-9 problem, reusing proven components from earlier chapters.",
+        "Each AI technique used (retrieval, an agent, MCP, fine-tuning) justified in writing by the problem; techniques not needed for this problem are left out rather than added to span every chapter.",
         "A frozen held-out test set and written acceptance criteria, compared against an ordinary-code or manual baseline.",
         "A deployed pilot on an org-approved platform, with the full release checklist run against the real deployment.",
         "Access/security tests, load results, monitoring/alerts, cost limits, and restore/rollback steps all recorded.",
@@ -233,7 +234,7 @@ export const ch8: Chapter = {
       milestones: [
         { id: "ch8.m1.s1", title: "Finish the end-to-end workflow, reusing proven components from earlier chapters", minutes: 120, week: 22 },
         { id: "ch8.m1.s2", title: "Freeze a held-out test set and write acceptance criteria", minutes: 45, week: 22 },
-        { id: "ch8.m1.s3", title: "Compare against an ordinary-code or manual baseline and record the architecture decisions", minutes: 60, week: 22 },
+        { id: "ch8.m1.s3", title: "Compare against an ordinary-code or manual baseline and record, for each technique used, a written justification for why the problem needed it", minutes: 60, week: 22 },
         { id: "ch8.m1.s4", title: "Deploy a pilot to an org-approved platform and run the release checklist against it", minutes: 90, week: 23 },
         { id: "ch8.m1.s5", title: "Record access/security tests, load results, monitoring/alerts, cost limits, and restore/rollback steps", minutes: 75, week: 23 },
         { id: "ch8.m1.s6", title: "Exercise any RAG, agent, or MCP surface actually used in the pilot", minutes: 45, week: 23 },

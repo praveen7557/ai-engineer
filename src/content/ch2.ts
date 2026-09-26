@@ -49,7 +49,7 @@ export const ch2: Chapter = {
               id: "ch2.c.structured-outputs",
               title: "Structured outputs & validation",
               summary:
-                "Constraining a response to a JSON schema and then validating it in code with Zod or Pydantic turns free text into something your application can trust and act on.",
+                "Constraining a response to a JSON schema and validating it in code with Zod or Pydantic guarantees the shape is right, not that the values are — schema validity and semantic correctness are different checks, and only the second tells you the fields are actually correct.",
               minutes: 35,
               resources: ["ch2.r.structured-outputs-docs"],
             },
@@ -80,7 +80,7 @@ export const ch2: Chapter = {
       build: {
         deliverable: "Run the same task against two model families.",
         evidence:
-          "Use identical validation inputs and semantic checks; compare failures, latency, and cost. Add a two-step chain only if error analysis justifies it.",
+          "Use identical validation inputs and semantic checks; compare failures, latency, and cost. Add a chain only if error analysis justifies it; otherwise record why not.",
       },
       groups: [
         {
@@ -315,7 +315,7 @@ export const ch2: Chapter = {
         "Report field accuracy, schema validity, and abstention rate; compare against a rule-based baseline",
         "Run the same task against a second model family using identical validation inputs and semantic checks",
         "Compare failures, latency, and cost across model families",
-        "Add a two-step chain only where error analysis on the single call justifies it",
+        "Add a two-step chain only if error analysis on the single call justifies it; otherwise record why not",
       ],
       milestones: [
         { id: "ch2.m1.s1", title: "Schema defined and structured-output extractor implemented", minutes: 45, week: 4 },
@@ -324,7 +324,7 @@ export const ch2: Chapter = {
         { id: "ch2.m1.s4", title: "Rule-based baseline compared against the extractor", minutes: 40, week: 4 },
         { id: "ch2.m1.s5", title: "Same task run against a second model family, identical validation inputs", minutes: 55, week: 5 },
         { id: "ch2.m1.s6", title: "Semantic-check comparison of failures, latency and cost across families", minutes: 50, week: 5 },
-        { id: "ch2.m1.s7", title: "Two-step chain added only where error analysis justifies it", minutes: 45, week: 5 },
+        { id: "ch2.m1.s7", title: "Two-step chain added, or a written reason recorded for why one wasn't needed", minutes: 45, week: 5, conditional: "Only if error analysis shows a single call can't meet the quality bar" },
       ],
       deliverable:
         "One command that runs the structured extractor across two model families and reports field accuracy, schema validity, abstentions, latency and cost against a held-out test split.",
@@ -401,6 +401,7 @@ export const ch2: Chapter = {
     {
       label: "Lab boundary",
       text: "Use a small model that fits available hardware or a capped hosted notebook. This week teaches inference, not production GPU serving. Reserve training for week 18.",
+      week: 6,
     },
   ],
   skills: { knowledge: 2, building: 1, evaluation: 1 },

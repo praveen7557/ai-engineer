@@ -5,17 +5,17 @@ export const setupItems: SetupItem[] = [
   {
     id: "setup.api-account",
     title: "Personal API account with a monthly spend limit",
-    note: "Total API spend for this roadmap is typically tens of dollars. Set a hard limit anyway.",
+    note: "Total API spend depends on model tier, token volume, and whether you run evaluations and fine-tuning — treat any total as a rough estimate, not a fact. Set a hard limit anyway.",
   },
   {
     id: "setup.runtime",
     title: "Node 20+ and/or Python 3.11+",
-    note: "Use whichever matches your stack; every project works in either.",
+    note: "The application builds can use your usual stack (TypeScript/Node or Python); the open-model lab (week 6) and the adaptation lab (week 18) need Python 3.11+.",
   },
   {
     id: "setup.docker",
     title: "Docker Desktop",
-    note: "For Postgres + pgvector, Langfuse, and the Temporal dev server.",
+    note: "For Postgres + pgvector and Langfuse.",
   },
   {
     id: "setup.git-repo",
