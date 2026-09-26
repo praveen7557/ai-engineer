@@ -3,9 +3,10 @@ import { ITEMS, MISSIONS, CHAPTER_BY_ID, chapterForWeek } from "./content";
 import {
   ACHIEVEMENTS, isMissionComplete, isTrialPassed, isWeekComplete, itemXp, rankFor, stageFor, bond, xpOf, XP,
 } from "./engine/progress";
-import { emptyState, isNewer, localDay, type ContinuingEntry, type ProgressState } from "./engine/state";
+import { emptyState, isNewer, localDay, type ContinuingEntry, type JournalLinks, type ProgressState } from "./engine/state";
 import * as store from "./engine/storage";
 import * as gistApi from "./engine/gist";
+import { decideSync } from "./engine/sync";
 
 /* ---------------- feedback events (pops, unlocks) ---------------- */
 export type FeedEvent =
@@ -22,17 +23,24 @@ export type SyncMode = "local" | "file" | "file-paused";
 export interface GistStatus {
   /** A token is configured. */
   enabled: boolean;
-  status: "off" | "idle" | "syncing" | "error";
+  /** Sync turned off in this browser (local progress is untouched). */
+  paused: boolean;
+  status: "off" | "idle" | "syncing" | "error" | "conflict";
   gistId: string | null;
   lastSynced: Date | null;
   error: string | null;
+  /** Both sides changed since the last sync: nothing is overwritten until the learner chooses. */
+  conflict: { local: ProgressState; remote: ProgressState; reason: "first-sync" | "both-changed" } | null;
 }
 
 interface Ctx {
   state: ProgressState;
   toggle: (id: string, on: boolean, source?: Element | null) => void;
+  /** Resolve a conditional milestone as not applicable (reason required), or clear it with null. */
+  setNotApplicable: (id: string, reason: string | null) => void;
   setStartDate: (d: string | null) => void;
   setJournal: (key: string, text: string) => void;
+  setJournalLinks: (key: string, links: JournalLinks) => void;
   addContinuing: (e: Omit<ContinuingEntry, "id">) => void;
   removeContinuing: (id: string) => void;
   feed: FeedEvent[];
@@ -50,6 +58,10 @@ interface Ctx {
   gist: GistStatus;
   syncGistNow: () => Promise<void>;
   createPrivateGist: () => Promise<void>;
+  resolveGistConflict: (keep: "local" | "remote") => Promise<void>;
+  setGistPaused: (paused: boolean) => void;
+  snapshots: store.Snapshot[];
+  restoreSnapshot: (id: string) => void;
 }
 
 const StoreContext = createContext<Ctx | null>(null);
@@ -77,9 +89,20 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const stateRef = useRef(state);
   stateRef.current = state;
   const gistCfg = useRef(gistApi.readGistConfig(import.meta.env, gistApi.loadStoredGistId()));
-  const [gist, setGist] = useState<GistStatus>(() => ({
-    enabled: !!gistCfg.current, status: gistCfg.current ? "idle" : "off", gistId: gistCfg.current?.gistId ?? null, lastSynced: null, error: null,
-  }));
+  const [gist, setGist] = useState<GistStatus>(() => {
+    const paused = store.isGistPaused();
+    return {
+      enabled: !!gistCfg.current, paused, status: gistCfg.current && !paused ? "idle" : "off",
+      gistId: gistCfg.current?.gistId ?? null, lastSynced: null, error: null, conflict: null,
+    };
+  });
+  const gistRef = useRef(gist);
+  gistRef.current = gist;
+  const [snapshots, setSnapshots] = useState<store.Snapshot[]>(() => store.listSnapshots());
+  /** Keep a recoverable copy of local progress before anything replaces it. */
+  const snapshot = useCallback((reason: string) => {
+    if (store.saveSnapshot(stateRef.current, reason)) setSnapshots(store.listSnapshots());
+  }, []);
   const gistTimer = useRef<number | undefined>(undefined);
   const lastPull = useRef(0);
 
@@ -119,47 +142,99 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   /* ---------- gist sync ---------- */
   const scheduleGistRef = useRef<() => void>(() => {});
-  const adoptRemote = useCallback((remote: ProgressState) => {
-    stateRef.current = remote;
-    setState(remote);
-    store.saveLocal(remote);
+  const replaceLocal = useCallback((next: ProgressState) => {
+    stateRef.current = next;
+    setState(next);
+    store.saveLocal(next);
     if (liveRef.current) scheduleFileWrite();
   }, [scheduleFileWrite]);
 
-  /** Newer save wins: pull the gist; adopt it if it's newer, otherwise push ours. */
+  const gistActive = () => !!gistCfg.current?.gistId && !gistRef.current.paused;
+
+  /**
+   * Safe sync: fast-forward whichever side changed since the last agreed version; if both changed
+   * (or this is the first sync and both have data), stop and ask. Local progress is snapshotted before
+   * it is ever replaced.
+   */
   const syncGist = useCallback(async (reason: "load" | "focus" | "change" | "manual") => {
     const cfg = gistCfg.current;
-    if (!cfg?.gistId) return;
+    if (!cfg?.gistId || gistRef.current.paused || gistRef.current.conflict) return;
     setGist(g => ({ ...g, status: "syncing" }));
     try {
       lastPull.current = Date.now();
       const remote = await gistApi.pullGist(cfg);
-      if (remote && gistNewer(remote, stateRef.current)) {
-        adoptRemote(remote);
-        if (reason !== "change") notifyRef.current("Loaded newer progress from your gist.");
-      } else if (!remote || gistNewer(stateRef.current, remote)) {
-        if (stateRef.current.updatedAt || remote) await gistApi.pushGist(cfg, stateRef.current);
+      const lastSynced = store.loadLastSynced(cfg.gistId);
+      const d = decideSync(stateRef.current, remote, lastSynced);
+      if (d.kind === "conflict" && remote) {
+        setGist(g => ({ ...g, status: "conflict", conflict: { local: stateRef.current, remote, reason: d.reason } }));
+        return;
+      }
+      if (d.kind === "pull" && remote) {
+        snapshot("Before loading your gist's newer version");
+        replaceLocal(remote);
+        store.saveLastSynced(cfg.gistId, remote.updatedAt);
+        if (reason !== "change") notifyRef.current("Loaded newer progress from your gist. The previous version is saved under Snapshots.");
+      } else if (d.kind === "push") {
+        await gistApi.pushGist(cfg, stateRef.current);
+        store.saveLastSynced(cfg.gistId, stateRef.current.updatedAt);
+      } else if (d.kind === "noop") {
+        store.saveLastSynced(cfg.gistId, d.agreedAt);
       }
       setGist(g => ({ ...g, status: "idle", lastSynced: new Date(), error: null }));
     } catch (e) {
       setGist(g => ({ ...g, status: "error", error: (e as Error).message }));
     }
-  }, [adoptRemote]);
+  }, [replaceLocal, snapshot]);
 
   scheduleGistRef.current = () => {
-    if (!gistCfg.current?.gistId) return;
+    if (!gistActive()) return;
     window.clearTimeout(gistTimer.current);
     gistTimer.current = window.setTimeout(() => { syncGist("change"); }, 2000);
   };
 
   useEffect(() => {
-    if (!gistCfg.current?.gistId) return;
+    if (!gistCfg.current?.gistId || gist.paused) return;
     syncGist("load");
     const onFocus = () => { if (document.visibilityState === "visible" && Date.now() - lastPull.current > 30000) syncGist("focus"); };
     window.addEventListener("focus", onFocus);
     document.addEventListener("visibilitychange", onFocus);
     return () => { window.removeEventListener("focus", onFocus); document.removeEventListener("visibilitychange", onFocus); };
-  }, [syncGist]);
+  }, [syncGist, gist.paused]);
+
+  // Don't let a pending save or sync fire after the provider unmounts.
+  useEffect(() => () => { window.clearTimeout(gistTimer.current); window.clearTimeout(writeTimer.current); }, []);
+
+  const resolveGistConflict = useCallback(async (keep: "local" | "remote") => {
+    const cfg = gistCfg.current;
+    const c = gistRef.current.conflict;
+    if (!cfg?.gistId || !c) return;
+    setGist(g => ({ ...g, status: "syncing" }));
+    try {
+      if (keep === "remote") {
+        snapshot("Before choosing your gist's version");
+        replaceLocal(c.remote);
+        store.saveLastSynced(cfg.gistId, c.remote.updatedAt);
+      } else {
+        // The gist's version is kept as a snapshot too, so choosing this device is also recoverable.
+        if (store.saveSnapshot(c.remote, "Gist version replaced by this device's")) setSnapshots(store.listSnapshots());
+        const mine = { ...stateRef.current, updatedAt: new Date().toISOString() };
+        replaceLocal(mine);
+        await gistApi.pushGist(cfg, mine);
+        store.saveLastSynced(cfg.gistId, mine.updatedAt);
+      }
+      setGist(g => ({ ...g, status: "idle", conflict: null, lastSynced: new Date(), error: null }));
+      notifyRef.current(keep === "remote" ? "Using your gist's version. This device's version is saved under Snapshots." : "Kept this device's version and updated your gist. The gist's version is saved under Snapshots.");
+    } catch (e) {
+      setGist(g => ({ ...g, status: "error", error: (e as Error).message }));
+    }
+  }, [replaceLocal, snapshot]);
+
+  const setGistPausedCb = useCallback((paused: boolean) => {
+    store.setGistPaused(paused);
+    window.clearTimeout(gistTimer.current);
+    setGist(g => ({ ...g, paused, conflict: paused ? null : g.conflict, status: paused ? "off" : "idle", error: null }));
+    notifyRef.current(paused ? "Gist sync is off in this browser. Your progress here is unchanged." : "Gist sync is back on.");
+  }, []);
 
   const adopt = useCallback(async (h: store.FileHandle, prompt: boolean, preferFile: boolean) => {
     let perm = await h.queryPermission({ mode: "readwrite" });
@@ -171,6 +246,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     let fromFile: ProgressState | null = null;
     try { fromFile = await store.readHandle(h); } catch { /* invalid or empty: overwrite */ }
     if (fromFile && (preferFile || isNewer(fromFile, stateRef.current))) {
+      if (store.saveSnapshot(stateRef.current, `Before loading ${h.name}`)) setSnapshots(store.listSnapshots());
       stateRef.current = fromFile;
       setState(fromFile);
       store.saveLocal(fromFile);
@@ -189,43 +265,24 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   /* ---------- actions ---------- */
   const toggle = useCallback((id: string, on: boolean, source?: Element | null) => {
     const prev = stateRef.current;
-    const next: ProgressState = { ...prev, done: { ...prev.done } };
-    if (on) next.done[id] = new Date().toISOString(); else delete next.done[id];
-
-    const events: FeedInput[] = [];
-    if (on) {
-      const meta = ITEMS.get(id);
-      const rect = source?.getBoundingClientRect();
-      const pos = rect ? { x: rect.left + rect.width / 2, y: rect.top } : {};
-      if (meta) {
-        let amount = itemXp(meta);
-        let label = LABEL[meta.kind];
-        if (meta.week && meta.kind === "concept" && !isWeekComplete(prev, meta.week) && isWeekComplete(next, meta.week)) {
-          amount += XP.weekComplete; label = `Week ${String(meta.week).padStart(2, "0")} complete`;
-        }
-        if (meta.missionId && !isMissionComplete(prev, meta.missionId) && isMissionComplete(next, meta.missionId)) {
-          const m = MISSIONS.get(meta.missionId)!;
-          amount += m.major ? XP.missionMajor : XP.missionMinor; label = "Mission complete";
-        }
-        const ch = meta.chapterId ? CHAPTER_BY_ID.get(meta.chapterId) : undefined;
-        if (ch && meta.kind === "trial" && !isTrialPassed(prev, ch) && isTrialPassed(next, ch)) {
-          amount += XP.trialPassed; label = `Chapter ${String(ch.number).padStart(2, "0")} trial passed`;
-        }
-        events.push({ type: "xp", amount, label, ...pos });
-      }
-      const r0 = rankFor(xpOf(prev).total).rank, r1 = rankFor(xpOf(next).total).rank;
-      if (r1.index > r0.index) events.push({ type: "rank", name: r1.name, description: r1.description });
-      const s0 = stageFor(bond(prev)).stage, s1 = stageFor(bond(next)).stage;
-      if (s1.index > s0.index) events.push({ type: "stage", name: s1.name, unlock: s1.unlock });
-      for (const a of ACHIEVEMENTS) {
-        if (!a.earned(prev) && a.earned(next) && !prev.seen.achievements.includes(a.id)) {
-          events.push({ type: "achievement", name: a.name, description: a.description });
-          next.seen = { ...next.seen, achievements: [...next.seen.achievements, a.id] };
-        }
-      }
-      next.seen = { ...next.seen, rank: Math.max(next.seen.rank, r1.index), stage: Math.max(next.seen.stage, s1.index) };
-      setPulse(p => p + 1);
+    const next: ProgressState = { ...prev, done: { ...prev.done }, na: { ...prev.na } };
+    if (on) { next.done[id] = new Date().toISOString(); delete next.na[id]; } else delete next.done[id];
+    const events = progressEvents(prev, next, id, on, source);
+    if (events.some(e => e.type === "achievement")) {
+      next.seen = { ...next.seen, achievements: [...new Set([...next.seen.achievements, ...ACHIEVEMENTS.filter(a => !a.earned(prev) && a.earned(next)).map(a => a.id)])] };
     }
+    if (on) setPulse(p => p + 1);
+    commit(next);
+    push(events);
+  }, [commit, push]);
+
+  const setNotApplicable = useCallback((id: string, reason: string | null) => {
+    const prev = stateRef.current;
+    const next: ProgressState = { ...prev, done: { ...prev.done }, na: { ...prev.na } };
+    const on = !!reason?.trim();
+    if (on) { next.na[id] = { reason: reason!.trim(), at: new Date().toISOString() }; delete next.done[id]; } else delete next.na[id];
+    const events = progressEvents(prev, next, id, on, null, "Marked not applicable");
+    if (on) setPulse(p => p + 1);
     commit(next);
     push(events);
   }, [commit, push]);
@@ -236,9 +293,20 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const prev = stateRef.current;
     const today = localDay();
     const journal = { ...prev.journal };
-    if (text.trim()) journal[key] = { text, updatedAt: new Date().toISOString() }; else delete journal[key];
+    const links = prev.journal[key]?.links;
+    if (text.trim() || links) journal[key] = { text, updatedAt: new Date().toISOString(), ...(links ? { links } : {}) }; else delete journal[key];
     const journalDays = text.trim() && !prev.journalDays.includes(today) ? [...prev.journalDays, today].sort() : prev.journalDays;
     commit({ ...prev, journal, journalDays });
+  }, [commit]);
+
+  const setJournalLinks = useCallback((key: string, links: JournalLinks) => {
+    const prev = stateRef.current;
+    const cur = prev.journal[key];
+    const clean: JournalLinks = { repo: links.repo?.trim() || undefined, demo: links.demo?.trim() || undefined, report: links.report?.trim() || undefined };
+    const has = !!(clean.repo || clean.demo || clean.report);
+    const journal = { ...prev.journal };
+    if (cur || has) journal[key] = { text: cur?.text ?? "", updatedAt: new Date().toISOString(), ...(has ? { links: clean } : {}) };
+    commit({ ...prev, journal });
   }, [commit]);
 
   const addContinuing = useCallback((e: Omit<ContinuingEntry, "id">) => {
@@ -275,10 +343,18 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const importFile = useCallback(async (f: File) => {
     const s = await store.readUpload(f);
     if (!s) { notify("That file isn't a progress file for The AI Engineer."); return; }
+    snapshot(`Before importing ${f.name}`);
     commit(s);
     notify(`Imported ${f.name}`);
-  }, [commit, notify]);
-  const resetAll = useCallback(() => { commit(emptyState()); notify("Progress reset."); }, [commit, notify]);
+  }, [commit, notify, snapshot]);
+  const resetAll = useCallback(() => { snapshot("Before reset"); commit(emptyState()); notify("Progress reset. The previous version is saved under Snapshots."); }, [commit, notify, snapshot]);
+  const restoreSnapshot = useCallback((id: string) => {
+    const snap = store.listSnapshots().find(x => x.id === id);
+    if (!snap) return;
+    snapshot("Before restoring a snapshot");
+    commit({ ...snap.state });
+    notify(`Restored the snapshot from ${new Date(snap.at).toLocaleString()}.`);
+  }, [commit, notify, snapshot]);
 
   const syncGistNow = useCallback(() => syncGist("manual"), [syncGist]);
   const createPrivateGist = useCallback(async () => {
@@ -289,6 +365,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const id = await gistApi.createGist(cfg, stateRef.current);
       gistApi.storeGistId(id);
       gistCfg.current = { ...cfg, gistId: id };
+      store.saveLastSynced(id, stateRef.current.updatedAt);
       setGist(g => ({ ...g, status: "idle", gistId: id, lastSynced: new Date(), error: null }));
       notify("Private gist created. Add its id to .env.local as VITE_GIST_ID.");
     } catch (e) {
@@ -297,14 +374,47 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [notify]);
 
   const value = useMemo<Ctx>(() => ({
-    state, toggle, setStartDate, setJournal, addContinuing, removeContinuing, feed, dismiss, notify, pulse,
+    state, toggle, setNotApplicable, setStartDate, setJournal, setJournalLinks, addContinuing, removeContinuing, feed, dismiss, notify, pulse,
     sync, linkFile, reconnectFile, unlinkFile, exportJson, importFile, resetAll, gist, syncGistNow, createPrivateGist,
-  }), [state, toggle, setStartDate, setJournal, addContinuing, removeContinuing, feed, dismiss, notify, pulse, sync, linkFile, reconnectFile, unlinkFile, exportJson, importFile, resetAll, gist, syncGistNow, createPrivateGist]);
+    resolveGistConflict, setGistPaused: setGistPausedCb, snapshots, restoreSnapshot,
+  }), [state, toggle, setNotApplicable, setStartDate, setJournal, setJournalLinks, addContinuing, removeContinuing, feed, dismiss, notify, pulse, sync, linkFile, reconnectFile, unlinkFile, exportJson, importFile, resetAll, gist, syncGistNow, createPrivateGist, resolveGistConflict, setGistPausedCb, snapshots, restoreSnapshot]);
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
 }
 
-const gistNewer = (a: ProgressState, b: ProgressState) => isNewer(a, b);
+/** Feedback for a change: XP pop (with week/mission/trial bonuses), rank-up, companion stage, new achievements. */
+function progressEvents(prev: ProgressState, next: ProgressState, id: string, on: boolean, source: Element | null | undefined, labelOverride?: string): FeedInput[] {
+  const events: FeedInput[] = [];
+  if (!on) return events;
+  const meta = ITEMS.get(id);
+  const rect = source?.getBoundingClientRect();
+  const pos = rect ? { x: rect.left + rect.width / 2, y: rect.top } : {};
+  if (meta) {
+    let amount = itemXp(meta);
+    let label = labelOverride ?? LABEL[meta.kind];
+    if (meta.week && !isWeekComplete(prev, meta.week) && isWeekComplete(next, meta.week)) {
+      amount += XP.weekComplete; label = `Week ${String(meta.week).padStart(2, "0")} complete`;
+    }
+    if (meta.missionId && !isMissionComplete(prev, meta.missionId) && isMissionComplete(next, meta.missionId)) {
+      const m = MISSIONS.get(meta.missionId)!;
+      amount += m.major ? XP.missionMajor : XP.missionMinor; label = "Mission complete";
+    }
+    const ch = meta.chapterId ? CHAPTER_BY_ID.get(meta.chapterId) : undefined;
+    if (ch && meta.kind === "trial" && !isTrialPassed(prev, ch) && isTrialPassed(next, ch)) {
+      amount += XP.trialPassed; label = `Chapter ${String(ch.number).padStart(2, "0")} trial passed`;
+    }
+    events.push({ type: "xp", amount, label, ...pos });
+  }
+  const r0 = rankFor(xpOf(prev).total).rank, r1 = rankFor(xpOf(next).total).rank;
+  if (r1.index > r0.index) events.push({ type: "rank", name: r1.name, description: r1.description });
+  const s0 = stageFor(bond(prev)).stage, s1 = stageFor(bond(next)).stage;
+  if (s1.index > s0.index) events.push({ type: "stage", name: s1.name, unlock: s1.unlock });
+  for (const a of ACHIEVEMENTS) {
+    if (!a.earned(prev) && a.earned(next) && !prev.seen.achievements.includes(a.id)) events.push({ type: "achievement", name: a.name, description: a.description });
+  }
+  next.seen = { ...next.seen, rank: Math.max(next.seen.rank, r1.index), stage: Math.max(next.seen.stage, s1.index) };
+  return events;
+}
 
 /** Helper for components: where an item lives, for links and search results. */
 export function locate(id: string) {

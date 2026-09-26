@@ -2,7 +2,7 @@
  * Persistence: localStorage always; optionally a linked progress.json on disk via the
  * File System Access API (Chrome/Edge); export/import everywhere.
  */
-import { normalize, serialize, type ProgressState } from "./state";
+import { isEmptyProgress, normalize, serialize, type ProgressState } from "./state";
 
 const LS_KEY = "the-ai-engineer/progress";
 
@@ -99,3 +99,51 @@ export function downloadJson(s: ProgressState) {
 export async function readUpload(file: File): Promise<ProgressState | null> {
   try { return normalize(JSON.parse(await file.text())); } catch { return null; }
 }
+
+/* ---------- Recoverable snapshots ---------- */
+const SNAP_KEY = "the-ai-engineer/snapshots";
+const SNAP_MAX = 5;
+
+export interface Snapshot {
+  id: string;
+  at: string; // ISO
+  /** Why it was taken, e.g. "Before loading your gist's version". */
+  reason: string;
+  state: ProgressState;
+}
+
+export function listSnapshots(): Snapshot[] {
+  try {
+    const raw = JSON.parse(localStorage.getItem(SNAP_KEY) ?? "[]");
+    if (!Array.isArray(raw)) return [];
+    return raw.flatMap(r => {
+      const state = normalize(r?.state);
+      return state && typeof r.id === "string" && typeof r.at === "string" ? [{ id: r.id, at: r.at, reason: String(r.reason ?? ""), state }] : [];
+    });
+  } catch {
+    return [];
+  }
+}
+
+/** Keeps a copy of `s` before something replaces it. Empty progress isn't worth a snapshot. */
+export function saveSnapshot(s: ProgressState, reason: string): Snapshot | null {
+  if (isEmptyProgress(s)) return null;
+  const snap: Snapshot = { id: crypto.randomUUID(), at: new Date().toISOString(), reason, state: s };
+  try {
+    localStorage.setItem(SNAP_KEY, JSON.stringify([snap, ...listSnapshots()].slice(0, SNAP_MAX)));
+  } catch { /* storage full: the replace still happens, but we tried */ }
+  return snap;
+}
+
+/* ---------- Gist sync, per browser ---------- */
+const GIST_PAUSED_KEY = "the-ai-engineer/gist-paused";
+const lastSyncedKey = (gistId: string) => `the-ai-engineer/gist-last-synced/${gistId}`;
+
+export const isGistPaused = () => { try { return localStorage.getItem(GIST_PAUSED_KEY) === "1"; } catch { return false; } };
+export const setGistPaused = (paused: boolean) => {
+  try { if (paused) localStorage.setItem(GIST_PAUSED_KEY, "1"); else localStorage.removeItem(GIST_PAUSED_KEY); } catch { /* blocked */ }
+};
+export const loadLastSynced = (gistId: string) => { try { return localStorage.getItem(lastSyncedKey(gistId)); } catch { return null; } };
+export const saveLastSynced = (gistId: string, at: string | null) => {
+  try { if (at) localStorage.setItem(lastSyncedKey(gistId), at); else localStorage.removeItem(lastSyncedKey(gistId)); } catch { /* blocked */ }
+};
