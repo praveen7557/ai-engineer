@@ -54,7 +54,7 @@ Every week has a **build** (deliverable + evidence), 3–5 concepts linked to th
 | 8 | Content rebuilt from a reviewed, **build-first `RESOURCES.md`** | A review (with another bot) produced a better curriculum: weekly builds, a Reference tier, 2–4-week chapters, open-model and fine-tuning labs |
 | 9 | Concept → resource links, "how to use this week", "I can explain this" | "How do I know concepts before reading them?" Clarified that ticking means understanding |
 | 10 | **Review fixes (P1–P5)** | A structured review: functional bugs, honest completion rules, data handling, build-first usability, content corrections |
-| 11 | **Course Path page** (`#/courses`, `src/content/coursePath.ts`) | A researched, course-led roadmap (8 phases, ~285 h) within a $1,000 yearly budget. Read-only: it adds no progress IDs or XP |
+| 11 | **Course Path page** (`#/courses`, `src/content/coursePath.ts`) | A researched, course-led roadmap (8 phases, ~285 h) within a $1,000 yearly budget. Each course is a non-core `course` item: it earns XP but never changes chapter completion or pace. A chapter-mapping section links each chapter and the chapter resources that fill gaps no course covers |
 
 The old static site lives at `~/ai-engineer-roadmap` and is no longer the focus.
 
@@ -78,7 +78,7 @@ src/pages/      HQ, ChapterPage, Journal, CoursePath, Other (Roadmap, Companion,
 - **Stack:** React 19, Vite 8, TypeScript 6, framer-motion. Tests use vitest, plus jsdom for the DOM tests.
 - **Fonts:** Cormorant Garamond (display), Geist and Geist Mono (UI and numbers).
 - **Run:** `npm run dev` (5173). Build: `npm run build`.
-- **Tests:** `npm test`, currently 128 tests across 9 files (content, course path, state, progress, rules, sync, gist, DOM).
+- **Tests:** `npm test`, currently 135 tests across 9 files (content, course path, state, progress, rules, sync, gist, DOM).
 - **Tooling quirk:** an RTK proxy hook can break `npx vitest`/`npx tsc` output. Use `./node_modules/.bin/vitest` and `./node_modules/.bin/tsc -b` directly.
 
 ---
@@ -97,6 +97,7 @@ src/pages/      HQ, ChapterPage, Journal, CoursePath, Other (Roadmap, Companion,
   | Stretch goal | `chN.mK.xN` |
   | Trial criterion | `chN.t.slug` |
   | Setup item | `setup.slug` |
+  | Course (Course Path) | `course.pN.slug` or `course.after.slug` |
 
 - **Never rename or reuse an ID.** If an item is split, retired or promoted, add an entry to `src/content/migrations.ts` (old id → successor ids). `normalize()` applies it on every load, and tests check every target exists.
 - A past mistake to avoid repeating: a helper agent reused `ch6.m2.x1` for a new meaning. It was fixed with a new ID plus a migration.
@@ -117,6 +118,7 @@ src/pages/      HQ, ChapterPage, Journal, CoursePath, Other (Roadmap, Companion,
 | Must-read | 15 |
 | Reference | 10 |
 | Bonus | 5 |
+| Course (Course Path) | 15 |
 | Milestone | 100 |
 | Stretch | 50 |
 | Trial criterion | 50 |
