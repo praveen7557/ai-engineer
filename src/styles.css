@@ -566,3 +566,5 @@ input[type="date"].input { color-scheme: dark; }
   .pop { display: none; }
 }
 .ascend .nox { margin: 0 auto 8px; }
+code { font-family: var(--mono); font-size: .88em; padding: 1px 5px; border-radius: 4px; background: rgba(255, 232, 200, .06); border: 1px solid var(--line); }
+.btn:disabled { opacity: .5; cursor: default; }

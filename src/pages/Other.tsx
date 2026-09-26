@@ -254,7 +254,8 @@ export function Continuing() {
 
 /* ---------------- Data / progress file ---------------- */
 export function DataPage() {
-  const { state, sync, linkFile, reconnectFile, unlinkFile, exportJson, importFile, resetAll, setStartDate } = useStore();
+  const { state, sync, linkFile, reconnectFile, unlinkFile, exportJson, importFile, resetAll, setStartDate, gist, syncGistNow, createPrivateGist } = useStore();
+  const [copied, setCopied] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
   const [confirmReset, setConfirmReset] = useState(false);
   return (
@@ -294,6 +295,47 @@ export function DataPage() {
         </div>
       </section>
       <section className="section">
+        <div className="panel pad" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div className="eyebrow">Across machines</div>
+          <div className="display h-md">Private GitHub Gist</div>
+          {!gist.enabled && (
+            <>
+              <p className="muted" style={{ margin: 0, fontSize: 14, maxWidth: "70ch" }}>
+                Sync progress to a private gist so it follows you to any browser or machine. Copy <code>.env.example</code> to <code>.env.local</code>,
+                set <code>VITE_GITHUB_TOKEN</code> to a classic token with only the <code>gist</code> scope, and restart <code>npm run dev</code>.
+              </p>
+              <p className="faint" style={{ margin: 0, fontSize: 13 }}>The token is inlined into the app's JavaScript, so run it locally and don't publish a build made with one.</p>
+            </>
+          )}
+          {gist.enabled && !gist.gistId && (
+            <>
+              <p className="muted" style={{ margin: 0, fontSize: 14 }}>A token is set but no gist yet. Create a private gist with your current progress, or set <code>VITE_GIST_ID</code> to one you already have.</p>
+              <div><button className="btn primary small" disabled={gist.status === "syncing"} onClick={createPrivateGist}>Create private gist</button></div>
+            </>
+          )}
+          {gist.enabled && gist.gistId && (
+            <>
+              <p className="muted" style={{ margin: 0, fontSize: 14 }}>
+                {gist.status === "syncing" ? "Syncing…" : gist.status === "error" ? gist.error : `Synced${gist.lastSynced ? ` at ${gist.lastSynced.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : ""}.`}
+                {" "}Changes push a couple of seconds after you make them; the gist is checked again whenever you come back to this tab. The newer save wins.
+              </p>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+                <button className="btn small" disabled={gist.status === "syncing"} onClick={syncGistNow}>Sync now</button>
+                <a className="btn small ghost" href={`https://gist.github.com/${gist.gistId}`} target="_blank" rel="noopener noreferrer">Open gist ↗</a>
+                {!import.meta.env.VITE_GIST_ID && (
+                  <button className="btn small ghost" onClick={() => {
+                    navigator.clipboard?.writeText(`VITE_GIST_ID=${gist.gistId}`).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800); }).catch(() => {});
+                  }}>{copied ? "Copied" : "Copy VITE_GIST_ID line"}</button>
+                )}
+              </div>
+              {!import.meta.env.VITE_GIST_ID && (
+                <p className="faint mono" style={{ margin: 0, fontSize: 12 }}>Add <code>VITE_GIST_ID={gist.gistId}</code> to .env.local so other browsers and machines use the same gist.</p>
+              )}
+            </>
+          )}
+        </div>
+      </section>
+      <section className="section">
         <div className="panel pad" style={{ display: "flex", gap: 24, alignItems: "flex-end", flexWrap: "wrap", justifyContent: "space-between" }}>
           <div className="field">
             <label htmlFor="start">Journey start date</label>
@@ -302,7 +344,7 @@ export function DataPage() {
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             {confirmReset ? (
               <>
-                <span className="muted" style={{ fontSize: 13.5 }}>Erase all progress, journals and logs in this browser?</span>
+                <span className="muted" style={{ fontSize: 13.5 }}>Erase all progress, journals and logs in this browser{gist.gistId ? " and your gist" : ""}?</span>
                 <button className="btn small danger" onClick={() => { resetAll(); setConfirmReset(false); }}>Erase</button>
                 <button className="btn small ghost" onClick={() => setConfirmReset(false)}>Cancel</button>
               </>

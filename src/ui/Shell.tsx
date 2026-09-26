@@ -123,7 +123,7 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
 }
 
 function SyncBadge() {
-  const { sync } = useStore();
+  const { sync, gist } = useStore();
   const time = sync.lastSaved?.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   return (
     <a className="sync" href={href("data")} style={{ textDecoration: "none" }}>
@@ -132,6 +132,12 @@ function SyncBadge() {
         {sync.mode === "file" ? `Saving to ${sync.fileName}` : sync.mode === "file-paused" ? `Reconnect ${sync.fileName}` : "Saved in this browser"}
       </span>
       {time && <span className="faint mono" style={{ fontSize: 11 }}>Last saved {time}</span>}
+      {gist.enabled && (
+        <span className="st">
+          <span className={`dot ${gist.status === "error" ? "paused" : gist.gistId ? "file" : ""}`} />
+          {!gist.gistId ? "Gist: not set up" : gist.status === "syncing" ? "Gist: syncing…" : gist.status === "error" ? "Gist: sync failed" : "Gist: synced"}
+        </span>
+      )}
     </a>
   );
 }

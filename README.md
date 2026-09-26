@@ -26,6 +26,32 @@ npm run preview
 
 When the browser copy and the file disagree, the copy with the newer `updatedAt` wins.
 
+### Sync across machines with a private GitHub Gist (optional)
+
+1. Create a classic personal access token with **only** the `gist` scope: <https://github.com/settings/tokens/new?scopes=gist&description=The%20AI%20Engineer>
+2. `cp .env.example .env.local` and set `VITE_GITHUB_TOKEN`.
+3. Restart `npm run dev`, then open **Progress file** → **Create private gist**. Copy the id it shows into `.env.local` as `VITE_GIST_ID`. You can also set `VITE_GIST_ID` to a gist you already own.
+4. On every other machine, clone the repo and use the same `.env.local`.
+
+| Variable | Required | Meaning |
+|---|---|---|
+| `VITE_GITHUB_TOKEN` | yes | Token with the `gist` scope. Sync is off when it's empty. |
+| `VITE_GIST_ID` | after setup | The gist to sync with. |
+| `VITE_GIST_FILENAME` | no | File inside the gist. Defaults to `progress.json`. |
+
+How syncing works:
+
+- The app pulls the gist on load, and again when you return to the tab (at most every 30 s).
+- It pushes about 2 s after each change.
+- Before pushing, it checks the gist. The newer save wins; there's no merge. Use one machine at a time and let it sync before switching.
+
+> **Security:** Vite inlines `VITE_*` values into the JavaScript it serves, so anyone who can load the app can read the token.
+> - Run the app locally.
+> - Never publish a `dist/` build made with a token.
+> - Keep the token scoped to `gist` only.
+>
+> `.env.local` is gitignored.
+
 ### progress.json
 
 ```json

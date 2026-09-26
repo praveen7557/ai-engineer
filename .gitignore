@@ -25,3 +25,8 @@ dist-ssr
 
 # Test cache
 .vitest
+
+# Local env (tokens)
+.env
+.env.*
+!.env.example
