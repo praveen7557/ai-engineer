@@ -54,6 +54,7 @@ Every week has a **build** (deliverable + evidence), 3–5 concepts linked to th
 | 8 | Content rebuilt from a reviewed, **build-first `RESOURCES.md`** | A review (with another bot) produced a better curriculum: weekly builds, a Reference tier, 2–4-week chapters, open-model and fine-tuning labs |
 | 9 | Concept → resource links, "how to use this week", "I can explain this" | "How do I know concepts before reading them?" Clarified that ticking means understanding |
 | 10 | **Review fixes (P1–P5)** | A structured review: functional bugs, honest completion rules, data handling, build-first usability, content corrections |
+| 11 | **Course Path page** (`#/courses`, `src/content/coursePath.ts`) | A researched, course-led roadmap (8 phases, ~285 h) within a $1,000 yearly budget. Read-only: it adds no progress IDs or XP |
 
 The old static site lives at `~/ai-engineer-roadmap` and is no longer the focus.
 
@@ -71,13 +72,13 @@ src/engine/     pure logic (no React):
                   gist.ts      GitHub Gist client (pull/push/create) with readable errors
 src/store.tsx   React context: actions, persistence, gist sync orchestration, feedback events (XP pops, rank-ups)
 src/ui/         Shell (rail, header, mobile nav + More menu, overlay clearance), Nox (SVG), Feed, Search, CheckRow
-src/pages/      HQ, ChapterPage, Journal, Other (Roadmap, Companion, Record, Continuing, Progress file)
+src/pages/      HQ, ChapterPage, Journal, CoursePath, Other (Roadmap, Companion, Record, Continuing, Progress file)
 ```
 
 - **Stack:** React 19, Vite 8, TypeScript 6, framer-motion. Tests use vitest, plus jsdom for the DOM tests.
 - **Fonts:** Cormorant Garamond (display), Geist and Geist Mono (UI and numbers).
 - **Run:** `npm run dev` (5173). Build: `npm run build`.
-- **Tests:** `npm test`, currently 118 tests across 7 files (content, state, progress, rules, sync, gist, DOM).
+- **Tests:** `npm test`, currently 128 tests across 9 files (content, course path, state, progress, rules, sync, gist, DOM).
 - **Tooling quirk:** an RTK proxy hook can break `npx vitest`/`npx tsc` output. Use `./node_modules/.bin/vitest` and `./node_modules/.bin/tsc -b` directly.
 
 ---

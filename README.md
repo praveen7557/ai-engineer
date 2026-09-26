@@ -100,11 +100,11 @@ IDs are stable and defined in `src/content/ch*.ts`:
 ## Structure
 
 ```
-src/content/    8 chapters (typed content), continuing sources, setup; types.ts is the contract
+src/content/    8 chapters (typed content), course path, continuing sources, setup; types.ts is the contract
 src/engine/     pure logic: state + normalize + migrations, XP/ranks/companion/pace/achievements, sync decisions, storage + snapshots
 src/store.tsx   React state, persistence, progress events (pops, rank-ups, achievements)
 src/ui/         shell, Nox, atmosphere, feedback, search, shared bits
-src/pages/      HQ, chapter, journal, roadmap, companion, record, continuing, progress file
+src/pages/      HQ, chapter, journal, roadmap, course path, companion, record, continuing, progress file
 ```
 
 ## Tests
