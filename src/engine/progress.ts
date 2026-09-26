@@ -33,18 +33,26 @@ export function itemXp(m: ItemMeta): number {
   }
 }
 
-const isDone = (s: ProgressState, id: string) => !!s.done[id];
+/** Done, or a conditional milestone marked not applicable with a reason. Both count as resolved. */
+export const isResolved = (s: ProgressState, id: string) => !!s.done[id] || (!!s.na[id] && !!ITEMS.get(id)?.conditional);
+const isDone = isResolved;
 const allDone = (s: ProgressState, ids: string[]) => ids.length > 0 && ids.every(id => isDone(s, id));
 
+/** Required concepts of a week (optional depth excluded). */
 export const weekConceptIds = (ch: Chapter, week: number) =>
-  ch.weeks.find(w => w.number === week)?.groups.flatMap(g => g.concepts.map(c => c.id)) ?? [];
+  ch.weeks.find(w => w.number === week)?.groups.flatMap(g => g.concepts.filter(c => !c.optional).map(c => c.id)) ?? [];
+/** Required milestones scheduled in a week, across the chapter's missions. */
+export const weekMilestoneIds = (ch: Chapter, week: number) =>
+  ch.missions.flatMap(m => m.milestones.filter(s => s.week === week).map(s => s.id));
+/** What "Week complete" means: the week's required build milestones and required concepts are all resolved. */
+export const weekRequiredIds = (ch: Chapter, week: number) => [...weekMilestoneIds(ch, week), ...weekConceptIds(ch, week)];
 export const trialIds = (ch: Chapter) => ch.trial.map(t => t.id);
 export const missionMilestoneIds = (missionId: string) => MISSIONS.get(missionId)?.milestones.map(m => m.id) ?? [];
 
 export const chapterCoreIds = (ch: Chapter) => [...ITEMS.values()].filter(m => m.core && m.chapterId === ch.id).map(m => m.id);
 export const ALL_CORE_IDS = [...ITEMS.values()].filter(m => m.core).map(m => m.id);
 
-export const isWeekComplete = (s: ProgressState, week: number) => allDone(s, weekConceptIds(chapterForWeek(week), week));
+export const isWeekComplete = (s: ProgressState, week: number) => allDone(s, weekRequiredIds(chapterForWeek(week), week));
 export const isMissionComplete = (s: ProgressState, missionId: string) => allDone(s, missionMilestoneIds(missionId));
 export const isTrialPassed = (s: ProgressState, ch: Chapter) => allDone(s, trialIds(ch));
 
@@ -56,9 +64,9 @@ export interface XpBreakdown {
 
 export function xpOf(s: ProgressState): XpBreakdown {
   let items = 0;
-  for (const id of Object.keys(s.done)) {
+  for (const id of new Set([...Object.keys(s.done), ...Object.keys(s.na)])) {
     const m = ITEMS.get(id);
-    if (m) items += itemXp(m);
+    if (m && isResolved(s, id)) items += itemXp(m);
   }
   let bonuses = 0;
   for (let w = 1; w <= TOTAL_WEEKS; w++) if (isWeekComplete(s, w)) bonuses += XP.weekComplete;
@@ -123,7 +131,8 @@ export function activityByDay(s: ProgressState): Map<string, DayActivity> {
     if (!a) { a = { xp: 0, concepts: 0, resources: 0, milestones: 0, journal: false }; map.set(d, a); }
     return a;
   };
-  for (const [id, iso] of Object.entries(s.done)) {
+  const resolvedAt: [string, string][] = [...Object.entries(s.done), ...Object.entries(s.na).filter(([id]) => !s.done[id] && ITEMS.get(id)?.conditional).map(([id, n]) => [id, n.at] as [string, string])];
+  for (const [id, iso] of resolvedAt) {
     const m = ITEMS.get(id);
     if (!m) continue;
     const a = get(dayOf(iso));
@@ -244,20 +253,31 @@ const KIND_LABEL: Record<ItemMeta["kind"], string> = {
   concept: "Study", resource: "Read", milestone: "Build", stretch: "Stretch", trial: "Prove", setup: "Prepare",
 };
 
-/** Ordered core sequence for a chapter: per week, concepts → must-reads → that week's milestones; then the trial. */
+/** Build-first core sequence for a chapter: per week, the build's milestones → must-reads → concepts; then the trial. */
 export function chapterSequence(ch: Chapter): ItemMeta[] {
   const seq: ItemMeta[] = [];
   const seen = new Set<string>();
   const push = (id: string) => { const m = ITEMS.get(id); if (m && m.core && !seen.has(id)) { seen.add(id); seq.push(m); } };
   for (const w of ch.weeks) {
-    weekConceptIds(ch, w.number).forEach(push);
+    weekMilestoneIds(ch, w.number).forEach(push);
     ch.resources.filter(r => r.use === "must" && r.week === w.number).forEach(r => push(r.id));
-    for (const m of ch.missions) m.milestones.filter(s => s.week === w.number).forEach(s => push(s.id));
+    weekConceptIds(ch, w.number).forEach(push);
   }
   ch.resources.filter(r => r.use === "must").forEach(r => push(r.id));
   ch.missions.forEach(m => m.milestones.forEach(s => push(s.id)));
   ch.trial.forEach(t => push(t.id));
   return seq;
+}
+
+/** The next unresolved build milestone, in roadmap order. */
+export function nextMilestone(s: ProgressState): NextStep | null {
+  for (const ch of CHAPTERS) {
+    for (const item of chapterSequence(ch)) {
+      if (item.kind !== "milestone" || isDone(s, item.id)) continue;
+      return { item, chapter: ch, xp: itemXp(item), label: KIND_LABEL[item.kind] };
+    }
+  }
+  return null;
 }
 
 export function nextSteps(s: ProgressState, count = 3): NextStep[] {
@@ -314,7 +334,7 @@ export function companionLine(s: ProgressState, now = new Date()): string {
   const idle = daysSinceActivity(s, localDay(now));
   const p = pace(s, now);
   if (isEndState(s)) return "The road continues. It always does.";
-  if (!Object.keys(s.done).length) return s.startDate ? "One step is enough to begin." : "A long road. Choose a day to begin.";
+  if (!Object.keys(s.done).length && !Object.keys(s.na).length) return "Start with one real model call. The rest follows.";
   if (idle != null && idle >= 4) return "The path is still here when you're ready.";
   if (p.kind === "tracked" && p.delta <= -2) return "The roadmap has moved ahead. We only need the next step.";
   if (p.kind === "tracked" && p.delta >= 2) return "Ahead of the plan. Don't rush the trials.";
@@ -327,7 +347,7 @@ export function companionLine(s: ProgressState, now = new Date()): string {
 /* ---------------- Achievements ---------------- */
 export interface Achievement { id: string; name: string; description: string; earned: (s: ProgressState) => boolean }
 
-const doneAt = (s: ProgressState, id: string) => s.done[id] ?? "";
+const wordCount = (t?: string) => (t?.trim() ? t.trim().split(/\s+/).length : 0);
 const majorMissions = [...MISSIONS.values()].filter(m => m.major);
 
 export const ACHIEVEMENTS: Achievement[] = [
@@ -337,15 +357,9 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: "deep-dive", name: "Deep Dive", description: "Complete an entire chapter.", earned: s => CHAPTERS.some(c => chapterPct(s, c) === 100) },
   { id: "system-thinker", name: "System Thinker", description: "Pass a chapter trial: prove you understand it, not just that you read it.", earned: s => CHAPTERS.some(c => isTrialPassed(s, c)) },
   {
-    id: "no-shortcuts", name: "No Shortcuts", description: "Finish every must-read in a chapter before passing its trial.",
-    earned: s => CHAPTERS.some(c => {
-      if (!isTrialPassed(s, c)) return false;
-      const reqs = c.resources.filter(r => r.use === "must").map(r => r.id);
-      if (!allDone(s, reqs)) return false;
-      const lastRead = reqs.map(id => doneAt(s, id)).sort().pop() ?? "";
-      const passed = trialIds(c).map(id => doneAt(s, id)).sort().pop() ?? "";
-      return lastRead <= passed;
-    }),
+    id: "show-your-work", name: "Show Your Work",
+    description: "Finish a major mission and write its reflection: what you built, what you measured, what you decided.",
+    earned: s => majorMissions.some(m => isMissionComplete(s, m.id) && wordCount(s.journal[m.id]?.text) >= 40),
   },
   { id: "steady-hand", name: "Steady Hand", description: "Keep a seven-day streak.", earned: s => longestStreak(s) >= 7 },
   { id: "reflective", name: "Reflective", description: "Write in your journal on ten different days.", earned: s => s.journalDays.length >= 10 },
@@ -398,4 +412,44 @@ export function skillLevels(s: ProgressState): Record<Skill, number> {
     out[key] = den ? Math.round(num / den) : 0;
   }
   return out;
+}
+
+/* ---------------- Time budget ---------------- */
+export interface WeekBudget {
+  /** This week's share of mission project hours (implementation, debugging, evaluation, write-up). */
+  buildHours: number;
+  /** Of which: focused milestone slices. */
+  milestoneHours: number;
+  /** Must-read + reference reading scheduled this week (ranges split evenly). */
+  readingHours: number;
+  /** Concept study; overlaps reading, so it isn't added to the total. */
+  conceptHours: number;
+}
+
+export function weekBudget(ch: Chapter, week: number): WeekBudget {
+  let buildHours = 0, milestoneMin = 0;
+  for (const m of ch.missions) {
+    const total = m.milestones.reduce((a, x) => a + x.minutes, 0);
+    const here = m.milestones.filter(x => x.week === week).reduce((a, x) => a + x.minutes, 0);
+    if (total > 0) buildHours += m.hours * (here / total);
+    milestoneMin += here;
+  }
+  let readingHours = 0;
+  for (const r of ch.resources) {
+    if (r.use === "bonus") continue;
+    const end = r.weekEnd ?? r.week;
+    if (week >= r.week && week <= end) readingHours += r.hours / (end - r.week + 1);
+  }
+  const conceptMin = ch.weeks.find(w => w.number === week)?.groups.flatMap(g => g.concepts).filter(c => !c.optional).reduce((a, c) => a + c.minutes, 0) ?? 0;
+  const r1 = (n: number) => Math.round(n * 10) / 10;
+  return { buildHours: r1(buildHours), milestoneHours: r1(milestoneMin / 60), readingHours: r1(readingHours), conceptHours: r1(conceptMin / 60) };
+}
+
+/** One vocabulary for chapter status everywhere, so an untouched chapter never claims "In progress". */
+export function chapterStatusLabel(s: ProgressState, ch: Chapter): string {
+  const st = chapterStatus(s, ch);
+  if (st === "complete") return "Complete";
+  if (chapterPct(s, ch) > 0) return "In progress";
+  if (st === "active") return "Up next";
+  return st === "sealed" ? "Ahead" : "Open";
 }

@@ -33,6 +33,8 @@ export interface Concept {
   minutes: number;
   /** Ids of resources that teach this concept (most useful first): this chapter's own, or ones in its `revisit` list. May be empty when the build itself teaches it. */
   resources?: string[];
+  /** Optional depth (e.g. SDKs, subagents): tracked and rewarded, but not required for week completion or progress. */
+  optional?: boolean;
 }
 
 export interface ConceptGroup {
@@ -83,6 +85,12 @@ export interface Milestone {
   minutes: number;
   /** The week this milestone belongs to (within the chapter). */
   week: number;
+  /**
+   * When set, this milestone only applies under a condition (e.g. "Only if error analysis shows a single call
+   * can't handle the task"). The learner can mark it Completed, or Not applicable with a written reason; both
+   * count as resolved so a justified simpler implementation isn't penalized.
+   */
+  conditional?: string;
 }
 
 export interface Mission {
@@ -115,6 +123,8 @@ export interface ChapterNote {
   /** e.g. "Lab boundary", "Bonus build", "Apply earlier resources", "Deployment". */
   label: string;
   text: string;
+  /** Show only in this week's panel; omit for chapter-wide notes. */
+  week?: number;
 }
 
 export interface Chapter {
@@ -151,6 +161,14 @@ export interface ContinuingSource {
   category: "Releases" | "Research" | "Practice" | "Community" | "Deep dives";
 }
 
+/** A specialization to pursue after week 24, built from existing sources. */
+export interface ContinuingTrack {
+  name: string;
+  /** Who this is for and what it deepens, one or two sentences. */
+  summary: string;
+  items: ShelfItem[];
+}
+
 export interface ShelfItem {
   title: string;
   url: string;
@@ -165,6 +183,8 @@ export interface Guide {
   resourceAllowance: string;
   prerequisites: string;
   deployment: string;
+  /** How to read the time estimates: milestone slices vs total project work vs reading vs evaluation vs buffer. */
+  timeEstimates: { label: string; text: string }[];
   shelf: ShelfItem[];
   continuingIntro: string;
 }

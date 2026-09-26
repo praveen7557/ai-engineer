@@ -22,6 +22,9 @@ import {
   chapterCoreIds,
   ALL_CORE_IDS,
   weekConceptIds,
+  weekMilestoneIds,
+  weekRequiredIds,
+  nextMilestone,
   missionMilestoneIds,
   trialIds,
   ACHIEVEMENTS,
@@ -60,15 +63,20 @@ describe("itemXp", () => {
 });
 
 describe("xpOf", () => {
-  it("awards the week-complete bonus when every concept in a week is done", () => {
+  it("awards the week-complete bonus only when the week's build milestones and required concepts are done", () => {
     const s = freshState();
-    const weekIds = weekConceptIds(ch1, 1);
-    expect(weekIds.length).toBeGreaterThan(0);
-    markDone(s, weekIds);
-    const items = weekIds.reduce((t, id) => t + itemXp(ITEMS.get(id)!), 0);
+    const concepts = weekConceptIds(ch1, 1);
+    const build = weekMilestoneIds(ch1, 1);
+    expect(concepts.length).toBeGreaterThan(0);
+    expect(build.length).toBeGreaterThan(0);
+    markDone(s, concepts);
+    expect(xpOf(s).bonuses).toBe(0); // concepts alone no longer complete a week
+    markDone(s, build);
+    const items = [...concepts, ...build].reduce((t, id) => t + itemXp(ITEMS.get(id)!), 0);
     const { total, bonuses } = xpOf(s);
-    expect(bonuses).toBe(XP.weekComplete);
-    expect(total).toBe(items + XP.weekComplete);
+    const missionDone = ch1.missions.filter(m => m.milestones.every(x => s.done[x.id])).reduce((a, m) => a + (m.major ? XP.missionMajor : XP.missionMinor), 0);
+    expect(bonuses).toBe(XP.weekComplete + missionDone);
+    expect(total).toBe(items + bonuses);
   });
 
   it("awards the major mission-complete bonus for a major mission", () => {
@@ -305,15 +313,16 @@ describe("youWeek", () => {
 });
 
 describe("nextSteps", () => {
-  it("starts with the first concept of chapter 1 week 1 on an empty state", () => {
+  it("is build-first: starts with the first Prompt Lab milestone on an empty state", () => {
     const steps = nextSteps(freshState());
-    expect(steps[0].item.id).toBe(weekConceptIds(ch1, 1)[0]);
-    expect(steps[0].item.id).toBe("ch1.c.next-token-prediction");
+    expect(steps[0].item.id).toBe(weekMilestoneIds(ch1, 1)[0]);
+    expect(steps[0].item.kind).toBe("milestone");
+    expect(nextMilestone(freshState())?.item.id).toBe(steps[0].item.id);
   });
 
   it("moves on to the next item once the first is done", () => {
     const s = freshState();
-    const first = weekConceptIds(ch1, 1)[0];
+    const first = nextSteps(s)[0].item.id;
     s.done[first] = new Date().toISOString();
     const steps = nextSteps(s);
     expect(steps[0].item.id).not.toBe(first);
@@ -367,19 +376,16 @@ describe("ACHIEVEMENTS", () => {
     expect(byId("builder").earned(s)).toBe(true);
   });
 
-  it("no-shortcuts requires all must-reads done before the trial is passed", () => {
-    const reqs = ch1.resources.filter(r => r.use === "must").map(r => r.id);
-    const trial = trialIds(ch1);
-
-    const good = freshState();
-    markDone(good, reqs, atDay("2024-01-01"));
-    markDone(good, trial, atDay("2024-01-05"));
-    expect(byId("no-shortcuts").earned(good)).toBe(true);
-
-    const bad = freshState();
-    markDone(bad, trial, atDay("2024-01-01"));
-    markDone(bad, reqs, atDay("2024-01-05"));
-    expect(byId("no-shortcuts").earned(bad)).toBe(false);
+  it("show-your-work needs a finished major mission plus a written reflection (evidence, not reading order)", () => {
+    const mission = [...MISSIONS.values()].find(m => m.major)!;
+    const s = freshState();
+    markDone(s, missionMilestoneIds(mission.id));
+    expect(byId("show-your-work").earned(s)).toBe(false);
+    s.journal[mission.id] = { text: "short", updatedAt: new Date().toISOString() };
+    expect(byId("show-your-work").earned(s)).toBe(false);
+    s.journal[mission.id] = { text: Array.from({ length: 45 }, (_, i) => `word${i}`).join(" "), updatedAt: new Date().toISOString() };
+    expect(byId("show-your-work").earned(s)).toBe(true);
+    expect(ACHIEVEMENTS.some(a => a.id === "no-shortcuts")).toBe(false);
   });
 });
 
@@ -388,10 +394,10 @@ describe("isEndState", () => {
     expect(isEndState(freshState())).toBe(false);
   });
 
-  it("is true once every week's concepts and the capstone are done", () => {
+  it("is true once every week's required build + concepts and the capstone are done", () => {
     const s = freshState();
     for (const ch of CHAPTERS) {
-      for (const w of ch.weeks) markDone(s, weekConceptIds(ch, w.number));
+      for (const w of ch.weeks) markDone(s, weekRequiredIds(ch, w.number));
     }
     const capstone = CHAPTERS[7].missions[0];
     markDone(s, missionMilestoneIds(capstone.id));

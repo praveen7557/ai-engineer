@@ -9,7 +9,7 @@ import { ch7 } from "./ch7";
 import { ch8 } from "./ch8";
 import { setupItems } from "./setup";
 
-export { continuingSources, continuingPrompts } from "./continuing";
+export { continuingSources, continuingPrompts, continuingTracks } from "./continuing";
 export { guide } from "./guide";
 export { setupItems };
 export type * from "./types";
@@ -31,6 +31,8 @@ export interface ItemMeta {
   week?: number;
   missionId?: string;
   minutes: number;
+  /** Conditional milestones can be resolved as "not applicable" with a reason. */
+  conditional?: string;
 }
 
 export const ITEMS = new Map<string, ItemMeta>();
@@ -44,7 +46,7 @@ for (const ch of CHAPTERS) {
   for (const w of ch.weeks) {
     for (const g of w.groups) {
       for (const c of g.concepts) {
-        ITEMS.set(c.id, { id: c.id, kind: "concept", title: c.title, core: true, chapterId: ch.id, week: w.number, minutes: c.minutes });
+        ITEMS.set(c.id, { id: c.id, kind: "concept", title: c.title, core: !c.optional, chapterId: ch.id, week: w.number, minutes: c.minutes });
       }
     }
   }
@@ -57,7 +59,7 @@ for (const ch of CHAPTERS) {
   for (const m of ch.missions) {
     MISSIONS.set(m.id, { ...m, chapterId: ch.id });
     for (const s of m.milestones) {
-      ITEMS.set(s.id, { id: s.id, kind: "milestone", title: s.title, core: true, chapterId: ch.id, week: s.week, missionId: m.id, minutes: s.minutes });
+      ITEMS.set(s.id, { id: s.id, kind: "milestone", title: s.title, core: true, chapterId: ch.id, week: s.week, missionId: m.id, minutes: s.minutes, conditional: s.conditional });
     }
     for (const s of m.stretch) {
       ITEMS.set(s.id, { id: s.id, kind: "stretch", title: s.title, core: false, chapterId: ch.id, week: s.week, missionId: m.id, minutes: s.minutes });
