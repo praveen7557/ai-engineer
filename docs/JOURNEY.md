@@ -8,7 +8,7 @@ _Last updated: 2026-09-26 · repo: `praveen7557/ai-engineer` · local: `~/the-ai
 
 ## 1. What this is
 
-A personal, no-backend web app that tracks a **24-week, build-first journey from frontend/backend developer to AI engineer**.
+A self-paced, no-backend web app for any learner that tracks a **24-week, build-first journey from frontend/backend developer to AI engineer**.
 
 - **Source of truth for the curriculum:** `RESOURCES.md`, the human-readable roadmap. It's mirrored by typed content in `src/content/ch*.ts`, which is what the app renders.
 - **Theme:** a dark, cinematic "progression" world with an original companion, **Nox**. No franchise references.
@@ -56,6 +56,7 @@ Every week has a **build** (deliverable + evidence), 3–5 concepts linked to th
 | 10 | **Review fixes (P1–P5)** | A structured review: functional bugs, honest completion rules, data handling, build-first usability, content corrections |
 | 11 | **Course Path page** (`#/courses`, `src/content/coursePath.ts`) | A researched, course-led roadmap (8 phases, ~285 h) within a $1,000 yearly budget. Each course is a non-core `course` item: it earns XP but never changes chapter completion or pace. A chapter-mapping section links each chapter and the chapter resources that fill gaps no course covers |
 | 12 | **Course Path re-targeted** at production agents (in-app assistant, Slack/ops agent, agent platform) | Reordered to 7 phases (~193 h, $289–438): Scott Moss's three 2026 courses, free evals, Epic MCP, trimmed CS329Z, flagship. Added a concept → course map. Retired courses keep no successor; renamed ids migrate. The repo is public, so internal systems that inspired this stay off the site |
+| 13 | **Made the site generic** | Removed the Course Path's budget and spend totals (each course keeps its price) and its "Left out, and why" list. Replaced org-specific hosting rules and "at work" assumptions with neutral wording, so the site works for any learner |
 
 The old static site lives at `~/ai-engineer-roadmap` and is no longer the focus.
 
@@ -154,10 +155,9 @@ Rank and stage thresholds are fractions of the maximum core XP, so they adjust a
   - `VITE_*` values are **inlined into the built JavaScript**, so a token in any hosted or public build is public. If that ever happened: revoke the token and rebuild without it.
   - A safer future option is per-browser runtime token entry (not built yet).
 - **`VITE_GIST_ID` is the bare ID** (e.g. `a9b9…`), not `user/id`. A `user/` prefix causes "Gist not found".
-- **Deployment constraint** (explicit project policy, also in `RESOURCES.md` and the chapter notes):
-  - Deploy only to an org-approved platform (Cloudflare or Google Cloud Platform).
-  - Anything else needs procurement and security approval first.
-  - Don't invent other policies.
+- **Deployment guidance** (in `RESOURCES.md`, the guide and the chapter notes):
+  - The site is generic, for any learner: deploy only to a platform you're permitted to use; for work projects, one your organization has approved.
+  - Never name a hosting vendor in site content. `content.test.ts` enforces this.
 
 ---
 
