@@ -53,6 +53,16 @@ describe("course path content", () => {
     }
   });
 
+  it("maps concepts only to courses on the page, and every phase's main course teaches at least one concept", () => {
+    const ids = new Set(COURSE_LINKS.map(c => c.id));
+    for (const c of coursePath.conceptMap) {
+      expect(c.courseIds.length > 0 || !!c.alsoIn, c.concept).toBe(true);
+      for (const id of c.courseIds) expect(ids.has(id), `${c.concept} -> ${id}`).toBe(true);
+    }
+    const taught = new Set(coursePath.conceptMap.flatMap(c => c.courseIds));
+    for (const p of coursePath.phases) if (p.resources[0]) expect(taught.has(p.resources[0].id), p.title).toBe(true);
+  });
+
   it("maps every chapter exactly once, in order", () => {
     expect(coursePath.chapterMap.map(m => m.chapterId)).toEqual(CHAPTERS.map(c => c.id));
   });

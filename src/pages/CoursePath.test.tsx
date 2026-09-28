@@ -80,6 +80,15 @@ describe("CoursePath page", () => {
     expect(container.textContent).toContain("0 / 13");
   });
 
+  it("marks a course finished in every concept it teaches", async () => {
+    const concepts = container.querySelector("[aria-labelledby=cp-concepts]")!;
+    const epicChips = () => [...concepts.querySelectorAll(".tag")].filter(t => t.textContent?.endsWith("Epic MCP"));
+    expect(epicChips().length).toBe(coursePath.conceptMap.filter(c => c.courseIds.includes("course.epic-mcp")).length);
+    expect(epicChips().every(t => !t.textContent!.startsWith("✓"))).toBe(true);
+    await act(async () => { boxFor(coursePath.phases[4].resources[0].title).click(); });
+    expect(epicChips().every(t => t.textContent!.startsWith("✓"))).toBe(true);
+  });
+
   it("links each chapter in the mapping and deep-links its gap resources into the chapter", () => {
     const section = container.querySelector("[aria-labelledby=cp-map]")!;
     for (const ch of CHAPTERS) expect(section.querySelector(`a[href="#/chapter/${ch.id}"]`)).not.toBeNull();

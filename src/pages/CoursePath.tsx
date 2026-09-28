@@ -5,6 +5,8 @@ import { CheckRow, Meter, pad2 } from "../ui/bits";
 import { chapterHref } from "../ui/router";
 import { PageHead } from "./Other";
 
+const COURSE_BY_ID = new Map(COURSE_LINKS.map(c => [c.id, c]));
+
 const usd = ([lo, hi]: readonly [number, number]) => (lo === hi ? `$${lo}` : `$${lo}–${hi}`);
 
 function CourseRow({ link, sub }: { link: Pick<CourseLink, "id" | "title" | "url">; sub: string }) {
@@ -69,6 +71,26 @@ export function CoursePath() {
             </div>
           </article>
         ))}
+      </section>
+
+      <section className="section" aria-labelledby="cp-concepts">
+        <div className="section-head"><h2 className="section-title" id="cp-concepts">Concept map</h2><span className="aside">concept → where you learn it · ✓ when finished</span></div>
+        <p className="muted" style={{ maxWidth: "70ch", margin: 0 }}>{coursePath.conceptMapIntro}</p>
+        <div className="panel" style={{ padding: "2px 12px" }}>
+          {coursePath.conceptMap.map(c => (
+            <div key={c.concept} className="row cp-concept" style={{ cursor: "default", gridTemplateColumns: "minmax(0,1fr)" }}>
+              <span className="title">{c.concept}</span>
+              <span className="cp-chips">
+                {c.courseIds.map((id, i) => {
+                  const course = COURSE_BY_ID.get(id)!;
+                  const finished = !!state.done[id];
+                  return <span key={id} className={`tag ${finished ? "good" : i === 0 ? "req" : ""}`}>{finished ? "✓ " : ""}{course.short}</span>;
+                })}
+                {c.alsoIn && <span className="tag steel">{c.alsoIn}</span>}
+              </span>
+            </div>
+          ))}
+        </div>
       </section>
 
       <section className="section" aria-labelledby="cp-map">

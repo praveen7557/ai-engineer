@@ -667,6 +667,8 @@ code { font-family: var(--mono); font-size: .88em; padding: 1px 5px; border-radi
 .cp-meta { display: inline-flex; align-items: center; gap: 10px; font-size: 12px; }
 .cp-res { border: 1px solid var(--line); border-radius: var(--r); padding: 0 10px; }
 .cp-build { margin: 0; display: grid; gap: 4px; }
+.cp-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.cp-concept .title { cursor: default; }
 .cp-gap { margin-top: 6px; }
 .cp-gap .eyebrow { margin-right: 6px; }
 .cp-map-row a { color: var(--text); }
