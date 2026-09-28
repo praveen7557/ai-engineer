@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { ALL_CORE_IDS } from "../engine/progress";
 import { normalize } from "../engine/state";
 import { CHAPTERS, ITEMS, RESOURCE_BY_ID } from "./index";
-import { COURSE_LINKS, coursePath, coursePathBudget, coursePathHours } from "./coursePath";
+import { COURSE_LINKS, coursePath, coursePathHours } from "./coursePath";
 
 const RETIRED_IDS = [
   "course.p0.uv", "course.p0.fastapi", "course.p0.pydantic", "course.p0.pytest", "course.p1.agentic-ai",
@@ -14,18 +14,16 @@ describe("course path content", () => {
     expect(coursePath.phases.map(p => p.number)).toEqual(coursePath.phases.map((_, i) => i + 1));
   });
 
-  it("totals phase hours and the budget range", () => {
+  it("totals phase hours", () => {
     expect(coursePathHours).toBe(18 + 25 + 25 + 15 + 30 + 30 + 50);
-    expect(coursePathBudget).toEqual([39 + 0 + 50 + 200, 78 + 0 + 60 + 300]);
-  });
-
-  it("keeps the worst-case spend inside the yearly budget", () => {
-    expect(coursePathBudget[1]).toBeLessThanOrEqual(coursePath.budgetCap);
-    for (const b of coursePath.budget) expect(b.usd[0]).toBeLessThanOrEqual(b.usd[1]);
   });
 
   it("splits time into shares that add up to 100%", () => {
     expect(coursePath.timeSplit.reduce((s, t) => s + t.pct, 0)).toBe(100);
+  });
+
+  it("shows a price on every course", () => {
+    for (const c of COURSE_LINKS) expect(c.cost.trim(), c.title).not.toBe("");
   });
 
   it("links every course over https, each only once", () => {

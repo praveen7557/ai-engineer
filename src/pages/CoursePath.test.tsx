@@ -46,9 +46,11 @@ describe("CoursePath page", () => {
     expect(text).toContain("10 weeks");
   });
 
-  it("shows the spend range against the cap", () => {
-    expect(container.textContent).toContain("$289–438");
-    expect(container.textContent).toContain("of a $1000 yearly budget");
+  it("shows each course's price next to it, with no totals or budget", () => {
+    const epic = coursePath.phases[4].resources[0];
+    expect(boxFor(epic.title).closest(".row")!.textContent).toContain(epic.cost);
+    expect(container.querySelector("[aria-labelledby=cp-budget]")).toBeNull();
+    expect(container.textContent).not.toMatch(/budget/i);
   });
 
   it("opens external links in a new tab without an opener", () => {

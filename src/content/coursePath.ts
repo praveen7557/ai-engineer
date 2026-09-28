@@ -40,33 +40,18 @@ export interface ChapterMapping {
   gapResourceIds?: string[];
 }
 
-export interface BudgetLine {
-  item: string;
-  usd: [min: number, max: number];
-  note: string;
-}
-
 export const coursePath = {
   researched: "September 2026",
   intro:
     "A course-led path from experienced developer to AI engineer, aimed at building production agents: a stateful agent behind a chat UI, tools with approvals, MCP servers with auth, durable runs, and evals. It runs alongside the 24-week chapters: use these courses as teachers for the builds. Ticking a course earns XP but doesn't change chapter completion or pace.",
   principle:
     "Courses don't make you job-ready; evaluated systems you can defend do. Every phase ends in a build, and every build ships with evals.",
-  budgetCap: 1000,
-  budget: [
-    { item: "Frontend Masters, one or two months", usd: [39, 78], note: "Pay monthly. Month one: Phases 1–2. Month two: Phase 4. The free evals phase sits in between." },
-    { item: "Epic MCP (Kent C. Dodds)", usd: [0, 0], note: "Access you already have." },
-    { item: "Chip Huyen, AI Engineering (book)", usd: [50, 60], note: "The Kindle edition is cheaper." },
-    { item: "LLM API usage and tracing", usd: [200, 300], note: "Cheap models while developing, frontier models only in evals." },
-  ] satisfies BudgetLine[],
-  budgetTip:
-    "Watch the three Scott Moss courses back to back where you can, so the subscription is never idle. Everything else on the path is free or already paid for.",
   phases: [
     {
       number: 1, title: "An agent from scratch", hours: 18,
       why: "Write the agent loop yourself before any framework hides it: tool calling, streaming, evals, telemetry, context compaction, and a sandboxed tool behind human approval.",
       resources: [
-        { id: "course.ai-agents-fundamentals-v2", short: "AI Agents Fundamentals v2", title: "AI Agents Fundamentals, v2 (Scott Moss, Jan 2026)", url: "https://master.dev/courses/ai-agents-v2/", provider: "Frontend Masters", cost: "Subscription" },
+        { id: "course.ai-agents-fundamentals-v2", short: "AI Agents Fundamentals v2", title: "AI Agents Fundamentals, v2 (Scott Moss, Jan 2026)", url: "https://master.dev/courses/ai-agents-v2/", provider: "Frontend Masters", cost: "Subscription, ~$39/mo" },
       ],
       build: "A CLI agent with file, web-search and shell tools, an approval step before anything destructive, and single- and multi-turn evals.",
     },
@@ -74,7 +59,7 @@ export const coursePath = {
       number: 2, title: "AI features in a web app", hours: 25,
       why: "The in-app assistant pattern: a stateful agent behind a chat UI, client-side tools, context engineering, and an eval harness that drives the improvement loop.",
       resources: [
-        { id: "course.ai-engineering-fundamentals", short: "AI Engineering Fundamentals", title: "AI Engineering Fundamentals (Scott Moss, Apr 2026)", url: "https://master.dev/courses/ai-engineering/", provider: "Frontend Masters", cost: "Subscription" },
+        { id: "course.ai-engineering-fundamentals", short: "AI Engineering Fundamentals", title: "AI Engineering Fundamentals (Scott Moss, Apr 2026)", url: "https://master.dev/courses/ai-engineering/", provider: "Frontend Masters", cost: "Subscription, ~$39/mo" },
         { id: "course.ai-engineering-book", short: "Chip Huyen's book", title: "AI Engineering (read across the whole path)", url: "https://huyenchip.com/books/", provider: "Chip Huyen · O'Reilly", cost: "~$50–60" },
       ],
       build: "A TypeScript chat assistant whose tool results render as UI cards, with a golden dataset and an eval harness that runs in CI.",
@@ -93,19 +78,18 @@ export const coursePath = {
       number: 4, title: "Durable agent systems", hours: 15,
       why: "What separates a demo from a system: runs that survive crashes and resume, sandboxed tools, memory and compaction, and sub-agents under supervision.",
       resources: [
-        { id: "course.durable-agent-systems", short: "Durable Agent Systems", title: "Build Durable AI Agent Systems (Scott Moss, Jul 2026)", url: "https://master.dev/courses/agent-harness/", provider: "Frontend Masters", cost: "Subscription" },
+        { id: "course.durable-agent-systems", short: "Durable Agent Systems", title: "Build Durable AI Agent Systems (Scott Moss, Jul 2026)", url: "https://master.dev/courses/agent-harness/", provider: "Frontend Masters", cost: "Subscription, ~$39/mo" },
       ],
       build: "Make your Phase 1 agent durable: checkpoint each step, resume after a killed process, and hand one task to a supervised sub-agent.",
     },
     {
       number: 5, title: "Building MCP servers, with auth", hours: 30,
-      why: "You already use MCP; this is the other side. Build servers with tools, resources, prompts, sampling, elicitation, long-running tasks and interactive UI, then secure them with OAuth 2.1 and scopes.",
+      why: "Using MCP servers is one side; this is the other. Build servers with tools, resources, prompts, sampling, elicitation, long-running tasks and interactive UI, then secure them with OAuth 2.1 and scopes.",
       resources: [
-        { id: "course.epic-mcp", short: "Epic MCP", title: "Epic MCP: From Scratch to Production (Kent C. Dodds)", url: "https://www.epicai.pro/workshops/epic-mcp-from-scratch-to-production", provider: "EpicAI.pro · 4 workshops, 47 exercises", cost: "Have access" },
+        { id: "course.epic-mcp", short: "Epic MCP", title: "Epic MCP: From Scratch to Production (Kent C. Dodds)", url: "https://www.epicai.pro/workshops/epic-mcp-from-scratch-to-production", provider: "EpicAI.pro · 4 workshops, 47 exercises", cost: "$500" },
         { id: "course.mcp-security-best-practices", short: "MCP security best practices", title: "MCP Security Best Practices", url: "https://modelcontextprotocol.io/specification/latest/basic/security_best_practices", provider: "Model Context Protocol spec", cost: "Free" },
       ],
       build: "A remote MCP server over an API you know, with OAuth 2.1 and per-tool scopes, one tool that returns interactive UI, and tests for every tool.",
-      note: "If a deployment lesson targets a platform other than Cloudflare or GCP, do it locally: other platforms need approval.",
     },
     {
       number: 6, title: "Research depth: data, evals, safety, coding agents", hours: 30,
@@ -185,21 +169,8 @@ export const coursePath = {
   paces: [10, 15, 20],
   niceToKnow: [
     { id: "course.core-track", short: "Ed Donner Core Track", title: "AI Engineer Core Track (selected weeks)", url: "https://www.udemy.com/course/llm-engineering-master-ai-and-large-language-models/", provider: "Ed Donner · Udemy", cost: "~$15–20 on sale", note: "Open models and QLoRA fine-tuning. Most of the rest repeats Phases 1–2." },
-    { id: "course.zero-to-hero", short: "Karpathy Zero to Hero", title: "Neural Networks: Zero to Hero (micrograd, makemore 1, Let's build GPT, tokenizer)", url: "https://karpathy.ai/zero-to-hero.html", provider: "Andrej Karpathy", cost: "Free", note: "Intuition for how models work inside. None of the target systems need it." },
+    { id: "course.zero-to-hero", short: "Karpathy Zero to Hero", title: "Neural Networks: Zero to Hero (micrograd, makemore 1, Let's build GPT, tokenizer)", url: "https://karpathy.ai/zero-to-hero.html", provider: "Andrej Karpathy", cost: "Free", note: "Intuition for how models work inside. Not needed to build production agents." },
   ] satisfies NiceToKnow[],
-  dropped: [
-    { title: "Andrew Ng, Agentic AI", why: "Its patterns (reflection, planning, multi-agent) are covered with more practice by Phases 1, 4 and 6." },
-    { title: "A separate Python phase", why: "The target systems are TypeScript. Learn the Python CS329Z HW2 needs, in Phase 6." },
-    { title: "Anthropic Academy MCP courses; Brian Holt's Complete Intro to MCP", why: "You already use MCP, and Epic MCP covers building servers, advanced features and auth in one course." },
-    { title: "Scott Moss, AI Agent: From Prototype to Production (2024)", why: "Superseded by his 2026 courses, which cover the same topics in more depth." },
-    { title: "vLLM and llama.cpp", why: "Serving your own models is infrastructure; the target systems call hosted models through a gateway." },
-    { title: "Stanford CS336", why: "Pre-training models is research territory, not this path." },
-    { title: "CS329Z HW1 and its early lectures", why: "Building a harness from scratch repeats Phase 1; tools, patterns, memory and multi-agent repeat Phases 1–4." },
-    { title: "AI Evals for Engineers & PMs (Maven)", why: "$4,200 is over the yearly budget. The free email course, FAQ and CS329Z HW2 cover the method." },
-    { title: "DataTalksClub LLM Zoomcamp", why: "Another pass at RAG the path already covers." },
-    { title: "Ed Donner's Agentic and Production Tracks", why: "A tour of frameworks, and cloud deployment, which is out of scope." },
-    { title: "Hugging Face LLM Course", why: "It teaches the transformers library and NLP tasks, which isn't this layer." },
-  ],
 };
 
 /** Every trackable course and resource on the path, in page order. */
@@ -210,7 +181,3 @@ export const COURSE_LINKS: CourseLink[] = [
 
 export const coursePathHours = coursePath.phases.reduce((sum, p) => sum + p.hours, 0);
 
-export const coursePathBudget = coursePath.budget.reduce<[number, number]>(
-  ([lo, hi], b) => [lo + b.usd[0], hi + b.usd[1]],
-  [0, 0],
-);

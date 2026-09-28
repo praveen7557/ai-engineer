@@ -138,7 +138,7 @@ export function Shell({ route, children }: { route: Route; children: ReactNode }
         <div className="more-scrim" onClick={() => setMoreOpen(false)}>
           <div id="more-menu" className="more-menu panel" role="menu" aria-label="More pages" style={lift ? { bottom: lift + 72 } : undefined}
             onClick={e => e.stopPropagation()} onKeyDown={e => { if (e.key === "Escape") setMoreOpen(false); }}>
-            <a role="menuitem" href={href("courses")} autoFocus><Icon name="courses" />Course Path<span className="faint">Courses &amp; budget</span></a>
+            <a role="menuitem" href={href("courses")} autoFocus><Icon name="courses" />Course Path<span className="faint">Courses &amp; concepts</span></a>
             <a role="menuitem" href={href("companion")}><Icon name="nox" />Nox<span className="faint">{d.stage.name}</span></a>
             <a role="menuitem" href={href("record")}><Icon name="record" />Record<span className="faint">{d.achievements.length} achievement{d.achievements.length === 1 ? "" : "s"}</span></a>
             <a role="menuitem" href={href("continuing")}><Icon name="cont" />Continuing<span className="faint">{d.endState ? "Unlocked" : "Sources open"}</span></a>

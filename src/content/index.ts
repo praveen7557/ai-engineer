@@ -11,7 +11,7 @@ import { COURSE_LINKS } from "./coursePath";
 import { setupItems } from "./setup";
 
 export { continuingSources, continuingPrompts, continuingTracks } from "./continuing";
-export { COURSE_LINKS, coursePath, coursePathBudget, coursePathHours } from "./coursePath";
+export { COURSE_LINKS, coursePath, coursePathHours } from "./coursePath";
 export { guide } from "./guide";
 export { setupItems };
 export type * from "./types";
