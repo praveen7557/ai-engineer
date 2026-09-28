@@ -1,6 +1,6 @@
 # The AI Engineer
 
-A personal 24-week progression system for going from frontend/backend developer to an engineer who builds real AI products. There are eight chapters, each with training, intel (resources), hands-on missions and a trial. The app also has XP and ranks, a companion named Nox, and a journal.
+A self-paced 24-week progression system for developers going from frontend/backend work to an engineer who builds real AI products. There are eight chapters, each with training, intel (resources), hands-on missions and a trial. The app also has XP and ranks, a companion named Nox, and a journal.
 
 No backend and no account. Progress lives in your browser's local storage, and optionally in a progress.json you link or export. It only leaves your machine if you configure GitHub Gist sync (see below).
 
