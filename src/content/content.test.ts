@@ -120,10 +120,13 @@ describe("roadmap content", () => {
     }
   });
 
-  it("names only org-approved platforms in deployment guidance", () => {
-    const text = [guide.deployment, ...CHAPTERS.flatMap(c => (c.notes ?? []).filter(n => n.label === "Deployment").map(n => n.text))].join(" ");
-    expect(text).toMatch(/Cloudflare/);
-    expect(text).toMatch(/Google Cloud/);
+  it("tells readers to deploy only where they're permitted, without naming a hosting vendor", () => {
+    const notes = [guide.deployment, ...CHAPTERS.flatMap(c => (c.notes ?? []).filter(n => n.label === "Deployment").map(n => n.text))];
+    expect(notes.length).toBeGreaterThan(1);
+    for (const n of notes) {
+      expect(n).toMatch(/platform you're permitted to use/);
+      expect(n).not.toMatch(/Cloudflare|Google Cloud|GCP|AWS|Azure|Vercel/);
+    }
   });
 
   it("indexes every tracked item and mission", () => {

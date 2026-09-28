@@ -85,7 +85,7 @@ export const guide: Guide = {
   prerequisites:
     "Prerequisite checkpoint: be comfortable with HTTP, async code, tests, Git, and a small backend. By week 6, be able to load JSONL data in Python, inspect tensor shapes, and explain sampling, precision/recall, and train/validation/test splits. Learn these through the labs; allow extra preparation time if they are new. Set an API/compute spending cap before running experiments and use public, synthetic, or explicitly permitted data.",
   deployment:
-    "Deploy only to an org-approved platform (Cloudflare or Google Cloud Platform); any other hosting provider needs the company's procurement and security approval first.",
+    "Deploy only to a platform you're permitted to use. For a work project, that means one your organization has approved, after any security review it requires; check before you build, not after.",
   shelf: [
     {
       title: "AI Engineering — Chip Huyen",

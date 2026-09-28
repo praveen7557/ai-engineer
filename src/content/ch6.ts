@@ -281,7 +281,7 @@ export const ch6: Chapter = {
       objective:
         "Deploy the same small server over an authenticated remote Streamable HTTP transport, using an existing authorization provider or identity platform, and keep tool-level permissions independent of whatever the model is told.",
       requirements: [
-        "Streamable HTTP transport instead of stdio, deployed to an org-approved platform (Cloudflare or Google Cloud Platform).",
+        "Streamable HTTP transport instead of stdio, deployed to a platform you're permitted to use.",
         "An authorization flow following the MCP spec via an existing authorization provider or identity platform, not a hand-built OAuth implementation.",
         "Prerequisites in place: an HTTPS endpoint, a test client, and a provider account or local test issuer.",
         "Valid/invalid token handling, scopes, and tool-level permission checks tested, plus credential scope and timeout cases.",
@@ -290,7 +290,7 @@ export const ch6: Chapter = {
         "Protocol, SDK, and client versions recorded in the repository.",
       ],
       milestones: [
-        { id: "ch6.m2.s1", title: "Stand up the server on Streamable HTTP transport behind an HTTPS endpoint, deployed to an org-approved platform (Cloudflare or Google Cloud Platform)", minutes: 60, week: 17 },
+        { id: "ch6.m2.s1", title: "Stand up the server on Streamable HTTP transport behind an HTTPS endpoint, deployed to a platform you're permitted to use", minutes: 60, week: 17 },
         { id: "ch6.m2.s2", title: "Wire the spec's OAuth 2.1 authorization flow to an existing authorization provider or identity platform (or a local test issuer)", minutes: 75, week: 17 },
         { id: "ch6.m2.s3", title: "Test valid/invalid token handling, scopes, and tool-level permission checks", minutes: 45, week: 17 },
         { id: "ch6.m2.s4", title: "Test timeouts and client compatibility against a real client", minutes: 40, week: 17 },
@@ -344,7 +344,7 @@ export const ch6: Chapter = {
     {
       label: "Deployment",
       text:
-        "Deploy only to an org-approved platform (Cloudflare or Google Cloud Platform); any other hosting provider needs the company's procurement and security approval first.",
+        "Deploy only to a platform you're permitted to use. For a work project, that means one your organization has approved, after any security review it requires; check before you build, not after.",
     },
   ],
   skills: { building: 2, systemDesign: 2, production: 1 },

@@ -9,7 +9,7 @@ export const ch8: Chapter = {
   description:
     "Ship one useful product to a small real audience and make an evidence-backed proposal for its next stage.",
   why:
-    "A finished, documented, evaluated project is worth more than ten tutorials, for your portfolio and for your own confidence. Turning the same skills into a proposal at work is what converts learning into career capital.",
+    "A finished, documented, evaluated project is worth more than ten tutorials, for your portfolio and for your own confidence. Presenting what you built, and what it should become next, to people who'd use it is what turns learning into career capital.",
   weeks: [
     {
       number: 22,
@@ -80,9 +80,9 @@ export const ch8: Chapter = {
           concepts: [
             {
               id: "ch8.c.deploying-approved-platform",
-              title: "Deploying on an approved platform",
+              title: "Deploying where you're permitted",
               summary:
-                "Deploy to an org-approved platform — Cloudflare or Google Cloud Platform; anything else needs your company's procurement and security approval before you touch it, even for a personal project you'd bring to work.",
+                "Deploy only to a platform you're permitted to use. For a work project, that's one your organization has approved, after any security review it requires, and that applies even to a side project you plan to bring to work.",
               minutes: 45,
               resources: [],
             },
@@ -130,7 +130,7 @@ export const ch8: Chapter = {
     {
       number: 24,
       title: "Ship & show",
-      focus: "Observe real usage, fix the highest-impact failure, and turn the same skills into something at work.",
+      focus: "Observe real usage, fix the highest-impact failure, and present what it should become next.",
       build: {
         deliverable: "Observe real usage, fix the highest-impact failure, and present the result.",
         evidence:
@@ -226,7 +226,7 @@ export const ch8: Chapter = {
         "One end-to-end workflow finished for the week-9 problem, reusing proven components from earlier chapters.",
         "Each AI technique used (retrieval, an agent, MCP, fine-tuning) justified in writing by the problem; techniques not needed for this problem are left out rather than added to span every chapter.",
         "A frozen held-out test set and written acceptance criteria, compared against an ordinary-code or manual baseline.",
-        "A deployed pilot on an org-approved platform, with the full release checklist run against the real deployment.",
+        "A deployed pilot on a platform you're permitted to use, with the full release checklist run against the real deployment.",
         "Access/security tests, load results, monitoring/alerts, cost limits, and restore/rollback steps all recorded.",
         "Any RAG, agent, or MCP surface actually used exercised as part of the release checklist.",
         "Real usage observed, the highest-impact failure fixed, and a demo plus a scoped next-step proposal delivered.",
@@ -235,7 +235,7 @@ export const ch8: Chapter = {
         { id: "ch8.m1.s1", title: "Finish the end-to-end workflow, reusing proven components from earlier chapters", minutes: 120, week: 22 },
         { id: "ch8.m1.s2", title: "Freeze a held-out test set and write acceptance criteria", minutes: 45, week: 22 },
         { id: "ch8.m1.s3", title: "Compare against an ordinary-code or manual baseline and record, for each technique used, a written justification for why the problem needed it", minutes: 60, week: 22 },
-        { id: "ch8.m1.s4", title: "Deploy a pilot to an org-approved platform and run the release checklist against it", minutes: 90, week: 23 },
+        { id: "ch8.m1.s4", title: "Deploy a pilot to a platform you're permitted to use and run the release checklist against it", minutes: 90, week: 23 },
         { id: "ch8.m1.s5", title: "Record access/security tests, load results, monitoring/alerts, cost limits, and restore/rollback steps", minutes: 75, week: 23 },
         { id: "ch8.m1.s6", title: "Exercise any RAG, agent, or MCP surface actually used in the pilot", minutes: 45, week: 23 },
         { id: "ch8.m1.s7", title: "Observe real usage and fix the highest-impact failure", minutes: 90, week: 24 },
@@ -290,7 +290,7 @@ export const ch8: Chapter = {
     {
       label: "Deployment",
       text:
-        "Deploy only to an org-approved platform (Cloudflare or Google Cloud Platform); any other hosting provider needs the company's procurement and security approval first.",
+        "Deploy only to a platform you're permitted to use. For a work project, that means one your organization has approved, after any security review it requires; check before you build, not after.",
     },
   ],
   skills: { building: 3, systemDesign: 3, evaluation: 1, production: 2 },

@@ -453,7 +453,7 @@ export const ch3: Chapter = {
     },
     {
       label: "Deployment",
-      text: "Deploy only to an org-approved platform (Cloudflare or Google Cloud Platform); any other hosting provider needs the company's procurement and security approval first.",
+      text: "Deploy only to a platform you're permitted to use. For a work project, that means one your organization has approved, after any security review it requires; check before you build, not after.",
     },
   ],
   skills: { building: 3, systemDesign: 1, production: 1 },
