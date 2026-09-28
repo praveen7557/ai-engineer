@@ -54,7 +54,6 @@ export function CoursePath() {
               <div className="cp-top">
                 <h3 id={`cp-phase-${p.number}`}>{p.title}</h3>
                 <span className="cp-meta">
-                  <span className={`tag ${p.tier === "must" ? "req" : ""}`}>{p.tier === "must" ? "Must learn" : "Nice to know"}</span>
                   <span className="faint mono">~{p.hours} h</span>
                   {p.resources.length > 0 && <span className="faint mono">{done(p.resources.map(r => r.id))}/{p.resources.length} done</span>}
                 </span>
@@ -137,10 +136,10 @@ export function CoursePath() {
         </div>
       </section>
 
-      <section className="section" aria-labelledby="cp-after">
-        <div className="section-head"><h2 className="section-title" id="cp-after">After the path</h2><span className="aside">nice to know</span></div>
-        <ul className="checks panel" style={{ padding: "2px 12px" }} aria-label="After the path">
-          {coursePath.afterwards.map(a => <CourseRow key={a.id} link={a} sub={a.note} />)}
+      <section className="section" aria-labelledby="cp-nice">
+        <div className="section-head"><h2 className="section-title" id="cp-nice">Nice to know</h2><span className="aside">optional · not in the hours or budget</span></div>
+        <ul className="checks panel" style={{ padding: "2px 12px" }} aria-label="Nice to know">
+          {coursePath.niceToKnow.map(a => <CourseRow key={a.id} link={a} sub={`${a.provider} · ${a.cost} · ${a.note}`} />)}
         </ul>
       </section>
     </>

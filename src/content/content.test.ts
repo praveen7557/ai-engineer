@@ -41,7 +41,7 @@ describe("roadmap content", () => {
       ch.trial.forEach(t => expect(t.id).toMatch(new RegExp(`^${ch.id}\\.t\\.[a-z0-9-]+$`)));
     }
     setupItems.forEach(s => expect(s.id).toMatch(/^setup\.[a-z0-9-]+$/));
-    COURSE_LINKS.forEach(c => expect(c.id).toMatch(/^course\.(p\d+|after)\.[a-z0-9-]+$/));
+    COURSE_LINKS.forEach(c => expect(c.id).toMatch(/^course\.[a-z0-9-]+$/));
   });
 
   it("numbers missions 1..N across the roadmap", () => {

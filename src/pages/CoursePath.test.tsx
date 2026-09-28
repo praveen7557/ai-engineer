@@ -41,13 +41,13 @@ describe("CoursePath page", () => {
 
   it("shows weeks needed at each pace, rounded up", () => {
     const text = container.textContent ?? "";
-    expect(text).toContain("29 weeks");
-    expect(text).toContain("19 weeks");
-    expect(text).toContain("15 weeks");
+    expect(text).toContain("20 weeks");
+    expect(text).toContain("13 weeks");
+    expect(text).toContain("10 weeks");
   });
 
   it("shows the spend range against the cap", () => {
-    expect(container.textContent).toContain("$353–468");
+    expect(container.textContent).toContain("$289–438");
     expect(container.textContent).toContain("of a $1000 yearly budget");
   });
 
@@ -61,7 +61,7 @@ describe("CoursePath page", () => {
   });
 
   it("gives every course and resource a checkbox", () => {
-    const titles = [...coursePath.phases.flatMap(p => p.resources), ...coursePath.afterwards].map(r => r.title);
+    const titles = [...coursePath.phases.flatMap(p => p.resources), ...coursePath.niceToKnow].map(r => r.title);
     for (const t of titles) expect(boxFor(t)).toBeTruthy();
     expect(container.textContent).toContain(`0 / ${titles.length}`);
   });
@@ -71,20 +71,20 @@ describe("CoursePath page", () => {
     await act(async () => { boxFor(course.title).click(); });
     expect(ctx.state.done[course.id]).toBeTruthy();
     expect(xpOf(ctx.state).total).toBe(XP.course);
-    expect(container.textContent).toContain("1 / 17");
+    expect(container.textContent).toContain("1 / 13");
     const phase = [...container.querySelectorAll("article")][4];
-    expect(phase.textContent).toContain("1/1 done");
+    expect(phase.textContent).toContain("1/2 done");
 
     await act(async () => { boxFor(course.title).click(); });
     expect(ctx.state.done[course.id]).toBeFalsy();
-    expect(container.textContent).toContain("0 / 17");
+    expect(container.textContent).toContain("0 / 13");
   });
 
   it("links each chapter in the mapping and deep-links its gap resources into the chapter", () => {
     const section = container.querySelector("[aria-labelledby=cp-map]")!;
     for (const ch of CHAPTERS) expect(section.querySelector(`a[href="#/chapter/${ch.id}"]`)).not.toBeNull();
-    const r = RESOURCE_BY_ID.get("ch6.r.mcp-specification")!;
+    const r = RESOURCE_BY_ID.get("ch7.r.handling-overload")!;
     const link = [...section.querySelectorAll<HTMLAnchorElement>("a")].find(a => a.textContent === r.title)!;
-    expect(link.getAttribute("href")).toBe(`#/chapter/ch6?week=${r.week}&focus=ch6.r.mcp-specification&s=intel`);
+    expect(link.getAttribute("href")).toBe(`#/chapter/ch7?week=${r.week}&focus=ch7.r.handling-overload&s=intel`);
   });
 });
